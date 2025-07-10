@@ -10,7 +10,7 @@ CREATE SEQUENCE IF NOT EXISTS sinistro_seq START 1;
 CREATE TABLE sinistros (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     numero_sinistro VARCHAR(20) UNIQUE NOT NULL DEFAULT 'SIN-' || to_char(CURRENT_TIMESTAMP, 'YYYY') || '-' || LPAD(NEXTVAL('sinistro_seq')::TEXT, 6, '0'),
-    tipo_sinistro VARCHAR(20) NOT NULL CHECK (tipo_sinistro IN ('colisao', 'furto')),
+    tipo_sinistro VARCHAR(20) NOT NULL CHECK (tipo_sinistro IN ('colisao', 'furto', 'roubo')),
     documentos_furtados BOOLEAN DEFAULT false,
     outros_veiculos_envolvidos BOOLEAN DEFAULT false,
     nome_completo_furto VARCHAR(255),

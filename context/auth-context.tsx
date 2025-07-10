@@ -22,12 +22,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Verificar sessão atual na inicialização
     const checkSession = async () => {
       try {
-        console.log('🔍 Verificando sessão atual...')
+        console.log('Verificando sessão atual...')
         const currentUser = await authService.getCurrentUser()
         setUser(currentUser)
-        console.log('👤 Usuário atual:', currentUser?.email || 'Não logado')
+        console.log('Usuário atual:', currentUser?.email || 'Não logado')
       } catch (error) {
-        console.error('❌ Erro ao verificar sessão:', error)
+        console.error('Erro ao verificar sessão:', error)
       } finally {
         setLoading(false)
       }
@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Escutar mudanças de autenticação
     const { data: { subscription } } = authService.onAuthStateChange((user) => {
-      console.log('🔄 Estado de auth mudou:', user?.email || 'logout')
+      console.log('Estado de auth mudou:', user?.email || 'logout')
       setUser(user)
       setLoading(false)
     })

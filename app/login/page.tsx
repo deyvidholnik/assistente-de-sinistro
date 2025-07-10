@@ -23,7 +23,7 @@ export default function LoginPage() {
   // Redirecionar se já estiver logado
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
-      console.log('✅ Usuário já logado, redirecionando...')
+      console.log('Usuário já logado, redirecionando...')
       router.push('/gerente')
     }
   }, [isAuthenticated, authLoading, router])
@@ -34,12 +34,12 @@ export default function LoginPage() {
     setError('')
 
     try {
-      console.log('🔐 Tentando login com:', email)
+      console.log('Tentando login com:', email)
       await signIn(email, password)
-      console.log('✅ Login bem-sucedido, redirecionando...')
+      console.log('Login bem-sucedido, redirecionando...')
       router.push('/gerente')
     } catch (err: any) {
-      console.error('❌ Erro no login:', err)
+      console.error('Erro no login:', err)
       setError(err.message || 'Erro ao fazer login. Verifique suas credenciais.')
     } finally {
       setLoading(false)

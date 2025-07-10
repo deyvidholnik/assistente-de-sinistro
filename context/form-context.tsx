@@ -272,12 +272,12 @@ export function FormProvider({ children }: { children: ReactNode }) {
 
   const nextStep = () => {
     if (currentStep === 1) setCurrentStep(2)
-    else if (currentStep === 2) setCurrentStep(tipoSinistro === "furto" ? 3 : 4)
+    else if (currentStep === 2) setCurrentStep(tipoSinistro === "furto" || tipoSinistro === "roubo" ? 3 : 4)
     else if (currentStep === 3) setCurrentStep(documentosFurtados ? 9 : 4)
     else if (currentStep === 4) setCurrentStep(5)
     else if (currentStep === 5) setCurrentStep(6)
     else if (currentStep === 6) {
-      if (tipoSinistro === "furto") {
+      if (tipoSinistro === "furto" || tipoSinistro === "roubo") {
         setCurrentStep(9)
       } else {
         setCurrentStep(7)
@@ -299,7 +299,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
         setCurrentStep(9)
       }
     } else if (currentStep === 9) {
-      if (tipoSinistro === "furto" && documentosFurtados) {
+      if ((tipoSinistro === "furto" || tipoSinistro === "roubo") && documentosFurtados) {
         setCurrentStep(10)
       }
     }
@@ -328,7 +328,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
       case 8:
         return outrosVeiculos !== null
       case 9:
-        if (tipoSinistro === "furto" && documentosFurtados) {
+        if ((tipoSinistro === "furto" || tipoSinistro === "roubo") && documentosFurtados) {
           return (
             dadosFurtoSemDocumentos.nomeCompleto.trim() !== "" &&
             dadosFurtoSemDocumentos.cpf.trim() !== "" &&

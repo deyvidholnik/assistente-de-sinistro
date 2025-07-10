@@ -11,7 +11,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 export interface SinistroData {
   id?: string
   numero_sinistro?: string
-  tipo_sinistro: 'colisao' | 'furto'
+  tipo_sinistro: 'colisao' | 'furto' | 'roubo'
   documentos_furtados?: boolean
   outros_veiculos_envolvidos?: boolean
   nome_completo_furto?: string

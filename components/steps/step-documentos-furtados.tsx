@@ -25,7 +25,7 @@ export function StepDocumentosFurtados() {
       <Alert className="border-amber-200 bg-amber-50 mx-2 sm:mx-0">
         <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0" />
         <AlertDescription className="text-amber-700 text-sm">
-          <strong className="block mb-1">Situação Comum em Furtos</strong>É comum que em casos de furto, os documentos
+          <strong className="block mb-1">Situação Comum em Furtos e Roubos</strong>É comum que em casos de furto e roubo, os documentos
           do veículo e do condutor também sejam levados. Selecione sua situação abaixo.
         </AlertDescription>
       </Alert>
@@ -55,9 +55,9 @@ export function StepDocumentosFurtados() {
         >
           <ShieldAlert className="w-10 h-10 sm:w-12 sm:h-12 text-red-600 flex-shrink-0" />
           <div>
-            <div className="font-bold text-base sm:text-lg text-red-600 mb-1">DOCUMENTOS FURTADOS</div>
+            <div className="font-bold text-base sm:text-lg text-red-600 mb-1">NÃO TENHO OS DOCUMENTOS</div>
             <div className="text-xs sm:text-sm text-gray-600 leading-tight">
-              CNH e/ou CRLV também foram levados no furto
+              CNH e/ou CRLV também foram levados
             </div>
           </div>
         </Button>
@@ -72,8 +72,7 @@ export function StepDocumentosFurtados() {
           <div className="flex-1">
             <h4 className="font-semibold text-blue-800 text-sm sm:text-base mb-1">Não se preocupe</h4>
             <p className="text-blue-700 text-xs sm:text-sm leading-relaxed">
-              Independente da sua situação, nossa equipe está preparada para auxiliá-lo no processo. Adaptaremos o fluxo
-              conforme sua necessidade.
+              Independente da sua situação, nossa equipe está preparada para auxiliá-lo no processo.
             </p>
           </div>
         </div>

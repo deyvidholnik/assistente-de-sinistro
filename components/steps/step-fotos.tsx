@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Camera, CheckCircle, Smartphone } from "lucide-react"
+import { Camera, CheckCircle, Smartphone, Target } from "lucide-react"
 import { useForm } from "@/context/form-context"
 import { fotoVeiculoSteps } from "@/constants/steps"
 import { FilePreview } from "@/components/file-preview"
@@ -40,7 +40,7 @@ export function StepFotos() {
             <ul className="space-y-1 text-xs sm:text-sm text-orange-700">
               {currentStepData.posicionamento.map((posicionamento, index) => (
                 <li key={index} className="flex items-start leading-relaxed">
-                  <span className="text-orange-600 mr-2 flex-shrink-0 mt-0.5">🎯</span>
+                  <Target className="w-4 h-4 text-orange-600 mr-2 flex-shrink-0 mt-0.5" />
                   <span>{posicionamento}</span>
                 </li>
               ))}

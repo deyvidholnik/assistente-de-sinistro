@@ -23,7 +23,7 @@ export function UserProfile() {
       console.log('🚪 Fazendo logout...')
       await signOut()
     } catch (error) {
-      console.error('❌ Erro no logout:', error)
+      console.error('Erro no logout:', error)
     }
   }
 

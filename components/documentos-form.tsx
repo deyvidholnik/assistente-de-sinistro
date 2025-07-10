@@ -104,7 +104,7 @@ export default function DocumentosForm() {
     const normalizedStep = currentStep === 10 ? 9 : currentStep
     const completedSteps = normalizedStep - 1 // Steps completados = step atual - 1
     
-    if (tipoSinistro === "furto") {
+    if (tipoSinistro === "furto" || tipoSinistro === "roubo") {
       return (completedSteps / 9) * 100
     }
     if (isDocumentingThirdParty) {
@@ -144,7 +144,7 @@ export default function DocumentosForm() {
       case 8:
         return <StepTerceiros />
       case 9:
-        if (tipoSinistro === "furto" && documentosFurtados) {
+        if ((tipoSinistro === "furto" || tipoSinistro === "roubo") && documentosFurtados) {
           return <StepFurtoSemDocumentos />
         }
         return <StepFinalizacao />

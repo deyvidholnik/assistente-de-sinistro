@@ -86,10 +86,10 @@ export function StepFinalizacao() {
       }
 
       // Adicionar fotos dos steps
-      console.log('🖼️ FotoStepFiles disponíveis:', fotoStepFiles)
+      console.log('FotoStepFiles disponíveis:', fotoStepFiles)
       Object.keys(fotoStepFiles).forEach(stepId => {
         const files = fotoStepFiles[parseInt(stepId)]
-        console.log(`📸 Step ${stepId}:`, files)
+        console.log(`Step ${stepId}:`, files)
         if (files && files.length > 0) {
           files.forEach((arquivo, index) => {
             const chaveArquivo = `arquivo_foto_veiculo_${stepId}_${index}`
@@ -100,7 +100,7 @@ export function StepFinalizacao() {
       })
 
       // Debug: listar todas as chaves do FormData
-      console.log('📋 Todas as chaves do FormData:')
+      console.log('Todas as chaves do FormData:')
       for (const [key, value] of formData.entries()) {
         if (key.startsWith('arquivo_')) {
           console.log(`  - ${key}:`, value instanceof File ? `${value.name} (${value.size} bytes)` : value)
