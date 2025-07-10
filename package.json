@@ -6,7 +6,10 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "build:prod": "npm install --legacy-peer-deps && next build",
+    "clean": "rm -rf .next node_modules package-lock.json",
+    "reinstall": "npm run clean && npm install --legacy-peer-deps"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
