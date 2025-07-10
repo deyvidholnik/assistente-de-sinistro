@@ -1,0 +1,169 @@
+---
+description: "Soluções para problemas de hidratação no Next.js"
+---
+
+# Hidratação no Next.js - Soluções
+
+## Problemas Comuns de Hidratação
+
+### Extensões do Navegador
+- **Problema**: Extensões modificam o HTML após renderização
+- **Sintoma**: Atributos como `cz-shortcut-listen="true"` aparecem no cliente
+- **Solução**: Use `suppressHydrationWarning={true}` no elemento afetado
+
+### Renderização Condicional
+- **Problema**: Código que usa `typeof window !== 'undefined'`
+- **Sintoma**: Diferenças entre servidor e cliente
+- **Solução**: Use componente `ClientOnly` ou `useEffect`
+
+### Dados Dinâmicos
+- **Problema**: `Date.now()`, `Math.random()`, timestamps
+- **Sintoma**: Valores diferentes entre servidor e cliente
+- **Solução**: Use `useEffect` para dados dinâmicos
+
+## Implementações no Projeto
+
+### Layout com Supressão
+```typescript
+// app/layout.tsx
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body suppressHydrationWarning={true}>
+        {children}
+      </body>
+    </html>
+  )
+}
+```
+
+### Componente ClientOnly
+```typescript
+// components/client-only.tsx
+"use client"
+
+import { useEffect, useState } from 'react'
+
+interface ClientOnlyProps {
+  children: React.ReactNode
+  fallback?: React.ReactNode
+}
+
+export default function ClientOnly({ children, fallback = null }: ClientOnlyProps) {
+  const [hasMounted, setHasMounted] = useState(false)
+
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
+
+  if (!hasMounted) {
+    return <>{fallback}</>
+  }
+
+  return <>{children}</>
+}
+```
+
+### Uso do ClientOnly
+```typescript
+import ClientOnly from '@/components/client-only'
+
+function MyComponent() {
+  return (
+    <ClientOnly fallback={<div>Carregando...</div>}>
+      <ComponenteThatNeedsClient />
+    </ClientOnly>
+  )
+}
+```
+
+## Casos de Uso Específicos
+
+### ThemeProvider
+```typescript
+// Se houver problemas com tema
+<ClientOnly>
+  <ThemeProvider>
+    <App />
+  </ThemeProvider>
+</ClientOnly>
+```
+
+### Componentes com localStorage
+```typescript
+function ComponenteComStorage() {
+  const [data, setData] = useState<string | null>(null)
+
+  useEffect(() => {
+    setData(localStorage.getItem('key'))
+  }, [])
+
+  if (data === null) {
+    return <div>Carregando...</div>
+  }
+
+  return <div>{data}</div>
+}
+```
+
+### Componentes com window
+```typescript
+function ComponenteComWindow() {
+  const [windowWidth, setWindowWidth] = useState(0)
+
+  useEffect(() => {
+    setWindowWidth(window.innerWidth)
+    
+    const handleResize = () => setWindowWidth(window.innerWidth)
+    window.addEventListener('resize', handleResize)
+    
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  return <div>Largura: {windowWidth}px</div>
+}
+```
+
+## Debugging de Hidratação
+
+### Identificar Problemas
+1. Abra o console do navegador
+2. Procure por mensagens de hidratação
+3. Identifique o componente/elemento afetado
+4. Verifique se há extensões do navegador interferindo
+
+### Ferramentas de Debug
+```typescript
+// Adicionar logs para debug
+useEffect(() => {
+  console.log('Componente hidratado')
+}, [])
+
+// Comparar estados servidor vs cliente
+const [isClient, setIsClient] = useState(false)
+useEffect(() => {
+  setIsClient(true)
+}, [])
+
+console.log('isClient:', isClient)
+```
+
+## Boas Práticas
+
+### Evitar Problemas
+- Use `useEffect` para código que depende do cliente
+- Evite `Date.now()` em renderização inicial
+- Use `ClientOnly` para componentes problemáticos
+- Teste em diferentes navegadores/extensões
+
+### Performance
+- Use `suppressHydrationWarning` com parcimônia
+- Prefira `useEffect` over `ClientOnly` quando possível
+- Minimize componentes client-only
+- Use fallbacks apropriados
+
+### Monitoramento
+- Monitore logs de hidratação em produção
+- Teste com extensões comuns
+- Valide em diferentes dispositivos
+- Use ferramentas de debugging do React

@@ -1,0 +1,162 @@
+---
+description: "Validação de CPF e placa no sistema"
+---
+
+# Validação de CPF e Placa
+
+## Funções de Validação
+
+### Localização
+As funções de validação estão em [lib/validations.ts](mdc:lib/validations.ts).
+
+### Funções Disponíveis
+
+#### `validarCPF(cpf: string): boolean`
+- Valida CPF usando algoritmo oficial
+- Remove automaticamente formatação
+- Verifica dígitos verificadores
+- Rejeita CPFs com dígitos iguais
+
+#### `formatarCPF(value: string): string`
+- Aplica máscara xxx.xxx.xxx-xx
+- Remove caracteres não numéricos
+- Limita a 14 caracteres
+
+#### `validarPlaca(placa: string): boolean`
+- Valida formatos antigo (ABC-1234) e Mercosul (ABC1D23)
+- Remove formatação automaticamente
+- Converte para maiúscula
+
+#### `formatarPlaca(value: string): string`
+- Adiciona hífen quando necessário
+- Converte para maiúscula
+- Limita a 8 caracteres
+
+## Uso no Contexto
+
+### Validação no `canProceed()`
+```typescript
+case 9:
+  if (tipoSinistro === "furto" && documentosFurtados) {
+    return (
+      dadosFurtoSemDocumentos.nomeCompleto.trim() !== "" &&
+      dadosFurtoSemDocumentos.cpf.trim() !== "" &&
+      validarCPF(dadosFurtoSemDocumentos.cpf) &&
+      dadosFurtoSemDocumentos.placaVeiculo.trim() !== "" &&
+      validarPlaca(dadosFurtoSemDocumentos.placaVeiculo)
+    )
+  }
+```
+
+## Implementação nos Componentes
+
+### StepFurtoSemDocumentos
+- Validação em tempo real
+- Feedback visual (cores de borda)
+- Mensagens de erro específicas
+- Ícones de validação
+
+### Exemplo de Uso
+```typescript
+const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const value = e.target.value
+  const formattedValue = formatarCPF(value)
+  setDadosFurtoSemDocumentos({ ...dadosFurtoSemDocumentos, cpf: formattedValue })
+  
+  if (formattedValue.length === 14) {
+    if (validarCPF(formattedValue)) {
+      setErros(prev => ({ ...prev, cpf: "" }))
+    } else {
+      setErros(prev => ({ ...prev, cpf: "CPF inválido" }))
+    }
+  }
+}
+```
+
+## Estados de Validação
+
+### Visual Feedback
+- **Verde**: Campo válido (`border-green-300`)
+- **Vermelho**: Campo inválido (`border-red-300`)
+- **Cinza**: Campo neutro (padrão)
+
+### Ícones
+- `CheckCircle`: Campo válido
+- `XCircle`: Campo inválido
+- Nenhum ícone: Campo neutro
+
+## Mensagens de Erro
+
+### CPF
+- "CPF incompleto": Menos de 14 caracteres
+- "CPF inválido": Falha na validação
+
+### Placa
+- "Placa incompleta": Menos de 7 caracteres
+- "Placa inválida": Formato não reconhecido
+
+### Nome
+- "Nome deve ter pelo menos 2 caracteres"
+
+## Botão Prosseguir
+
+### Condições para Aparecer
+- Todos os campos válidos
+- `canProceed()` retorna `true`
+- Validação em tempo real passed
+
+### Comportamento
+- Feedback visual durante processamento
+- Animação de loading
+- Ícone de sucesso
+- Chama `nextStep()` ao finalizar
+
+## Padrões de Implementação
+
+### Validação em Tempo Real
+```typescript
+const [erros, setErros] = useState<{ [key: string]: string }>({})
+
+const handleChange = (field: string, value: string, validator: (v: string) => boolean) => {
+  // Atualiza valor
+  setValue(value)
+  
+  // Valida
+  if (validator(value)) {
+    setErros(prev => ({ ...prev, [field]: "" }))
+  } else {
+    setErros(prev => ({ ...prev, [field]: "Mensagem de erro" }))
+  }
+}
+```
+
+### Status Visual
+```typescript
+const hasValidField = validator(fieldValue)
+
+<Input
+  className={`base-classes ${
+    erros.field ? 'border-red-300 focus:border-red-500' : 
+    hasValidField ? 'border-green-300 focus:border-green-500' : ''
+  }`}
+/>
+```
+
+### Seção de Status
+```typescript
+<div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+  <h4 className="font-medium text-gray-800 text-sm mb-3">Status dos Campos</h4>
+  <div className="space-y-2">
+    {fields.map(field => (
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-gray-600">{field.label}</span>
+        {field.isValid ? (
+          <CheckCircle className="w-4 h-4 text-green-600" />
+        ) : (
+          <XCircle className="w-4 h-4 text-gray-400" />
+        )}
+      </div>
+    ))}
+  </div>
+</div>
+```

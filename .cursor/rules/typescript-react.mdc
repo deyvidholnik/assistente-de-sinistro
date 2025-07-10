@@ -1,0 +1,71 @@
+---
+globs: "*.ts,*.tsx"
+---
+
+# Regras TypeScript/React - PV Auto Proteção
+
+## Padrões de Código
+
+### Imports e Exports
+- Use imports nomeados quando possível
+- Organize imports: React primeiro, depois bibliotecas, depois locais
+- Use aliases `@/` para imports relativos ao projeto
+
+### Componentes React
+- Use function components com TypeScript
+- Sempre tipifique props com interfaces
+- Use `React.FC` apenas quando necessário
+- Prefira destructuring de props
+
+### Gerenciamento de Estado
+- Use `useForm()` hook para acessar o contexto principal
+- Para estado local, prefira `useState` e `useEffect`
+- Evite prop drilling - use o context quando necessário
+
+### Validação
+- Use `canProceed()` do contexto para validar etapas
+- Implemente validação de campos obrigatórios
+- Trate erros de OCR adequadamente
+
+### Convenções de Nomes
+- Componentes: PascalCase (`StepInicio`)
+- Hooks: camelCase iniciando com `use` (`useForm`)
+- Interfaces: PascalCase com sufixo apropriado (`CNHData`, `StepProps`)
+- Arquivos: kebab-case (`step-inicio.tsx`)
+
+### Padrões de Arquivos
+- Etapas seguem o padrão `step-[nome].tsx`
+- Componentes UI em `components/ui/`
+- Hooks customizados em `hooks/`
+- Tipos em `types/index.ts`
+
+### Tratamento de Erros
+- Use try/catch para operações assíncronas
+- Exiba mensagens de erro claras para o usuário
+- Valide dados antes de processar
+
+### Performance
+- Use lazy loading para componentes pesados
+- Evite re-renders desnecessários
+- Otimize uploads de arquivos
+
+## Exemplo de Componente de Etapa
+
+```typescript
+interface StepProps {
+  onNext: () => void
+  onPrev: () => void
+  canProceed: boolean
+  isProcessing?: boolean
+}
+
+export default function StepExemplo({ onNext, onPrev, canProceed }: StepProps) {
+  const { tipoSinistro, setTipoSinistro } = useForm()
+  
+  return (
+    <div>
+      {/* Conteúdo da etapa */}
+    </div>
+  )
+}
+```

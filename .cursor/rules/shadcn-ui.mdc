@@ -1,0 +1,179 @@
+---
+description: "Componentes shadcn/ui utilizados no projeto"
+---
+
+# Componentes shadcn/ui
+
+## Estrutura dos Componentes
+
+Todos os componentes UI estão em [components/ui/](mdc:components/ui/) e seguem o padrão shadcn/ui.
+
+### Componentes Principais Utilizados
+
+#### Formulários
+- `Button`: Botões de ação e navegação
+- `Input`: Campos de texto
+- `Label`: Rótulos de campos
+- `Card`: Containers para conteúdo
+- `Form`: Wrapper para formulários
+
+#### Navegação
+- `Progress`: Barra de progresso das etapas
+- `Tabs`: Navegação entre seções
+- `Breadcrumb`: Navegação hierárquica
+
+#### Feedback
+- `Alert`: Mensagens de alerta
+- `Toast`: Notificações temporárias
+- `Skeleton`: Loading states
+
+#### Upload
+- `Aspect-ratio`: Proporção de imagens
+- `Dialog`: Modais para preview
+
+### Padrões de Uso
+
+#### Botões
+```typescript
+import { Button } from "@/components/ui/button"
+
+// Botão primário
+<Button onClick={onNext} disabled={!canProceed}>
+  Próximo
+</Button>
+
+// Botão secundário
+<Button variant="outline" onClick={onPrev}>
+  Voltar
+</Button>
+```
+
+#### Cards
+```typescript
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
+<Card>
+  <CardHeader>
+    <CardTitle>Título da Etapa</CardTitle>
+  </CardHeader>
+  <CardContent>
+    {/* Conteúdo */}
+  </CardContent>
+</Card>
+```
+
+#### Inputs
+```typescript
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+
+<div className="space-y-2">
+  <Label htmlFor="nome">Nome Completo</Label>
+  <Input 
+    id="nome" 
+    value={cnhData.nome} 
+    onChange={(e) => setCnhData({...cnhData, nome: e.target.value})}
+  />
+</div>
+```
+
+#### Alerts
+```typescript
+import { Alert, AlertDescription } from "@/components/ui/alert"
+
+<Alert variant="destructive">
+  <AlertDescription>
+    {ocrError}
+  </AlertDescription>
+</Alert>
+```
+
+### Estilos e Temas
+
+#### Tema Provider
+O tema é configurado em [components/theme-provider.tsx](mdc:components/theme-provider.tsx).
+
+#### Classes CSS
+- Use `className` com Tailwind CSS
+- Componentes já vêm com estilos base
+- Customize com classes utilitárias
+
+#### Variantes
+Cada componente tem variantes predefinidas:
+- `Button`: default, destructive, outline, secondary, ghost, link
+- `Alert`: default, destructive
+- `Card`: default
+
+### Customização
+
+#### Cores
+Definidas em [tailwind.config.ts](mdc:tailwind.config.ts) e [globals.css](mdc:app/globals.css).
+
+#### Componentes Personalizados
+Extenda componentes base quando necessário:
+```typescript
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
+interface CustomButtonProps extends React.ComponentProps<typeof Button> {
+  isLoading?: boolean
+}
+
+export function CustomButton({ isLoading, children, className, ...props }: CustomButtonProps) {
+  return (
+    <Button 
+      className={cn("relative", className)} 
+      disabled={isLoading || props.disabled}
+      {...props}
+    >
+      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      {children}
+    </Button>
+  )
+}
+```
+
+### Acessibilidade
+
+#### Boas Práticas
+- Use `Label` com `htmlFor` para inputs
+- Implemente `aria-labels` quando necessário
+- Mantenha contraste adequado
+- Navegação por teclado
+
+#### Validação Visual
+- Estados de erro com `variant="destructive"`
+- Loading states com `Skeleton`
+- Feedback imediato com `Toast`
+
+### Responsividade
+
+#### Breakpoints
+- `sm`: 640px
+- `md`: 768px
+- `lg`: 1024px
+- `xl`: 1280px
+
+#### Layout
+- Use `Grid` e `Flex` utilities
+- Componentes `Card` são responsivos por padrão
+- Teste em diferentes tamanhos de tela
+
+### Ícones
+
+#### Lucide React
+```typescript
+import { Shield, Car, CheckCircle } from "lucide-react"
+
+<Button>
+  <Shield className="mr-2 h-4 w-4" />
+  Proteger
+</Button>
+```
+
+### Dicas de Performance
+
+- Importe apenas componentes necessários
+- Use `cn()` para merge de classes
+- Evite re-renders desnecessários
+- Lazy load componentes pesados

@@ -1,0 +1,79 @@
+---
+alwaysApply: true
+---
+
+# Estrutura do Projeto - PV Auto Proteção
+
+Este é um sistema Next.js para reportar sinistros de veículos (proteção veicular) com fluxo de múltiplas etapas.
+
+## Arquitetura Principal
+
+- **Framework**: Next.js 15.2 com TypeScript
+- **UI**: Tailwind CSS + shadcn/ui components
+- **Gerenciamento de Estado**: Context API ([context/form-context.tsx](mdc:context/form-context.tsx))
+- **Formulários**: React Hook Form + Zod para validação
+- **OCR**: API customizada para extrair dados de CNH e CRLV
+
+## Fluxo de Etapas
+
+O sistema segue um fluxo de 9 etapas definidas em [constants/steps.ts](mdc:constants/steps.ts):
+
+1. **Início**: Boas-vindas
+2. **Tipo**: Seleção do tipo de sinistro (colisão/furto)
+3. **Situação**: Verificação se documentos foram furtados
+4. **CNH**: Upload da habilitação com OCR
+5. **CRLV**: Upload do documento do veículo com OCR
+6. **B.O.**: Upload do boletim de ocorrência
+7. **Fotos**: Fotos guiadas do veículo (11 tipos diferentes)
+8. **Terceiros**: Informações sobre outros veículos
+9. **Finalização**: Confirmação e envio
+
+## Componentes de Etapas
+
+Cada etapa está em [components/steps/](mdc:components/steps/):
+- `step-inicio.tsx`: Tela inicial
+- `step-tipo-sinistro.tsx`: Seleção colisão/furto
+- `step-documentos-furtados.tsx`: Verificação de documentos
+- `step-cnh.tsx`: Upload CNH com OCR
+- `step-crlv.tsx`: Upload CRLV com OCR
+- `step-boletim-ocorrencia.tsx`: Upload B.O.
+- `step-fotos.tsx`: Sistema de fotos guiadas
+- `step-terceiros.tsx`: Outros veículos
+- `step-finalizacao.tsx`: Confirmação final
+
+## Tipos Importantes
+
+Definidos em [types/index.ts](mdc:types/index.ts):
+- `CNHData`: Dados extraídos da habilitação
+- `CRLVData`: Dados do documento do veículo
+- `DocumentosData`: Arquivos uploadados
+- `FotoVeiculoStep`: Estrutura das fotos guiadas
+- `TipoSinistro`: "colisao" | "furto"
+
+## Context API
+
+O [context/form-context.tsx](mdc:context/form-context.tsx) gerencia:
+- Estado atual da etapa
+- Dados de CNH e CRLV (próprio e terceiros)
+- Arquivos uploadados
+- Lógica de progressão entre etapas
+- Processamento OCR
+- Validação de campos obrigatórios
+
+## API Routes
+
+- `/api/ocr/route.ts`: Processa OCR de CNH e CRLV
+
+## Fotos Guiadas
+
+Sistema de 11 tipos de fotos definidas em [constants/steps.ts](mdc:constants/steps.ts):
+- 5 fotos obrigatórias do próprio veículo
+- 5 fotos opcionais de outros veículos
+- 1 foto geral do local
+
+## Convenções
+
+- Sempre usar português nos textos
+- Componentes seguem padrão shadcn/ui
+- Props de etapas seguem interface `StepProps`
+- Validação via `canProceed()` no contexto

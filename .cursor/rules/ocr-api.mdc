@@ -1,0 +1,134 @@
+---
+description: "API de OCR para processamento de CNH e CRLV"
+---
+
+# API de OCR - Processamento de Documentos
+
+## Estrutura da API
+
+A API de OCR está localizada em [app/api/ocr/route.ts](mdc:app/api/ocr/route.ts).
+
+### Endpoint
+- **URL**: `/api/ocr`
+- **Método**: POST
+- **Content-Type**: application/json
+
+### Payload
+```typescript
+{
+  base64Image: string    // Imagem em base64 sem prefixo
+  type: "cnh" | "crlv"   // Tipo de documento
+}
+```
+
+### Response
+```typescript
+{
+  success: boolean
+  message?: string
+  extractedData?: CNHData | CRLVData
+}
+```
+
+## Processamento no Context
+
+### Função processarOCR
+```typescript
+const processarOCR = async (file: File, documentType: "cnh" | "crlv") => {
+  // Converte arquivo para base64
+  const base64Image = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve((reader.result as string).split(",")[1])
+    reader.readAsDataURL(file)
+  })
+  
+  // Chama API
+  const resp = await fetch("/api/ocr", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ base64Image, type: documentType })
+  })
+}
+```
+
+### Estados de Processamento
+- `isProcessingOCR`: Flag global de processamento
+- `ocrError`: Mensagem de erro atual
+- `processingFiles`: Set de arquivos sendo processados
+- `hasProcessedCNH`: Flag se CNH foi processada
+- `hasProcessedCRLV`: Flag se CRLV foi processado
+
+### Validação de Dados
+
+#### CNH
+```typescript
+if (documentType === "cnh" && (!extractedData || !extractedData.cpf)) {
+  removeFile("cnh", 0)
+  throw new Error("Por favor, envie uma foto mais nítida e sem reflexos.")
+}
+```
+
+#### CRLV
+```typescript
+if (documentType === "crlv" && (!extractedData || !extractedData.placa)) {
+  removeFile("crlv", 0)
+  throw new Error("Por favor, envie uma foto mais nítida e sem reflexos.")
+}
+```
+
+## Fluxo de Processamento
+
+1. **Upload**: Usuário seleciona arquivo
+2. **Conversão**: Arquivo convertido para base64
+3. **Envio**: Dados enviados para API
+4. **Processamento**: API extrai dados do documento
+5. **Validação**: Verifica se campos essenciais existem
+6. **Atualização**: Atualiza estado do contexto
+7. **Feedback**: Mostra resultado ou erro para usuário
+
+## Tratamento de Erros
+
+### Tipos de Erro
+- Falha na API (response.success = false)
+- Campos obrigatórios ausentes
+- Erro de conexão/timeout
+- Arquivo inválido
+
+### Comportamento
+- Remove arquivo automaticamente em caso de erro
+- Reseta dados do documento
+- Exibe mensagem de erro para usuário
+- Permite nova tentativa
+
+## Componentes Relacionados
+
+### step-cnh.tsx
+- Processa CNH com OCR
+- Exibe dados extraídos
+- Permite edição manual
+- Feedback visual durante processamento
+
+### step-crlv.tsx
+- Processa CRLV com OCR
+- Exibe dados extraídos
+- Permite edição manual
+- Feedback visual durante processamento
+
+## Dicas de Implementação
+
+### Performance
+- Evite reprocessamento do mesmo arquivo
+- Use FileReader de forma assíncrona
+- Implemente debounce se necessário
+
+### UX
+- Mostre loading state durante processamento
+- Feedback claro sobre sucesso/erro
+- Possibilidade de editar dados extraídos
+- Retry automático em caso de falha temporária
+
+### Validação
+- Sempre valide dados extraídos
+- Campos obrigatórios: CPF (CNH), Placa (CRLV)
+- Formatos de data e números
+- Sanitização de dados de entrada

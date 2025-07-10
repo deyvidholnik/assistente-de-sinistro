@@ -1,0 +1,114 @@
+---
+description: "Sistema de fotos guiadas do veículo"
+---
+
+# Sistema de Fotos Guiadas
+
+## Estrutura das Fotos
+
+O sistema de fotos é definido em [constants/steps.ts](mdc:constants/steps.ts) no array `fotoVeiculoSteps`.
+
+### Categorias de Fotos
+
+1. **"proprio"** (obrigatórias):
+   - Traseira com placa
+   - Frente completa
+   - Lateral direita
+   - Lateral esquerda
+   - Danos específicos
+
+2. **"outros"** (opcionais):
+   - Mesmas 5 fotos para outros veículos
+
+3. **"geral"** (opcional):
+   - Visão panorâmica do local
+
+### Estrutura FotoVeiculoStep
+
+```typescript
+interface FotoVeiculoStep {
+  id: number
+  titulo: string
+  descricao: string
+  instrucoes: string[]
+  posicionamento: string[]
+  exemplo: string
+  obrigatoria: boolean
+  imagemExemplo: string
+  categoria: "proprio" | "outros" | "geral"
+}
+```
+
+## Fluxo de Fotos
+
+### Context State
+- `currentFotoStep`: Índice da foto atual
+- `fotoStepFiles`: Arquivos por step ID
+- `isDocumentingThirdParty`: Flag para terceiros
+
+### Lógica de Progressão
+```typescript
+const limit = isDocumentingThirdParty ? 9 : 4
+if (currentFotoStep < limit) {
+  setCurrentFotoStep(currentFotoStep + 1)
+}
+```
+
+### Validação
+```typescript
+const fotoStep = fotoVeiculoSteps[currentFotoStep]
+return !fotoStep?.obrigatoria || (fotoStepFiles[fotoStep.id] || []).length > 0
+```
+
+## Implementação
+
+### Upload de Fotos
+```typescript
+const handleFotoStepUpload = (stepId: number, fileList: FileList | null) => {
+  if (!fileList || fileList.length === 0) return
+  const newFiles = Array.from(fileList).slice(0, 1)
+  setFotoStepFiles(prev => ({ ...prev, [stepId]: newFiles }))
+}
+```
+
+### Remoção de Fotos
+```typescript
+const removeFotoStepFile = (stepId: number, index: number) => {
+  const files = fotoStepFiles[stepId] || []
+  const newStepFiles = files.filter((_, i) => i !== index)
+  setFotoStepFiles(prev => ({ ...prev, [stepId]: newStepFiles }))
+}
+```
+
+## Componente step-fotos.tsx
+
+### Responsabilidades
+- Renderizar instruções visuais
+- Gerenciar upload de arquivos
+- Navegação entre etapas de foto
+- Validação de arquivos obrigatórios
+
+### Padrões
+- Máximo 1 arquivo por etapa
+- Validação de formato de imagem
+- Preview das fotos uploadadas
+- Instruções detalhadas de posicionamento
+
+### Interface
+```typescript
+// Props padrão de etapa
+interface StepProps {
+  onNext: () => void
+  onPrev: () => void
+  canProceed: boolean
+  isProcessing?: boolean
+}
+```
+
+## Dicas de Implementação
+
+- Use `fotoVeiculoSteps[currentFotoStep]` para dados da etapa atual
+- Filtre fotos por categoria se necessário
+- Implemente preview das imagens
+- Validação de tipos de arquivo aceitos
+- Feedback visual para upload em progresso
