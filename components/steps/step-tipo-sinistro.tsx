@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Car, ShieldAlert, AlertTriangle, FileText, Sword } from "lucide-react"
+import { Car, ShieldAlert, AlertTriangle, FileText, Sword, Wrench } from "lucide-react"
 import { useForm } from "@/context/form-context"
 
 export function StepTipoSinistro() {
@@ -21,7 +21,7 @@ export function StepTipoSinistro() {
       </div>
 
       {/* Botões de seleção */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 px-2 sm:px-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 px-2 sm:px-0">
         {/* Botão Colisão */}
         <Button
           variant="outline"
@@ -92,7 +92,7 @@ export function StepTipoSinistro() {
         <Button
           variant="outline"
           onClick={() => setTipoSinistro("roubo")}
-          className={`h-32 sm:h-36 flex flex-col items-center justify-center space-y-2 sm:space-y-3 text-center border-2 transition-all duration-200 sm:col-span-2 lg:col-span-1 ${
+          className={`h-32 sm:h-36 flex flex-col items-center justify-center space-y-2 sm:space-y-3 text-center border-2 transition-all duration-200 ${
             tipoSinistro === "roubo"
               ? "bg-red-600 hover:bg-red-700 text-white border-red-600 shadow-lg transform scale-105"
               : "border-gray-300 hover:border-red-400 hover:bg-red-50 bg-white"
@@ -120,6 +120,39 @@ export function StepTipoSinistro() {
             </div>
           </div>
         </Button>
+
+        {/* Botão Pequenos Reparos */}
+        <Button
+          variant="outline"
+          onClick={() => setTipoSinistro("pequenos_reparos")}
+          className={`h-32 sm:h-36 flex flex-col items-center justify-center space-y-2 sm:space-y-3 text-center border-2 transition-all duration-200 ${
+            tipoSinistro === "pequenos_reparos"
+              ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-lg transform scale-105"
+              : "border-gray-300 hover:border-blue-400 hover:bg-blue-50 bg-white"
+          }`}
+        >
+          <Wrench
+            className={`w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0 ${
+              tipoSinistro === "pequenos_reparos" ? "text-white" : "text-blue-600"
+            }`}
+          />
+          <div>
+            <div
+              className={`font-bold text-base sm:text-lg mb-1 ${
+                tipoSinistro === "pequenos_reparos" ? "text-white" : "text-blue-600"
+              }`}
+            >
+              PEQUENOS REPAROS
+            </div>
+            <div
+              className={`text-xs leading-tight px-1 ${
+                tipoSinistro === "pequenos_reparos" ? "text-blue-100" : "text-gray-600"
+              }`}
+            >
+              Danos menores e riscos
+            </div>
+          </div>
+        </Button>
       </div>
 
       {/* Informação adicional baseada na seleção */}
@@ -130,6 +163,8 @@ export function StepTipoSinistro() {
               ? "bg-purple-50 border-purple-400" 
               : tipoSinistro === "roubo"
               ? "bg-red-50 border-red-400"
+              : tipoSinistro === "pequenos_reparos"
+              ? "bg-blue-50 border-blue-400"
               : "bg-orange-50 border-orange-400"
           }`}
         >
@@ -140,6 +175,8 @@ export function StepTipoSinistro() {
                   ? "bg-purple-100" 
                   : tipoSinistro === "roubo"
                   ? "bg-red-100"
+                  : tipoSinistro === "pequenos_reparos"
+                  ? "bg-blue-100"
                   : "bg-orange-100"
               }`}
             >
@@ -147,6 +184,8 @@ export function StepTipoSinistro() {
                 <ShieldAlert className="w-4 h-4 text-purple-600" />
               ) : tipoSinistro === "roubo" ? (
                 <Sword className="w-4 h-4 text-red-600" />
+              ) : tipoSinistro === "pequenos_reparos" ? (
+                <Wrench className="w-4 h-4 text-blue-600" />
               ) : (
                 <Car className="w-4 h-4 text-orange-600" />
               )}
@@ -158,6 +197,8 @@ export function StepTipoSinistro() {
                     ? "text-purple-800" 
                     : tipoSinistro === "roubo"
                     ? "text-red-800"
+                    : tipoSinistro === "pequenos_reparos"
+                    ? "text-blue-800"
                     : "text-orange-800"
                 }`}
               >
@@ -165,6 +206,8 @@ export function StepTipoSinistro() {
                   ? "Documentação para Furto" 
                   : tipoSinistro === "roubo"
                   ? "Documentação para Roubo"
+                  : tipoSinistro === "pequenos_reparos"
+                  ? "Documentação para Pequenos Reparos"
                   : "Documentação para Colisão"}
               </h4>
 
@@ -212,6 +255,31 @@ export function StepTipoSinistro() {
                   <p className="text-red-700 text-xs sm:text-sm leading-relaxed font-medium flex items-center gap-1">
                     <AlertTriangle className="w-3 h-3" />
                     <strong>URGENTE:</strong> Registre o B.O. imediatamente na delegacia!
+                  </p>
+                </div>
+              ) : tipoSinistro === "pequenos_reparos" ? (
+                <div className="space-y-2">
+                  <div className="bg-blue-100 p-3 rounded-md mb-3">
+                    <p className="text-blue-800 text-xs sm:text-sm font-medium mb-1 flex items-center gap-1">
+                      <Wrench className="w-3 h-3" />
+                      O que são PEQUENOS REPAROS?
+                    </p>
+                    <p className="text-blue-700 text-xs leading-relaxed">
+                      Danos menores que não comprometem o funcionamento do veículo.
+                      Ex: riscos, amassados pequenos, quebra de retrovisores, farol trincado.
+                    </p>
+                  </div>
+                  <p className="text-blue-700 text-xs sm:text-sm leading-relaxed">
+                    Para pequenos reparos, você precisará enviar apenas:
+                  </p>
+                  <ul className="text-blue-700 text-xs sm:text-sm space-y-1 ml-4">
+                    <li>• Foto da CNH do titular</li>
+                    <li>• Foto do CRLV do veículo</li>
+                    <li>• Foto do reparo a ser feito</li>
+                    <li>• Foto do chassi do veículo</li>
+                  </ul>
+                  <p className="text-blue-700 text-xs sm:text-sm leading-relaxed font-medium mt-2 bg-blue-200 p-2 rounded">
+                    💡 Processo simplificado sem necessidade de B.O.
                   </p>
                 </div>
               ) : (

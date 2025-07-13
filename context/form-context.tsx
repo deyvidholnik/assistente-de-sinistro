@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, type ReactNode, type Dispatch, type SetStateAction } from "react"
-import type { CNHData, CRLVData, DocumentosData, TipoSinistro, DadosFurtoSemDocumentos } from "@/types"
+import type { CNHData, CRLVData, DocumentosData, TipoSinistro, DadosFurtoSemDocumentos, TipoAtendimento, TipoAssistencia } from "@/types"
 import { fotoVeiculoSteps } from "@/constants/steps" // Assuming fotoVeiculoSteps is declared in a constants file
 import { validarCPF, validarPlaca } from "@/lib/validations"
 
@@ -11,7 +11,9 @@ interface FormContextType {
   currentStep: number
   currentFotoStep: number
   isDocumentingThirdParty: boolean
+  tipoAtendimento: TipoAtendimento
   tipoSinistro: TipoSinistro
+  tipoAssistencia: TipoAssistencia
   documentosFurtados: boolean | null
   documentos: DocumentosData
   documentosTerceiros: DocumentosData
@@ -33,7 +35,9 @@ interface FormContextType {
   setCurrentStep: Dispatch<SetStateAction<number>>
   setCurrentFotoStep: Dispatch<SetStateAction<number>>
   setIsDocumentingThirdParty: Dispatch<SetStateAction<boolean>>
+  setTipoAtendimento: Dispatch<SetStateAction<TipoAtendimento>>
   setTipoSinistro: Dispatch<SetStateAction<TipoSinistro>>
+  setTipoAssistencia: Dispatch<SetStateAction<TipoAssistencia>>
   setDocumentosFurtados: Dispatch<SetStateAction<boolean | null>>
   setDocumentos: Dispatch<SetStateAction<DocumentosData>>
   setDocumentosTerceiros: Dispatch<SetStateAction<DocumentosData>>
@@ -61,7 +65,9 @@ export function FormProvider({ children }: { children: ReactNode }) {
   const [currentStep, setCurrentStep] = useState(1)
   const [currentFotoStep, setCurrentFotoStep] = useState(0)
   const [isDocumentingThirdParty, setIsDocumentingThirdParty] = useState(false)
+  const [tipoAtendimento, setTipoAtendimento] = useState<TipoAtendimento>(null)
   const [tipoSinistro, setTipoSinistro] = useState<TipoSinistro>(null)
+  const [tipoAssistencia, setTipoAssistencia] = useState<TipoAssistencia>(null)
   const [documentosFurtados, setDocumentosFurtados] = useState<boolean | null>(null)
   const [documentos, setDocumentos] = useState<DocumentosData>({
     cnh: [],
@@ -271,36 +277,84 @@ export function FormProvider({ children }: { children: ReactNode }) {
   }
 
   const nextStep = () => {
-    if (currentStep === 1) setCurrentStep(2)
-    else if (currentStep === 2) setCurrentStep(tipoSinistro === "furto" || tipoSinistro === "roubo" ? 3 : 4)
-    else if (currentStep === 3) setCurrentStep(documentosFurtados ? 9 : 4)
-    else if (currentStep === 4) setCurrentStep(5)
-    else if (currentStep === 5) setCurrentStep(6)
-    else if (currentStep === 6) {
+    if (currentStep === 1) {
+      setCurrentStep(2) // Vai para tipo de atendimento
+    } else if (currentStep === 2) {
+      // Step 2 - Tipo de Atendimento
+      if (tipoAtendimento === "sinistro") {
+        setCurrentStep(3) // Vai para tipo de sinistro
+      } else if (tipoAtendimento === "assistencia") {
+        setCurrentStep(4) // Vai para tipo de assistência
+      }
+    } else if (currentStep === 3) {
+      // Step 3 - Tipo de Sinistro
       if (tipoSinistro === "furto" || tipoSinistro === "roubo") {
-        setCurrentStep(9)
+        setCurrentStep(5) // Vai para situação dos documentos
+      } else if (tipoSinistro === "pequenos_reparos") {
+        setCurrentStep(6) // Vai direto para CNH
+      } else {
+        setCurrentStep(6) // Colisão vai para CNH
+      }
+    } else if (currentStep === 4) {
+      // Step 4 - Tipo de Assistência
+      setCurrentStep(6) // Vai para CNH ao invés de finalização
+    } else if (currentStep === 5) {
+      // Step 5 - Situação dos documentos (furto/roubo)
+      setCurrentStep(documentosFurtados ? 11 : 6)
+    } else if (currentStep === 6) {
+      // Step 6 - CNH
+      if (tipoAtendimento === "assistencia") {
+        setCurrentStep(11) // Assistência vai direto para finalização após CNH
       } else {
         setCurrentStep(7)
-        setCurrentFotoStep(0)
       }
     } else if (currentStep === 7) {
-      const limit = isDocumentingThirdParty ? 9 : 4
-      if (currentFotoStep < limit) {
-        setCurrentFotoStep(currentFotoStep + 1)
-      } else {
-        setCurrentStep(isDocumentingThirdParty ? 9 : 8)
-      }
-    } else if (currentStep === 8) {
-      if (outrosVeiculos) {
-        setIsDocumentingThirdParty(true)
-        setCurrentStep(4)
+      // Step 7 - CRLV
+      if (tipoSinistro === "pequenos_reparos") {
+        setCurrentStep(9) // Pequenos reparos vai direto para fotos
         setCurrentFotoStep(0)
       } else {
-        setCurrentStep(9)
+        setCurrentStep(8) // Outros vão para B.O.
+      }
+    } else if (currentStep === 8) {
+      // Step 8 - B.O.
+      if (tipoSinistro === "furto" || tipoSinistro === "roubo") {
+        setCurrentStep(11) // Furto/roubo vai para finalização
+      } else {
+        setCurrentStep(9) // Colisão vai para fotos
+        setCurrentFotoStep(0)
       }
     } else if (currentStep === 9) {
+      // Step 9 - Fotos
+      if (tipoSinistro === "pequenos_reparos") {
+        // Para pequenos reparos, só precisa da foto do reparo e do chassi
+        if (currentFotoStep < 1) {
+          setCurrentFotoStep(currentFotoStep + 1)
+        } else {
+          setCurrentStep(11) // Vai para finalização
+        }
+      } else {
+        // Fluxo normal de fotos para colisão
+        const limit = isDocumentingThirdParty ? 9 : 4
+        if (currentFotoStep < limit) {
+          setCurrentFotoStep(currentFotoStep + 1)
+        } else {
+          setCurrentStep(isDocumentingThirdParty ? 11 : 10)
+        }
+      }
+    } else if (currentStep === 10) {
+      // Step 10 - Terceiros
+      if (outrosVeiculos) {
+        setIsDocumentingThirdParty(true)
+        setCurrentStep(6)
+        setCurrentFotoStep(0)
+      } else {
+        setCurrentStep(11)
+      }
+    } else if (currentStep === 11) {
+      // Step 11 - Finalização
       if ((tipoSinistro === "furto" || tipoSinistro === "roubo") && documentosFurtados) {
-        setCurrentStep(10)
+        setCurrentStep(12) // Vai para furto sem documentos
       }
     }
   }
@@ -313,21 +367,30 @@ export function FormProvider({ children }: { children: ReactNode }) {
 
     switch (currentStep) {
       case 2:
-        return tipoSinistro !== null
+        return tipoAtendimento !== null
       case 3:
-        return documentosFurtados !== null
+        return tipoSinistro !== null
       case 4:
-        return currentDocs.cnh.length > 0 && (currentHasProcessedCNH || !!ocrError) && currentCNH.nome !== ""
+        return tipoAssistencia !== null
       case 5:
-        return currentDocs.crlv.length > 0 || Object.values(currentCRLV).some((v) => v !== "")
+        return documentosFurtados !== null
       case 6:
-        return currentDocs.boletimOcorrencia.length > 0
+        return currentDocs.cnh.length > 0 && (currentHasProcessedCNH || !!ocrError) && currentCNH.nome !== ""
       case 7:
-        const fotoStep = fotoVeiculoSteps[currentFotoStep]
-        return !fotoStep?.obrigatoria || (fotoStepFiles[fotoStep.id] || []).length > 0
+        return currentDocs.crlv.length > 0 || Object.values(currentCRLV).some((v) => v !== "")
       case 8:
-        return outrosVeiculos !== null
+        return currentDocs.boletimOcorrencia.length > 0
       case 9:
+        if (tipoSinistro === "pequenos_reparos") {
+          // Para pequenos reparos, verificar se tem as fotos necessárias
+          return currentFotoStep === 0 ? (fotoStepFiles[0] || []).length > 0 : (fotoStepFiles[1] || []).length > 0
+        } else {
+          const fotoStep = fotoVeiculoSteps[currentFotoStep]
+          return !fotoStep?.obrigatoria || (fotoStepFiles[fotoStep.id] || []).length > 0
+        }
+      case 10:
+        return outrosVeiculos !== null
+      case 11:
         if ((tipoSinistro === "furto" || tipoSinistro === "roubo") && documentosFurtados) {
           return (
             dadosFurtoSemDocumentos.nomeCompleto.trim() !== "" &&
@@ -350,8 +413,12 @@ export function FormProvider({ children }: { children: ReactNode }) {
     setCurrentFotoStep,
     isDocumentingThirdParty,
     setIsDocumentingThirdParty,
+    tipoAtendimento,
+    setTipoAtendimento,
     tipoSinistro,
     setTipoSinistro,
+    tipoAssistencia,
+    setTipoAssistencia,
     documentosFurtados,
     setDocumentosFurtados,
     documentos,

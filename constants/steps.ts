@@ -1,16 +1,18 @@
-import { Shield, CreditCard, FileText, Car, CheckCircle, AlertCircle, ClipboardList, ShieldAlert } from "lucide-react"
+import { Shield, CreditCard, FileText, Car, CheckCircle, AlertCircle, ClipboardList, ShieldAlert, Headphones, HelpCircle } from "lucide-react"
 import type { FotoVeiculoStep } from "@/types"
 
 export const steps = [
   { id: 1, title: "Início", icon: Shield, description: "Bem-vindo ao sistema" },
-  { id: 2, title: "Tipo", icon: ClipboardList, description: "Tipo de Sinistro" },
-  { id: 3, title: "Situação", icon: ShieldAlert, description: "Situação dos Documentos" },
-  { id: 4, title: "CNH", icon: CreditCard, description: "Foto da Habilitação" },
-  { id: 5, title: "CRLV", icon: FileText, description: "Documento do Veículo" },
-  { id: 6, title: "B.O.", icon: FileText, description: "Boletim de Ocorrência" },
-  { id: 7, title: "Fotos do Veículo", icon: Car, description: "Fotos guiadas" },
-  { id: 8, title: "Terceiros", icon: AlertCircle, description: "Outros veículos" },
-  { id: 9, title: "Finalização", icon: CheckCircle, description: "Envio concluído" },
+  { id: 2, title: "Atendimento", icon: HelpCircle, description: "Tipo de Atendimento" },
+  { id: 3, title: "Tipo", icon: ClipboardList, description: "Tipo de Sinistro" },
+  { id: 4, title: "Assistência", icon: Headphones, description: "Tipo de Assistência" },
+  { id: 5, title: "Situação", icon: ShieldAlert, description: "Situação dos Documentos" },
+  { id: 6, title: "CNH", icon: CreditCard, description: "Foto da Habilitação" },
+  { id: 7, title: "CRLV", icon: FileText, description: "Documento do Veículo" },
+  { id: 8, title: "B.O.", icon: FileText, description: "Boletim de Ocorrência" },
+  { id: 9, title: "Fotos do Veículo", icon: Car, description: "Fotos guiadas" },
+  { id: 10, title: "Terceiros", icon: AlertCircle, description: "Outros veículos" },
+  { id: 11, title: "Finalização", icon: CheckCircle, description: "Envio concluído" },
 ]
 
 export const fotoVeiculoSteps: FotoVeiculoStep[] = [

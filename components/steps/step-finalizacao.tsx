@@ -15,7 +15,9 @@ export function StepFinalizacao() {
   const hasExecutedRef = useRef(false)
 
   const {
+    tipoAtendimento,
     tipoSinistro,
+    tipoAssistencia,
     documentosFurtados,
     outrosVeiculos,
     cnhData,
@@ -35,7 +37,9 @@ export function StepFinalizacao() {
     try {
       // Preparar dados para envio
       const dadosFormulario = {
+        tipoAtendimento,
         tipoSinistro,
+        tipoAssistencia,
         documentosFurtados,
         outrosVeiculos,
         cnhData,
@@ -119,11 +123,13 @@ export function StepFinalizacao() {
         setNumeroSinistro(result.numero_sinistro)
         setIsCompleted(true)
       } else {
-        setError(result.error || 'Erro ao enviar sinistro')
+        console.error('❌ Erro da API:', result)
+        const errorMessage = result.details || result.message || result.error || 'Erro ao enviar dados'
+        setError(errorMessage)
       }
 
     } catch (err) {
-      console.error('Erro ao enviar sinistro:', err)
+      console.error('❌ Erro ao enviar:', err)
       setError('Erro de conexão. Tente novamente.')
     } finally {
       setIsProcessing(false)

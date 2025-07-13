@@ -25,8 +25,16 @@ const StepLoading = () => (
 )
 
 // Otimização: Carregar as etapas subsequentes dinamicamente para não sobrecarregar o carregamento inicial.
+const StepTipoAtendimento = dynamic(
+  () => import("@/components/steps/step-tipo-atendimento").then((mod) => mod.StepTipoAtendimento),
+  { loading: () => <StepLoading /> },
+)
 const StepTipoSinistro = dynamic(
   () => import("@/components/steps/step-tipo-sinistro").then((mod) => mod.StepTipoSinistro),
+  { loading: () => <StepLoading /> },
+)
+const StepAssistencia = dynamic(
+  () => import("@/components/steps/step-assistencia").then((mod) => mod.StepAssistencia),
   { loading: () => <StepLoading /> },
 )
 const StepDocumentosFurtados = dynamic(
@@ -64,6 +72,7 @@ export default function DocumentosForm() {
     currentStep,
     currentFotoStep,
     isDocumentingThirdParty,
+    tipoAtendimento,
     tipoSinistro,
     documentosFurtados,
     isProcessingOCR,
@@ -95,31 +104,54 @@ export default function DocumentosForm() {
 
   /* ---------- cálculo de progresso ---------- */
   function getProgress() {
-    // O progresso deve mostrar quantos steps foram COMPLETADOS, não o step atual
-    // Step 1: 0% (nenhum step completado ainda)
-    // Step 2: 1/9 = ~11% (step 1 completado)
-    // Step 3: 2/9 = ~22% (steps 1 e 2 completados)
-    // etc.
+    // Agora temos 11 steps no total
+    const totalSteps = 11
+    const normalizedStep = currentStep === 12 ? 11 : currentStep
+    const completedSteps = normalizedStep - 1
     
-    const normalizedStep = currentStep === 10 ? 9 : currentStep
-    const completedSteps = normalizedStep - 1 // Steps completados = step atual - 1
+    if (tipoAtendimento === "assistencia") {
+      // Para assistência, o fluxo é: steps 1, 2, 4, 6, 11
+      if (currentStep === 1) return 0
+      if (currentStep === 2) return 20
+      if (currentStep === 4) return 40
+      if (currentStep === 6) return 60
+      if (currentStep === 11) return 100
+    }
+    
+    if (tipoSinistro === "pequenos_reparos") {
+      // Para pequenos reparos: steps 1, 2, 3, 6, 7, 9 (fotos simplificadas), 11
+      if (currentStep === 1) return 0
+      if (currentStep === 2) return 14
+      if (currentStep === 3) return 28
+      if (currentStep === 6) return 42
+      if (currentStep === 7) return 56
+      if (currentStep === 9) {
+        // Pequenos reparos tem apenas 2 fotos
+        const fotoProgress = (currentFotoStep / 1) * 14
+        return 70 + fotoProgress
+      }
+      if (currentStep === 11) return 100
+    }
     
     if (tipoSinistro === "furto" || tipoSinistro === "roubo") {
-      return (completedSteps / 9) * 100
+      return (completedSteps / totalSteps) * 100
     }
+    
     if (isDocumentingThirdParty) {
-      if (normalizedStep === 7) {
+      if (normalizedStep === 9) {
         const terceirosFotoProgress = ((currentFotoStep - 5) / 7) * 0.5
         return 50 + terceirosFotoProgress * 100
       }
-      return (completedSteps / 9) * 50 + 50
+      return (completedSteps / totalSteps) * 50 + 50
     }
-    if (normalizedStep === 7) {
-      const baseProgress = (6 / 9) * 100 // 6 steps completados antes das fotos
-      const fotoProgress = ((currentFotoStep + 1) / 5) * (1 / 9) * 100 // Progresso das fotos
+    
+    if (normalizedStep === 9) {
+      const baseProgress = (8 / totalSteps) * 100
+      const fotoProgress = ((currentFotoStep + 1) / 5) * (1 / totalSteps) * 100
       return baseProgress + fotoProgress
     }
-    return (completedSteps / 9) * 100
+    
+    return (completedSteps / totalSteps) * 100
   }
 
   const progress = getProgress()
@@ -130,25 +162,29 @@ export default function DocumentosForm() {
       case 1:
         return <StepInicio />
       case 2:
-        return <StepTipoSinistro />
+        return <StepTipoAtendimento />
       case 3:
-        return <StepDocumentosFurtados />
+        return <StepTipoSinistro />
       case 4:
-        return <StepCNH />
+        return <StepAssistencia />
       case 5:
-        return <StepCRLV />
+        return <StepDocumentosFurtados />
       case 6:
-        return <StepBoletimOcorrencia />
+        return <StepCNH />
       case 7:
-        return <StepFotos />
+        return <StepCRLV />
       case 8:
-        return <StepTerceiros />
+        return <StepBoletimOcorrencia />
       case 9:
+        return <StepFotos />
+      case 10:
+        return <StepTerceiros />
+      case 11:
         if ((tipoSinistro === "furto" || tipoSinistro === "roubo") && documentosFurtados) {
           return <StepFurtoSemDocumentos />
         }
         return <StepFinalizacao />
-      case 10:
+      case 12:
         return <StepFinalizacao />
       default:
         return null
@@ -156,27 +192,36 @@ export default function DocumentosForm() {
   }
 
   const getStepTitle = () => {
-    if (currentStep === 7) return fotoVeiculoSteps[currentFotoStep]?.titulo || "Fotos do Veículo"
-    if (isDocumentingThirdParty && currentStep <= 7) {
-      const titles: { [key: number]: string } = { 4: "CNH do Terceiro", 5: "CRLV do Terceiro" }
+    if (currentStep === 9 && tipoSinistro === "pequenos_reparos") {
+      const titles = ["Foto do Reparo", "Foto do Chassi"]
+      return titles[currentFotoStep] || "Fotos do Veículo"
+    }
+    if (currentStep === 9) return fotoVeiculoSteps[currentFotoStep]?.titulo || "Fotos do Veículo"
+    if (isDocumentingThirdParty && currentStep <= 9) {
+      const titles: { [key: number]: string } = { 6: "CNH do Terceiro", 7: "CRLV do Terceiro" }
       return titles[currentStep] || steps[currentStep - 1].title
     }
-    // Se for step 10, usar o step 9 (finalização) como referência
-    const stepIndex = currentStep === 10 ? 8 : currentStep - 1
+    const stepIndex = currentStep === 12 ? 10 : currentStep - 1
     return steps[stepIndex]?.title || "Finalização"
   }
 
   const getStepDescription = () => {
-    if (currentStep === 7) return fotoVeiculoSteps[currentFotoStep]?.descricao || "Siga as instruções."
-    if (isDocumentingThirdParty && currentStep <= 7) {
+    if (currentStep === 9 && tipoSinistro === "pequenos_reparos") {
+      const descriptions = [
+        "Foto clara do dano a ser reparado",
+        "Foto do número do chassi do veículo"
+      ]
+      return descriptions[currentFotoStep] || "Siga as instruções."
+    }
+    if (currentStep === 9) return fotoVeiculoSteps[currentFotoStep]?.descricao || "Siga as instruções."
+    if (isDocumentingThirdParty && currentStep <= 9) {
       const descriptions: { [key: number]: string } = {
-        4: "Documentos do condutor terceiro",
-        5: "Documento do veículo terceiro",
+        6: "Documentos do condutor terceiro",
+        7: "Documento do veículo terceiro",
       }
       return descriptions[currentStep] || steps[currentStep - 1].description
     }
-    // Se for step 10, usar o step 9 (finalização) como referência
-    const stepIndex = currentStep === 10 ? 8 : currentStep - 1
+    const stepIndex = currentStep === 12 ? 10 : currentStep - 1
     return steps[stepIndex]?.description || "Envio concluído"
   }
 
@@ -203,24 +248,36 @@ export default function DocumentosForm() {
           </p>
           <Progress value={progress} className="w-full h-1.5 sm:h-2 mb-2 sm:mb-3" />
           <div className="flex justify-between text-xs text-gray-500 px-1">
-            {steps.map((step) => {
-              const normalizedStep = currentStep === 10 ? 9 : currentStep
-              return (
-                <div key={step.id} className="flex flex-col items-center min-w-0">
-                  <span
-                    className={`${normalizedStep >= step.id ? "text-blue-600 font-medium" : ""} truncate text-center leading-tight`}
-                  >
-                    <span className="hidden sm:inline text-xs">{step.title}</span>
-                    <span className="sm:hidden text-xs">{step.title.split(" ")[0]}</span>
-                    {normalizedStep === 7 && step.id === 7 && (
-                      <span className="block text-xs">
-                        ({currentFotoStep + 1}/{isDocumentingThirdParty ? "9" : "5"})
-                      </span>
-                    )}
-                  </span>
-                </div>
-              )
-            })}
+            {/* Versão desktop - mostra todos os steps */}
+            <div className="hidden sm:flex sm:justify-between sm:w-full">
+              {steps.map((step) => {
+                const normalizedStep = currentStep === 12 ? 11 : currentStep
+                return (
+                  <div key={step.id} className="flex flex-col items-center min-w-0">
+                    <span
+                      className={`${normalizedStep >= step.id ? "text-blue-600 font-medium" : ""} truncate text-center leading-tight text-xs`}
+                    >
+                      {step.title}
+                      {normalizedStep === 9 && step.id === 9 && (
+                        <span className="block text-xs">
+                          ({currentFotoStep + 1}/{isDocumentingThirdParty ? "9" : tipoSinistro === "pequenos_reparos" ? "2" : "5"})
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+            
+            {/* Versão mobile - mostra apenas step atual e total */}
+            <div className="flex sm:hidden justify-between w-full">
+              <span className="text-xs text-gray-600">
+                Passo {currentStep === 12 ? 11 : currentStep} de {tipoAtendimento === "assistencia" ? "5" : "11"}
+              </span>
+              <span className="text-xs text-blue-600 font-medium">
+                {getStepTitle()}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -228,7 +285,7 @@ export default function DocumentosForm() {
         <Card ref={cardRef} className="shadow-lg border-gray-200 mx-1 sm:mx-0">
           <CardHeader className="bg-white border-b border-gray-100 p-3 sm:p-4">
             <CardTitle className="flex items-center text-base sm:text-lg text-gray-800">
-              {React.createElement(steps[currentStep === 10 ? 8 : currentStep - 1]?.icon || CheckCircle, {
+              {React.createElement(steps[currentStep === 12 ? 10 : currentStep - 1]?.icon || CheckCircle, {
                 className: "w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-600 flex-shrink-0",
               })}
               <span className="truncate">{getStepTitle()}</span>
@@ -252,7 +309,7 @@ export default function DocumentosForm() {
         </Card>
 
         {/* BOTÕES NAVEGAÇÃO */}
-        {currentStep !== 1 && currentStep !== 9 && currentStep !== 10 && isReadyToProceed && !isProcessingOCR && (
+        {currentStep !== 1 && currentStep !== 11 && currentStep !== 12 && isReadyToProceed && !isProcessingOCR && (
           <div
             ref={navigationRef}
             className="bg-white border-t border-gray-200 p-3 mt-4 sm:bg-transparent sm:border-t-0 sm:p-0"

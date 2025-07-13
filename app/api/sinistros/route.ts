@@ -42,35 +42,88 @@ export async function POST(req: NextRequest) {
     // Extrair dados do form
     const dadosFormulario = JSON.parse(formData.get('dados') as string)
     
-    console.log('Dados recebidos:', dadosFormulario)
+    console.log('🔵 Dados recebidos:', {
+      tipoAtendimento: dadosFormulario.tipoAtendimento,
+      tipoSinistro: dadosFormulario.tipoSinistro,
+      tipoAssistencia: dadosFormulario.tipoAssistencia,
+      cnhData: dadosFormulario.cnhData ? 'Presente' : 'Ausente'
+    })
 
     // 1. Criar o sinistro principal
     const dataAtualBrasilia = obterDataAtualBrasilia()
     console.log('🕐 Data atual Brasília:', dataAtualBrasilia)
     
-    const sinistroData: SinistroData = {
-      tipo_sinistro: dadosFormulario.tipoSinistro,
+    // Para assistências, não precisamos de tipo_sinistro
+    const sinistroData: any = {
+      tipo_atendimento: dadosFormulario.tipoAtendimento || 'sinistro',
       documentos_furtados: dadosFormulario.documentosFurtados || false,
       outros_veiculos_envolvidos: dadosFormulario.outrosVeiculos || false,
-      nome_completo_furto: dadosFormulario.dadosFurtoSemDocumentos?.nomeCompleto || null,
-      cpf_furto: dadosFormulario.dadosFurtoSemDocumentos?.cpf || null,
-      placa_veiculo_furto: dadosFormulario.dadosFurtoSemDocumentos?.placaVeiculo || null,
       status: 'pendente',
       data_criacao: dataAtualBrasilia,
       data_atualizacao: dataAtualBrasilia
     }
 
-    const { data: sinistro, error: sinistroError } = await supabase
-      .from('sinistros')
-      .insert([sinistroData])
-      .select()
-      .single()
-
-    if (sinistroError) {
-      console.error('Erro ao criar sinistro:', sinistroError)
-      return NextResponse.json({ error: 'Erro ao criar sinistro' }, { status: 500 })
+    // Adicionar campos condicionalmente para evitar undefined
+    if (dadosFormulario.tipoAtendimento === 'assistencia') {
+      if (dadosFormulario.tipoAssistencia) {
+        sinistroData.tipo_assistencia = dadosFormulario.tipoAssistencia
+      }
+      // tipo_sinistro permanece null para assistências
+    } else {
+      if (dadosFormulario.tipoSinistro) {
+        sinistroData.tipo_sinistro = dadosFormulario.tipoSinistro
+      }
     }
 
+    // Adicionar campos de furto se existirem
+    if (dadosFormulario.dadosFurtoSemDocumentos?.nomeCompleto) {
+      sinistroData.nome_completo_furto = dadosFormulario.dadosFurtoSemDocumentos.nomeCompleto
+    }
+    if (dadosFormulario.dadosFurtoSemDocumentos?.cpf) {
+      sinistroData.cpf_furto = dadosFormulario.dadosFurtoSemDocumentos.cpf
+    }
+    if (dadosFormulario.dadosFurtoSemDocumentos?.placaVeiculo) {
+      sinistroData.placa_veiculo_furto = dadosFormulario.dadosFurtoSemDocumentos.placaVeiculo
+    }
+
+    console.log('📝 Dados do sinistro a serem inseridos:', sinistroData)
+
+    let sinistro
+    let sinistroError
+    
+    try {
+      const result = await supabase
+        .from('sinistros')
+        .insert([sinistroData])
+        .select()
+        .single()
+      
+      sinistro = result.data
+      sinistroError = result.error
+    } catch (insertError) {
+      console.error('❌ Erro ao executar insert:', insertError)
+      return NextResponse.json({ 
+        error: 'Erro ao criar registro no banco de dados', 
+        details: insertError instanceof Error ? insertError.message : 'Erro desconhecido'
+      }, { status: 500 })
+    }
+
+    if (sinistroError) {
+      console.error('❌ Erro retornado pelo Supabase:', sinistroError)
+      return NextResponse.json({ 
+        error: 'Erro ao criar sinistro', 
+        details: sinistroError.message,
+        code: sinistroError.code,
+        hint: sinistroError.hint
+      }, { status: 500 })
+    }
+
+    if (!sinistro) {
+      console.error('❌ Nenhum sinistro retornado')
+      return NextResponse.json({ error: 'Falha ao criar sinistro - nenhum dado retornado' }, { status: 500 })
+    }
+
+    console.log('✅ Sinistro criado com sucesso:', sinistro.numero_sinistro)
     const sinistroId = sinistro.id
 
     // 2. Salvar dados da CNH (próprio)
@@ -296,24 +349,41 @@ export async function POST(req: NextRequest) {
     }
 
     // 7. Registrar log
+    const tipoDescricao = dadosFormulario.tipoAtendimento === 'assistencia' 
+      ? `Assistência: ${dadosFormulario.tipoAssistencia}`
+      : `Sinistro: ${dadosFormulario.tipoSinistro}`
+    
     await supabase.from('log_atividades').insert([{
       sinistro_id: sinistroId,
-      acao: 'SINISTRO_CRIADO',
-      descricao: `Sinistro criado via formulário web - Tipo: ${dadosFormulario.tipoSinistro}`,
+      acao: dadosFormulario.tipoAtendimento === 'assistencia' ? 'ASSISTENCIA_CRIADA' : 'SINISTRO_CRIADO',
+      descricao: `${dadosFormulario.tipoAtendimento === 'assistencia' ? 'Assistência' : 'Sinistro'} criado via formulário web - ${tipoDescricao}`,
       status_novo: 'pendente',
       usuario_nome: 'Sistema Web',
       created_at: dataAtualBrasilia
     }])
 
+    console.log('✅ Processo concluído com sucesso!')
+    
     return NextResponse.json({ 
       success: true, 
       sinistro_id: sinistroId,
       numero_sinistro: sinistro.numero_sinistro,
-      message: 'Sinistro salvo com sucesso!' 
+      message: dadosFormulario.tipoAtendimento === 'assistencia' 
+        ? 'Assistência registrada com sucesso!' 
+        : 'Sinistro salvo com sucesso!' 
     })
 
   } catch (error) {
-    console.error('Erro geral ao salvar sinistro:', error)
-    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
+    console.error('❌ Erro geral ao salvar:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
+    const errorStack = error instanceof Error ? error.stack : ''
+    
+    console.error('Stack trace:', errorStack)
+    
+    return NextResponse.json({ 
+      error: 'Erro interno do servidor',
+      message: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? errorStack : undefined
+    }, { status: 500 })
   }
 } 

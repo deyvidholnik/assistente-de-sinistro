@@ -47,7 +47,11 @@ export interface StepProps {
   isProcessing?: boolean
 }
 
-export type TipoSinistro = "colisao" | "furto" | "roubo" | null
+export type TipoSinistro = "colisao" | "furto" | "roubo" | "pequenos_reparos" | null
+
+export type TipoAtendimento = "sinistro" | "assistencia" | null
+
+export type TipoAssistencia = "hotel" | "guincho" | "taxi" | "pane_seca" | "pane_mecanica" | "pane_eletrica" | "trocar_pneu" | null
 
 export interface DadosFurtoSemDocumentos {
   nomeCompleto: string
