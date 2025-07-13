@@ -23,7 +23,7 @@ export default function PlanosPage() {
   const { darkMode, toggleDarkMode } = useTheme()
 
   const handleWhatsAppClick = () => {
-    window.open('https://api.whatsapp.com/send/?phone=5577997271993&text=Ol%C3%A1,%20quero%20uma%20cota%C3%A7%C3%A3o.&app_absent=0', '_blank')
+    window.open('https://api.whatsapp.com/send/?phone=5571997271993&text=Ol%C3%A1,%20quero%20uma%20cota%C3%A7%C3%A3o.&app_absent=0', '_blank')
   }
 
   const planos = [
