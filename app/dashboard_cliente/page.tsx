@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
-import { useTheme } from '@/context/theme-context'
+import { useTheme } from 'next-themes'
 import { 
   Shield, 
   LogOut, 
@@ -24,42 +24,43 @@ import {
   Phone,
   MapPin,
   Wrench,
-  CreditCard,
-  Eye
+  Eye,
+  RefreshCw
 } from 'lucide-react'
 
 interface ClienteData {
   cpf: string
-  dataNascimento: string
+  nome?: string
   loginTime: string
-  sinistros?: SinistroCompleto[]
+  sinistros?: any[] // Dados diretos da tabela sinistros
 }
 
 interface SinistroCompleto {
   id: string
   numero_sinistro: string
-  tipo_atendimento: 'sinistro' | 'assistencia'
+  tipo_atendimento?: 'sinistro' | 'assistencia'
   tipo_sinistro?: 'colisao' | 'furto' | 'roubo' | 'pequenos_reparos'
   tipo_assistencia?: 'hotel' | 'guincho' | 'taxi' | 'pane_seca' | 'pane_mecanica' | 'pane_eletrica' | 'trocar_pneu'
   status: 'pendente' | 'em_analise' | 'aprovado' | 'rejeitado' | 'concluido'
   data_criacao: string
-  data_atualizacao: string
-  cnh_proprio_nome: string
-  cnh_proprio_cpf: string
-  crlv_proprio_placa: string
-  crlv_proprio_marca: string
-  crlv_proprio_modelo: string
-  crlv_proprio_ano: number
-  total_fotos: number
-  total_arquivos: number
+  data_atualizacao?: string
+  nome_completo_furto?: string
+  cpf_furto?: string
+  placa_veiculo_furto?: string
+  assistencia_adicional?: boolean
+  assistencias_tipos?: string[] | string
+  total_assistencias?: number
 }
 
 export default function DashboardClientePage() {
   const [clienteData, setClienteData] = useState<ClienteData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [nomeCliente, setNomeCliente] = useState<string>('')
   
-  const { darkMode, toggleDarkMode } = useTheme()
+  const { theme, setTheme } = useTheme()
+
+  const isDark = theme === 'dark'
   const router = useRouter()
 
   // Combinar sinistros e assistências em uma lista única, ordenada por data
@@ -73,7 +74,18 @@ export default function DashboardClientePage() {
   const sinistros = todosRegistros.filter((s: SinistroCompleto) => s.tipo_atendimento === 'sinistro')
   const assistencias = todosRegistros.filter((s: SinistroCompleto) => s.tipo_atendimento === 'assistencia')
 
-  const carregarDados = async () => {
+  // Função para formatar assistências adicionais
+  const formatarAssistenciasAdicionais = (sinistro: SinistroCompleto) => {
+    if (!sinistro.assistencias_tipos) return []
+    
+    const tipos = Array.isArray(sinistro.assistencias_tipos) 
+      ? sinistro.assistencias_tipos 
+      : sinistro.assistencias_tipos.split(',')
+    
+    return tipos.map(tipo => tipo.trim()).filter(Boolean)
+  }
+
+  const carregarDados = async (forceRefresh = false) => {
     const dadosCliente = localStorage.getItem('clienteLogado')
     if (!dadosCliente) {
       router.push('/login_cliente')
@@ -81,13 +93,45 @@ export default function DashboardClientePage() {
     }
 
     const dadosParseados = JSON.parse(dadosCliente)
-    setClienteData(dadosParseados)
-    
-    // Extrair nome do primeiro sinistro/assistência
-    if (dadosParseados.sinistros && dadosParseados.sinistros.length > 0) {
-      const primeiroRegistro = dadosParseados.sinistros[0]
-      setNomeCliente(primeiroRegistro.cnh_proprio_nome || 'Cliente')
+
+    // Se forceRefresh = true, buscar dados atualizados do banco
+    if (forceRefresh && dadosParseados.cpf) {
+      setRefreshing(true)
+      try {
+        const { supabase } = await import('@/lib/supabase')
+        
+        const { data: sinistros, error } = await supabase
+          .from('view_sinistros_completos')
+          .select('*')
+          .or(`cpf_furto.eq.${dadosParseados.cpf},cnh_proprio_cpf.eq.${dadosParseados.cpf},cnh_terceiros_cpf.eq.${dadosParseados.cpf}`)
+          .order('data_criacao', { ascending: false })
+
+        if (!error && sinistros) {
+          // Atualizar dados no localStorage com dados frescos
+          const dadosAtualizados = {
+            ...dadosParseados,
+            sinistros: sinistros,
+            lastRefresh: new Date().toISOString()
+          }
+          
+          localStorage.setItem('clienteLogado', JSON.stringify(dadosAtualizados))
+          setClienteData(dadosAtualizados)
+        } else {
+          console.warn('Erro ao atualizar dados:', error)
+          setClienteData(dadosParseados)
+        }
+      } catch (err) {
+        console.warn('Erro na atualização automática:', err)
+        setClienteData(dadosParseados)
+      } finally {
+        setRefreshing(false)
+      }
+    } else {
+      setClienteData(dadosParseados)
     }
+    
+    // Usar o nome que vem dos dados do login
+    setNomeCliente(dadosParseados.nome || 'Cliente')
     
     setLoading(false)
   }
@@ -101,7 +145,7 @@ export default function DashboardClientePage() {
   useEffect(() => {
     const interval = setInterval(() => {
       console.log('🔄 Atualizando dados automaticamente...')
-      carregarDados()
+      carregarDados(true) // forceRefresh = true
     }, 5 * 60 * 1000) // 5 minutos
 
     return () => clearInterval(interval)
@@ -112,19 +156,23 @@ export default function DashboardClientePage() {
     router.push('/')
   }
 
+  const handleRefresh = () => {
+    console.log('🔄 Atualizando dados manualmente...')
+    carregarDados(true)
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'concluido':
-      case 'aprovado':
-        return 'bg-green-100 text-green-800 border-green-200'
-      case 'em_analise':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200'
       case 'pendente':
-        return 'bg-blue-100 text-blue-800 border-blue-200'
+        return 'bg-status-warning text-status-warning-foreground border-status-warning'
+      case 'em_analise':
+        return 'bg-status-info text-status-info-foreground border-status-info'
+      case 'aprovado':
+        return 'bg-status-success text-status-success-foreground border-status-success'
       case 'rejeitado':
-        return 'bg-red-100 text-red-800 border-red-200'
+        return 'bg-status-error text-status-error-foreground border-status-error'
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200'
+        return 'bg-muted text-muted-foreground border-border'
     }
   }
 
@@ -178,18 +226,33 @@ export default function DashboardClientePage() {
 
   const getTipoTexto = (sinistro: SinistroCompleto) => {
     if (sinistro.tipo_atendimento === 'sinistro') {
-      return sinistro.tipo_sinistro ? sinistro.tipo_sinistro.charAt(0).toUpperCase() + sinistro.tipo_sinistro.slice(1) : 'Sinistro'
+      const tipo = sinistro.tipo_sinistro
+      if (tipo) {
+        return tipo.charAt(0).toUpperCase() + tipo.slice(1)
+      }
+      return 'Sinistro'
+    } else if (sinistro.tipo_atendimento === 'assistencia') {
+      const tipo = sinistro.tipo_assistencia
+      if (tipo) {
+        return tipo.charAt(0).toUpperCase() + tipo.slice(1).replace('_', ' ')
+      }
+      return 'Assistência'
     } else {
-      return sinistro.tipo_assistencia ? sinistro.tipo_assistencia.charAt(0).toUpperCase() + sinistro.tipo_assistencia.slice(1).replace('_', ' ') : 'Assistência'
+      // Se não tem tipo_atendimento definido, tentar inferir pelo tipo_sinistro
+      const tipo = sinistro.tipo_sinistro
+      if (tipo) {
+        return tipo.charAt(0).toUpperCase() + tipo.slice(1)
+      }
+      return 'Registro'
     }
   }
 
   if (loading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center transition-all duration-300 ${darkMode ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'}`}>
+      <div className="min-h-screen flex items-center justify-center transition-all duration-300 bg-gradient-to-br from-background-gradient-light via-background-gradient-medium to-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mb-4"></div>
-          <p className={`transition-colors duration-300 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+          <p className="transition-colors duration-300 text-foreground">
             Carregando...
           </p>
         </div>
@@ -198,9 +261,9 @@ export default function DashboardClientePage() {
   }
 
   return (
-    <div className={`min-h-screen transition-all duration-300 ${darkMode ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'}`}>
+    <div className="min-h-screen transition-all duration-300 bg-gradient-to-br from-background-gradient-light via-background-gradient-medium to-background">
       {/* Header */}
-      <header className={`backdrop-blur-sm border-b sticky top-0 z-50 transition-all duration-300 ${darkMode ? 'bg-gray-900/80 border-gray-700' : 'bg-white/80 border-blue-100'}`}>
+      <header className="backdrop-blur-sm border-b sticky top-0 z-50 transition-all duration-300 bg-card/80 border-border">
         <div className="container mx-auto px-4 py-3 md:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 md:space-x-3">
@@ -211,13 +274,14 @@ export default function DashboardClientePage() {
                   width={56}
                   height={56}
                   className="object-contain rounded-full"
+                  style={{ width: 'auto', height: 'auto' }}
                 />
               </div>
               <div>
-                <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-blue-800 to-purple-800 bg-clip-text text-transparent">
+                <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">
                   PV Auto Proteção
                 </h1>
-                <p className={`text-xs md:text-sm transition-colors duration-300 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                <p className="text-xs md:text-sm transition-colors duration-300 text-muted-foreground">
                   Área do Cliente
                 </p>
               </div>
@@ -226,15 +290,24 @@ export default function DashboardClientePage() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={toggleDarkMode}
-                className={`hover:bg-opacity-20 transition-all duration-300 ${darkMode ? 'hover:bg-white text-gray-300' : 'hover:bg-blue-50 text-gray-700'}`}
+                onClick={() => setTheme(isDark ? 'light' : 'dark')}
+                className="hover:bg-surface-hover hover:text-accent-foreground transition-all duration-300"
               >
-                {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="hover:bg-surface-hover hover:text-accent-foreground transition-all duration-300"
+              >
+                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
               </Button>
               <Button
                 variant="ghost"
                 onClick={handleLogout}
-                className={`hover:bg-opacity-20 transition-all duration-300 ${darkMode ? 'hover:bg-white text-gray-300' : 'hover:bg-blue-50 text-gray-700'}`}
+                className="hover:bg-surface-hover hover:text-accent-foreground transition-all duration-300"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Sair
@@ -249,14 +322,14 @@ export default function DashboardClientePage() {
         {/* Welcome Section */}
         <div className="mb-8">
           <div className="flex items-center mb-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mr-4">
+            <div className="w-12 h-12 bg-gradient-to-r from-brand-primary to-brand-secondary rounded-full flex items-center justify-center mr-4">
               <User className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className={`text-2xl md:text-3xl font-bold transition-colors duration-300 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+              <h1 className="text-2xl md:text-3xl font-bold transition-colors duration-300 text-foreground">
                 Bem-vindo, {nomeCliente}!
               </h1>
-              <p className={`text-sm md:text-base transition-colors duration-300 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+              <p className="text-sm md:text-base transition-colors duration-300 text-muted-foreground">
                 CPF: {clienteData?.cpf} • Último acesso: {clienteData?.loginTime ? new Date(clienteData.loginTime).toLocaleString('pt-BR') : 'N/A'}
               </p>
             </div>
@@ -265,130 +338,135 @@ export default function DashboardClientePage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <Card className={`border-0 shadow-lg transition-all duration-300 ${darkMode ? 'bg-gray-800/50 backdrop-blur-sm' : 'bg-white'}`}>
+          <Card className="border-0 shadow-lg transition-all duration-300 bg-card">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className={`text-sm font-medium transition-colors duration-300 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <p className="text-sm font-medium transition-colors duration-300 text-muted-foreground">
                     Sinistros
                   </p>
-                  <p className={`text-2xl font-bold transition-colors duration-300 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                  <p className="text-2xl font-bold transition-colors duration-300 text-foreground">
                     {sinistros.length}
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-r from-status-info to-brand-primary rounded-full flex items-center justify-center">
                   <FileText className="w-6 h-6 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className={`border-0 shadow-lg transition-all duration-300 ${darkMode ? 'bg-gray-800/50 backdrop-blur-sm' : 'bg-white'}`}>
+          <Card className="border-0 shadow-lg transition-all duration-300 bg-card">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className={`text-sm font-medium transition-colors duration-300 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <p className="text-sm font-medium transition-colors duration-300 text-muted-foreground">
                     Assistências
                   </p>
-                  <p className={`text-2xl font-bold transition-colors duration-300 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                  <p className="text-2xl font-bold transition-colors duration-300 text-foreground">
                     {assistencias.length}
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                  <Wrench className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 bg-gradient-to-r from-status-success to-gradient-secondary-end rounded-full flex items-center justify-center">
+                  <Phone className="w-6 h-6 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Lista Unificada */}
-        <div className="mb-6">
-          <h2 className={`text-xl md:text-2xl font-bold mb-4 transition-colors duration-300 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-            Histórico de Atendimentos
+        {/* All Activities */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold mb-4 transition-colors duration-300 text-foreground">
+            Todas as Atividades
           </h2>
-          <p className={`text-sm transition-colors duration-300 ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-6`}>
-            {todosRegistros.length} registros encontrados, ordenados por data mais recente
-          </p>
-        </div>
-          
-          <div className="grid gap-4">
-            {todosRegistros.map((registro) => {
-              const isAssistencia = registro.tipo_atendimento === 'assistencia'
-              const iconColor = isAssistencia ? 'from-purple-500 to-pink-500' : 'from-blue-500 to-cyan-500'
-              
-              return (
-                <Card key={registro.id} className={`border-0 shadow-lg transition-all duration-300 ${darkMode ? 'bg-gray-800/50 backdrop-blur-sm' : 'bg-white'}`}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-10 h-10 bg-gradient-to-r ${iconColor} rounded-full flex items-center justify-center`}>
-                          {getTipoIcon(registro)}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <CardTitle className={`text-lg transition-colors duration-300 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                              {getTipoTexto(registro)}
-                            </CardTitle>
-                            <Badge variant="outline" className={`text-xs ${isAssistencia ? 'border-purple-300 text-purple-700' : 'border-blue-300 text-blue-700'}`}>
-                              {isAssistencia ? 'Assistência' : 'Sinistro'}
-                            </Badge>
-                          </div>
-                          <p className={`text-sm transition-colors duration-300 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                            {registro.numero_sinistro}
-                          </p>
-                        </div>
+          <div className="grid grid-cols-1 gap-6">
+            {todosRegistros.map((sinistro) => (
+              <Card key={sinistro.id} className="border-0 shadow-lg transition-all duration-300 hover:shadow-xl bg-card">
+                <CardContent className="p-4">
+                  {/* Header do Card */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                        sinistro.tipo_atendimento === 'assistencia' 
+                          ? 'bg-gradient-to-r from-purple-500 to-pink-500' 
+                          : 'bg-gradient-to-r from-blue-500 to-cyan-500'
+                      }`}>
+                        {getTipoIcon(sinistro)}
                       </div>
-                      <Badge className={`${getStatusColor(registro.status)} border`}>
-                        {getStatusIcon(registro.status)}
-                        <span className="ml-1 capitalize">{registro.status.replace('_', ' ')}</span>
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                          {isAssistencia ? 'Solicitante' : 'Veículo'}
-                        </p>
-                        <p className={`text-sm transition-colors duration-300 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                          {isAssistencia 
-                            ? registro.cnh_proprio_nome 
-                            : `${registro.crlv_proprio_marca} ${registro.crlv_proprio_modelo} ${registro.crlv_proprio_ano} • ${registro.crlv_proprio_placa}`
-                          }
-                        </p>
-                      </div>
-                      <div>
-                        <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                          Data de Criação
-                        </p>
-                        <p className={`text-sm transition-colors duration-300 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                          {new Date(registro.data_criacao).toLocaleDateString('pt-BR')} às {new Date(registro.data_criacao).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-base font-bold transition-colors duration-300 text-foreground">
+                            {getTipoTexto(sinistro)}
+                          </h3>
+                          <Badge variant="outline" className={`text-xs px-2 py-0.5 ${
+                            sinistro.tipo_atendimento === 'assistencia' 
+                              ? 'border-purple-300 text-purple-700 bg-purple-50' 
+                              : 'border-blue-300 text-blue-700 bg-blue-50'
+                          }`}>
+                            {sinistro.tipo_atendimento === 'assistencia' ? 'Assistência' : 'Sinistro'}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {sinistro.numero_sinistro || 'N/A'}
                         </p>
                       </div>
                     </div>
-                    <div className="mt-4">
-                      <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                        Status
-                      </p>
-                      <p className={`text-sm transition-colors duration-300 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                        {registro.status.replace('_', ' ').charAt(0).toUpperCase() + registro.status.replace('_', ' ').slice(1)}
+                    
+                    {/* Status Badge */}
+                    <Badge className={`${getStatusColor(sinistro.status)} border px-2 py-1 shrink-0`}>
+                      {getStatusIcon(sinistro.status)}
+                      <span className="ml-1 capitalize font-medium text-xs">
+                        {sinistro.status.replace('_', ' ')}
+                      </span>
+                    </Badge>
+                  </div>
+
+                  {/* Assistências Adicionais */}
+                  {sinistro.assistencia_adicional && sinistro.assistencias_tipos && (
+                    <div className="mb-3">
+                      <p className="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded-md inline-block">
+                        + {formatarAssistenciasAdicionais(sinistro).join(', ')}
                       </p>
                     </div>
-                    <div className="mt-4 flex justify-end">
-                      <Link href={`/dashboard_cliente/detalhes/${registro.id}`}>
-                        <Button variant="outline" size="sm" className={`transition-all duration-300 ${darkMode ? 'border-gray-500 text-gray-300 hover:bg-gray-700/50' : ''}`}>
-                          <Eye className="w-4 h-4 mr-2" />
-                          Ver Detalhes
-                        </Button>
-                      </Link>
+                  )}
+
+                  {/* Informações compactas */}
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <div className="flex items-center">
+                      <Calendar className="w-3 h-3 mr-1" />
+                      <span>{new Date(sinistro.data_criacao).toLocaleDateString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit', 
+                        year: 'numeric'
+                      })}</span>
+                      {sinistro.nome_completo_furto && (
+                        <>
+                          <span className="mx-2">•</span>
+                          <User className="w-3 h-3 mr-1" />
+                          <span className="truncate max-w-32">{sinistro.nome_completo_furto}</span>
+                        </>
+                      )}
                     </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
+                    
+                    <Link href={`/dashboard_cliente/detalhes/${sinistro.id}`}>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-7 px-3 text-xs transition-all duration-300 hover:bg-surface-hover hover:text-accent-foreground text-foreground border-border"
+                      >
+                        <Eye className="w-3 h-3 mr-1" />
+                        Detalhes
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
+        </div>
       </div>
     </div>
   )
-} 
+}
+

@@ -26,6 +26,8 @@ interface FormContextType {
   ocrError: string | null
   fotoStepFiles: { [key: number]: File[] }
   outrosVeiculos: boolean | null
+  assistenciaAdicional: boolean | null
+  assistenciasAdicionais: TipoAssistencia[]
   hasProcessedCNH: boolean
   hasProcessedCRLV: boolean
   hasProcessedCNHTerceiros: boolean
@@ -49,6 +51,8 @@ interface FormContextType {
   setOcrError: Dispatch<SetStateAction<string | null>>
   setFotoStepFiles: Dispatch<SetStateAction<{ [key: number]: File[] }>>
   setOutrosVeiculos: Dispatch<SetStateAction<boolean | null>>
+  setAssistenciaAdicional: Dispatch<SetStateAction<boolean | null>>
+  setAssistenciasAdicionais: Dispatch<SetStateAction<TipoAssistencia[]>>
 
   // Funções de Lógica
   nextStep: () => void
@@ -133,6 +137,8 @@ export function FormProvider({ children }: { children: ReactNode }) {
   const [fotoStepFiles, setFotoStepFiles] = useState<{ [key: number]: File[] }>({})
   const [processingFiles, setProcessingFiles] = useState<Set<string>>(new Set())
   const [outrosVeiculos, setOutrosVeiculos] = useState<boolean | null>(null)
+  const [assistenciaAdicional, setAssistenciaAdicional] = useState<boolean | null>(null)
+  const [assistenciasAdicionais, setAssistenciasAdicionais] = useState<TipoAssistencia[]>([])
   const [hasProcessedCNH, setHasProcessedCNH] = useState(false)
   const [hasProcessedCRLV, setHasProcessedCRLV] = useState(false)
   const [hasProcessedCNHTerceiros, setHasProcessedCNHTerceiros] = useState(false)
@@ -297,14 +303,14 @@ export function FormProvider({ children }: { children: ReactNode }) {
       }
     } else if (currentStep === 4) {
       // Step 4 - Tipo de Assistência
-      setCurrentStep(6) // Vai para CNH ao invés de finalização
+      setCurrentStep(6) // Vai para CNH
     } else if (currentStep === 5) {
       // Step 5 - Situação dos documentos (furto/roubo)
-      setCurrentStep(documentosFurtados ? 11 : 6)
+      setCurrentStep(documentosFurtados ? 12 : 6)
     } else if (currentStep === 6) {
       // Step 6 - CNH
       if (tipoAtendimento === "assistencia") {
-        setCurrentStep(11) // Assistência vai direto para finalização após CNH
+        setCurrentStep(11) // Assistência vai para assistência adicional após CNH
       } else {
         setCurrentStep(7)
       }
@@ -319,7 +325,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
     } else if (currentStep === 8) {
       // Step 8 - B.O.
       if (tipoSinistro === "furto" || tipoSinistro === "roubo") {
-        setCurrentStep(11) // Furto/roubo vai para finalização
+        setCurrentStep(11) // Furto/roubo AGORA vai para assistência adicional antes da finalização
       } else {
         setCurrentStep(9) // Colisão vai para fotos
         setCurrentFotoStep(0)
@@ -331,7 +337,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
         if (currentFotoStep < 1) {
           setCurrentFotoStep(currentFotoStep + 1)
         } else {
-          setCurrentStep(11) // Vai para finalização
+          setCurrentStep(11) // Vai para assistência adicional
         }
       } else {
         // Fluxo normal de fotos para colisão
@@ -339,7 +345,8 @@ export function FormProvider({ children }: { children: ReactNode }) {
         if (currentFotoStep < limit) {
           setCurrentFotoStep(currentFotoStep + 1)
         } else {
-          setCurrentStep(isDocumentingThirdParty ? 11 : 10)
+          // AGORA todos os fluxos passam pela assistência adicional antes da finalização
+          setCurrentStep(isDocumentingThirdParty ? 11 : 10) // Se já documentou terceiros, vai para assistência, senão vai para terceiros
         }
       }
     } else if (currentStep === 10) {
@@ -349,12 +356,16 @@ export function FormProvider({ children }: { children: ReactNode }) {
         setCurrentStep(6)
         setCurrentFotoStep(0)
       } else {
-        setCurrentStep(11)
+        setCurrentStep(11) // Vai para assistência adicional
       }
     } else if (currentStep === 11) {
-      // Step 11 - Finalização
+      // Step 11 - Assistência Adicional
+      // Sempre vai para finalização (a seleção das assistências é feita na mesma tela)
+      setCurrentStep(12)
+    } else if (currentStep === 12) {
+      // Step 12 - Finalização
       if ((tipoSinistro === "furto" || tipoSinistro === "roubo") && documentosFurtados) {
-        setCurrentStep(12) // Vai para furto sem documentos
+        setCurrentStep(13) // Vai para furto sem documentos
       }
     }
   }
@@ -391,6 +402,9 @@ export function FormProvider({ children }: { children: ReactNode }) {
       case 10:
         return outrosVeiculos !== null
       case 11:
+        // Se não quer assistência adicional OU se quer e já selecionou pelo menos uma
+        return assistenciaAdicional === false || (assistenciaAdicional === true && assistenciasAdicionais.length > 0)
+      case 12:
         if ((tipoSinistro === "furto" || tipoSinistro === "roubo") && documentosFurtados) {
           return (
             dadosFurtoSemDocumentos.nomeCompleto.trim() !== "" &&
@@ -442,6 +456,10 @@ export function FormProvider({ children }: { children: ReactNode }) {
     setFotoStepFiles,
     outrosVeiculos,
     setOutrosVeiculos,
+    assistenciaAdicional,
+    setAssistenciaAdicional,
+    assistenciasAdicionais,
+    setAssistenciasAdicionais,
     hasProcessedCNH,
     hasProcessedCRLV,
     hasProcessedCNHTerceiros,

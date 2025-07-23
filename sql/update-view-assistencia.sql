@@ -21,21 +21,40 @@ SELECT
     -- Dados CNH próprio
     cnh_p.nome as cnh_proprio_nome,
     cnh_p.cpf as cnh_proprio_cpf,
+    cnh_p.rg as cnh_proprio_rg,
+    cnh_p.numero_registro as cnh_proprio_numero,
+    cnh_p.data_vencimento as cnh_proprio_validade,
+    cnh_p.categoria as cnh_proprio_categoria,
     
     -- Dados CRLV próprio
     crlv_p.placa as crlv_proprio_placa,
     crlv_p.marca as crlv_proprio_marca,
     crlv_p.modelo as crlv_proprio_modelo,
     crlv_p.ano_modelo as crlv_proprio_ano,
+    crlv_p.cor as crlv_proprio_cor,
+    crlv_p.combustivel as crlv_proprio_combustivel,
+    crlv_p.renavam as crlv_proprio_renavam,
+    crlv_p.chassi as crlv_proprio_chassi,
+    crlv_p.proprietario as crlv_proprio_proprietario,
     
     -- Dados CNH terceiro
-    cnh_t.nome as cnh_terceiro_nome,
-    cnh_t.cpf as cnh_terceiro_cpf,
+    cnh_t.nome as cnh_terceiros_nome,
+    cnh_t.cpf as cnh_terceiros_cpf,
+    cnh_t.rg as cnh_terceiros_rg,
+    cnh_t.numero_registro as cnh_terceiros_numero,
+    cnh_t.data_vencimento as cnh_terceiros_validade,
+    cnh_t.categoria as cnh_terceiros_categoria,
     
     -- Dados CRLV terceiro
-    crlv_t.placa as crlv_terceiro_placa,
-    crlv_t.marca as crlv_terceiro_marca,
-    crlv_t.modelo as crlv_terceiro_modelo,
+    crlv_t.placa as crlv_terceiros_placa,
+    crlv_t.marca as crlv_terceiros_marca,
+    crlv_t.modelo as crlv_terceiros_modelo,
+    crlv_t.ano_modelo as crlv_terceiros_ano,
+    crlv_t.cor as crlv_terceiros_cor,
+    crlv_t.combustivel as crlv_terceiros_combustivel,
+    crlv_t.renavam as crlv_terceiros_renavam,
+    crlv_t.chassi as crlv_terceiros_chassi,
+    crlv_t.proprietario as crlv_terceiros_proprietario,
     
     -- Contadores
     (SELECT COUNT(*) FROM arquivos_sinistro WHERE sinistro_id = s.id AND tipo_arquivo = 'foto_veiculo') as total_fotos,
@@ -46,4 +65,14 @@ LEFT JOIN dados_cnh cnh_p ON cnh_p.sinistro_id = s.id AND cnh_p.tipo_titular = '
 LEFT JOIN dados_cnh cnh_t ON cnh_t.sinistro_id = s.id AND cnh_t.tipo_titular = 'terceiro'
 LEFT JOIN dados_crlv crlv_p ON crlv_p.sinistro_id = s.id AND crlv_p.tipo_veiculo = 'proprio'
 LEFT JOIN dados_crlv crlv_t ON crlv_t.sinistro_id = s.id AND crlv_t.tipo_veiculo = 'terceiro'
-ORDER BY s.data_criacao DESC; 
+ORDER BY s.data_criacao DESC;
+
+-- Verificar se a view foi criada corretamente
+SELECT 
+    s.numero_sinistro,
+    s.cnh_proprio_nome,
+    s.cnh_proprio_cpf,
+    s.tipo_atendimento,
+    s.status
+FROM view_sinistros_completos s
+LIMIT 5; 

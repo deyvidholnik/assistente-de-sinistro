@@ -9,18 +9,19 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { useTheme } from '@/context/theme-context'
+import { useTheme } from 'next-themes'
 import { supabase } from '@/lib/supabase'
-import { Loader2, Shield, ArrowLeft, Sun, Moon, User, Calendar } from 'lucide-react'
+import { Loader2, Shield, ArrowLeft, Sun, Moon, User } from 'lucide-react'
 
 export default function LoginClientePage() {
   const [cpf, setCpf] = useState('')
-  const [dataNascimento, setDataNascimento] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   
-  const { darkMode, toggleDarkMode } = useTheme()
+  const { theme, setTheme } = useTheme()
   const router = useRouter()
+
+  const isDark = theme === 'dark'
 
   const formatCPF = (value: string) => {
     const cpf = value.replace(/\D/g, '')
@@ -44,161 +45,66 @@ export default function LoginClientePage() {
     setError('')
 
     if (!validateCPF(cpf)) {
-      setError('CPF deve ter 11 dígitos')
-      return
-    }
-
-    if (!dataNascimento) {
-      setError('Data de nascimento é obrigatória')
+      setError('CPF inválido')
       return
     }
 
     setLoading(true)
 
     try {
-      // Buscar sinistros do cliente no Supabase
-      const cpfLimpo = cpf.replace(/\D/g, '')
-      const cpfFormatado = cpf
-      
-      console.log('🔍 Tentando login com:', {
-        cpfOriginal: cpf,
-        cpfLimpo: cpfLimpo,
-        cpfFormatado: cpfFormatado
-      })
+      // Buscar sinistros em todas as colunas onde o CPF pode aparecer usando a view completa
+      console.log('🔍 Buscando sinistros na view_sinistros_completos para CPF formatado:', cpf)
 
-      // Primeiro, vamos buscar todos os registros para ver o formato dos CPFs
-      const { data: todosCpfs, error: errorTodos } = await supabase
+      const { data: sinistros, error: supabaseError } = await supabase
         .from('view_sinistros_completos')
-        .select('cnh_proprio_cpf')
-        .not('cnh_proprio_cpf', 'is', null)
-      
-      if (!errorTodos && todosCpfs) {
-        console.log('📊 CPFs encontrados no banco:', todosCpfs.map(item => item.cnh_proprio_cpf))
-      }
-
-      // Buscar por CPF limpo OU formatado
-      let { data: sinistros, error } = await supabase
-        .from('view_sinistros_completos')
-        .select(`
-          id,
-          numero_sinistro,
-          tipo_atendimento,
-          tipo_sinistro,
-          tipo_assistencia,
-          status,
-          data_criacao,
-          data_atualizacao,
-          cnh_proprio_nome,
-          cnh_proprio_cpf,
-          crlv_proprio_placa,
-          crlv_proprio_marca,
-          crlv_proprio_modelo,
-          crlv_proprio_ano,
-          total_fotos,
-          total_arquivos
-        `)
-        .or(`cnh_proprio_cpf.eq.${cpfLimpo},cnh_proprio_cpf.eq.${cpfFormatado}`)
+        .select('*')
+        .or(`cpf_furto.eq.${cpf},cnh_proprio_cpf.eq.${cpf},cnh_terceiros_cpf.eq.${cpf}`)
         .order('data_criacao', { ascending: false })
 
-      console.log('📋 Resultado da busca na view:', {
-        error: error,
-        quantidadeSinistros: sinistros?.length || 0,
-        sinistros: sinistros
-      })
+      console.log('📊 Resultado da busca:', { sinistros, supabaseError })
 
-      // Se a view falhou ou não retornou resultados, tentar busca direta nas tabelas
-      if (error || !sinistros || sinistros.length === 0) {
-        console.log('🔄 Tentando busca alternativa nas tabelas...')
-        
-        const { data: cnhData, error: cnhError } = await supabase
-          .from('dados_cnh')
-          .select(`
-            sinistro_id,
-            nome,
-            cpf,
-            sinistros!inner(
-              id,
-              numero_sinistro,
-              tipo_atendimento,
-              tipo_sinistro,
-              tipo_assistencia,
-              status,
-              data_criacao,
-              data_atualizacao
-            )
-          `)
-          .eq('tipo_titular', 'proprio')
-          .or(`cpf.eq.${cpfLimpo},cpf.eq.${cpfFormatado}`)
-
-        console.log('📋 Resultado da busca alternativa:', {
-          error: cnhError,
-          quantidadeRegistros: cnhData?.length || 0,
-          dados: cnhData
-        })
-
-        if (cnhError) {
-          console.error('❌ Erro na busca alternativa:', cnhError)
-          setError('Erro ao consultar dados. Tente novamente.')
-          return
-        }
-
-        if (!cnhData || cnhData.length === 0) {
-          setError(`Não foram encontrados registros para este CPF (${cpfLimpo}). Verifique seus dados ou entre em contato conosco.`)
-          return
-        }
-
-                 // Converter dados da busca alternativa para o formato esperado
-         sinistros = cnhData.map(item => {
-           const sinistro = Array.isArray(item.sinistros) ? item.sinistros[0] : item.sinistros
-           return {
-             id: sinistro.id,
-             numero_sinistro: sinistro.numero_sinistro,
-             tipo_atendimento: sinistro.tipo_atendimento,
-             tipo_sinistro: sinistro.tipo_sinistro,
-             tipo_assistencia: sinistro.tipo_assistencia,
-             status: sinistro.status,
-             data_criacao: sinistro.data_criacao,
-             data_atualizacao: sinistro.data_atualizacao,
-             cnh_proprio_nome: item.nome,
-             cnh_proprio_cpf: item.cpf,
-             crlv_proprio_placa: '',
-             crlv_proprio_marca: '',
-             crlv_proprio_modelo: '',
-             crlv_proprio_ano: 0,
-             total_fotos: 0,
-             total_arquivos: 0
-           }
-         })
+      if (supabaseError) {
+        console.error('❌ Erro no Supabase:', supabaseError)
+        throw new Error('Erro ao buscar dados. Tente novamente.')
       }
 
       if (!sinistros || sinistros.length === 0) {
-        setError(`Não foram encontrados registros para este CPF (${cpfLimpo}). Verifique seus dados ou entre em contato conosco.`)
+        console.log('⚠️ Nenhum sinistro encontrado para CPF em todas as colunas:', cpf)
+        setError('Nenhuma ocorrência encontrada com o CPF informado')
         return
       }
 
-      console.log('✅ Login bem-sucedido! Sinistros encontrados:', sinistros.length)
+      console.log('✅ Sinistros encontrados:', sinistros)
 
-      // Salvar dados do cliente no localStorage
+      // Buscar o nome do cliente em diferentes colunas
+      const nomeCliente = sinistros[0]?.nome_completo_furto || 
+                         sinistros[0]?.cnh_proprio_nome || 
+                         sinistros[0]?.cnh_terceiros_nome || 
+                         'Cliente'
+
+      // Salvar dados no localStorage (não sessionStorage)
       localStorage.setItem('clienteLogado', JSON.stringify({
-        cpf,
-        dataNascimento,
+        cpf: cpf,
+        nome: nomeCliente,
         loginTime: new Date().toISOString(),
         sinistros: sinistros
       }))
 
+      // Redirecionar para dashboard
       router.push('/dashboard_cliente')
+
     } catch (err: any) {
-      console.error('Erro no login:', err)
-      setError('Erro ao fazer login. Verifique seus dados.')
+      console.error('❌ Erro no login:', err)
+      setError(err.message || 'Erro interno. Tente novamente mais tarde.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className={`min-h-screen transition-all duration-300 ${darkMode ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'}`}>
+    <div className="min-h-screen transition-all duration-300 bg-gradient-to-br from-background-gradient-light via-background-gradient-medium to-background">
       {/* Header */}
-      <header className={`backdrop-blur-sm border-b sticky top-0 z-50 transition-all duration-300 ${darkMode ? 'bg-gray-900/80 border-gray-700' : 'bg-white/80 border-blue-100'}`}>
+      <header className="backdrop-blur-sm border-b sticky top-0 z-50 transition-all duration-300 bg-card/80 border-border">
         <div className="container mx-auto px-4 py-3 md:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 md:space-x-3">
@@ -209,26 +115,27 @@ export default function LoginClientePage() {
                   width={56}
                   height={56}
                   className="object-contain rounded-full"
+                  style={{ width: 'auto', height: 'auto' }}
                 />
               </div>
               <div>
-                <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-blue-800 to-purple-800 bg-clip-text text-transparent">
+                <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">
                   PV Auto Proteção
                 </h1>
-                <p className={`text-xs md:text-sm transition-colors duration-300 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Proteção Veicular</p>
+                <p className={`text-xs md:text-sm transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Proteção Veicular</p>
               </div>
             </div>
             <div className="flex items-center space-x-2 md:space-x-4">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={toggleDarkMode}
-                className={`hover:bg-opacity-20 transition-all duration-300 ${darkMode ? 'hover:bg-white text-gray-300' : 'hover:bg-blue-50 text-gray-700'}`}
+                onClick={() => setTheme(isDark ? 'light' : 'dark')}
+                className="hover:bg-surface-hover hover:text-accent-foreground transition-all duration-300"
               >
-                {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </Button>
               <Link href="/">
-                <Button variant="ghost" className={`hover:bg-opacity-20 transition-all duration-300 ${darkMode ? 'hover:bg-white text-gray-300' : 'hover:bg-blue-50 text-gray-700'}`}>
+                <Button variant="ghost" className="hover:bg-surface-hover hover:text-accent-foreground transition-all duration-300">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Voltar
                 </Button>
@@ -241,98 +148,96 @@ export default function LoginClientePage() {
       {/* Main Content */}
       <div className="flex items-center justify-center min-h-[calc(100vh-80px)] p-4">
         <div className="w-full max-w-md">
-          {/* Logo e título */}
-          <div className="text-center mb-8">
-            <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mb-4">
-              <User className="w-8 h-8 text-white" />
-            </div>
-            <h1 className={`text-3xl font-bold mb-2 transition-colors duration-300 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-              Área do Cliente
-            </h1>
-            <p className={`transition-colors duration-300 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              Acesse sua conta para acompanhar sinistros e assistências
-            </p>
-          </div>
-
-          {/* Card de login */}
-          <Card className={`shadow-xl border-0 transition-all duration-300 ${darkMode ? 'bg-gray-800/50 backdrop-blur-sm border border-gray-700/50' : 'bg-white'}`}>
-            <CardHeader className="text-center pb-4">
-              <CardTitle className={`text-xl font-semibold transition-colors duration-300 ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>
-                Faça seu Login
-              </CardTitle>
-              <p className={`text-sm mt-2 transition-colors duration-300 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                Digite seu CPF e data de nascimento para acessar
-              </p>
+          <Card className="shadow-2xl transition-all duration-300 bg-card/90 border-border backdrop-blur-sm">
+            <CardHeader className="text-center space-y-4">
+              <div className="flex justify-center">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center bg-brand-primary">
+                  <User className="w-8 h-8 text-white" />
+                </div>
+              </div>
+              <div>
+                <CardTitle className="text-2xl font-bold transition-colors duration-300 text-foreground">
+                  Acompanhar Ocorrência
+                </CardTitle>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Digite seu CPF para ver todas as suas ocorrências
+                </p>
+              </div>
             </CardHeader>
+            
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Campo de CPF */}
                 <div className="space-y-2">
-                  <Label htmlFor="cpf" className={`text-sm font-medium transition-colors duration-300 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  <Label htmlFor="cpf" className="text-sm font-medium text-muted-foreground">
                     CPF
                   </Label>
-                  <Input
-                    id="cpf"
-                    type="text"
-                    value={cpf}
-                    onChange={handleCPFChange}
-                    placeholder="000.000.000-00"
-                    required
-                    className={`h-11 transition-all duration-300 ${darkMode ? 'bg-gray-700/50 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'}`}
-                    disabled={loading}
-                  />
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="cpf"
+                      type="text"
+                      placeholder="000.000.000-00"
+                      value={cpf}
+                      onChange={handleCPFChange}
+                      className="pl-10 bg-input border-border text-foreground placeholder-muted-foreground"
+                      required
+                    />
+                  </div>
                 </div>
 
-                {/* Campo de data de nascimento */}
-                <div className="space-y-2">
-                  <Label htmlFor="dataNascimento" className={`text-sm font-medium transition-colors duration-300 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Data de Nascimento
-                  </Label>
-                  <Input
-                    id="dataNascimento"
-                    type="date"
-                    value={dataNascimento}
-                    onChange={(e) => setDataNascimento(e.target.value)}
-                    required
-                    className={`h-11 transition-all duration-300 ${darkMode ? 'bg-gray-700/50 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'}`}
-                    disabled={loading}
-                  />
-                </div>
-
-                {/* Error message */}
                 {error && (
-                  <Alert className={`transition-all duration-300 ${darkMode ? 'border-red-600 bg-red-900/20' : 'border-red-200 bg-red-50'}`}>
-                    <AlertDescription className={`text-sm transition-colors duration-300 ${darkMode ? 'text-red-300' : 'text-red-700'}`}>
+                  <Alert variant="destructive">
+                    <AlertDescription>
                       {error}
                     </AlertDescription>
                   </Alert>
                 )}
 
-                {/* Botão de login */}
                 <Button
                   type="submit"
-                  className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium"
-                  disabled={loading || !cpf || !dataNascimento}
+                  disabled={loading}
+                  className="w-full bg-brand-primary hover:bg-brand-primary/90 text-brand-primary-foreground font-medium py-2.5"
                 >
                   {loading ? (
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Entrando...
-                    </div>
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Verificando...
+                    </>
                   ) : (
-                    'Entrar'
+                    <>
+                      <Shield className="w-4 h-4 mr-2" />
+                      Acessar
+                    </>
                   )}
                 </Button>
               </form>
 
-              {/* Info adicional */}
-              <div className={`mt-6 pt-4 border-t transition-all duration-300 ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
-                <p className={`text-xs text-center transition-colors duration-300 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Primeira vez aqui? Seus dados foram cadastrados quando você contratou a proteção veicular.
+             
+
+              <div className={`mt-6 text-center pt-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+                <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Dados protegidos e criptografados
                 </p>
               </div>
             </CardContent>
           </Card>
+
+          <div className="mt-6 text-center">
+          <div className="mt-12 text-center mb-16">
+                <Link href="/admin/login">
+                  <Button 
+                    variant="outline" 
+                    className="w-full transition-all duration-300 border-brand-primary text-brand-primary hover:bg-brand-primary/10"
+                  >
+                    <Shield className="w-4 h-4 mr-2" />
+                    Acessar Sistema
+                  </Button>
+                </Link>
+              </div>
+            <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+              © 2024 PV Auto Proteção. Todos os direitos reservados.
+            </p>
+          </div>
         </div>
       </div>
     </div>

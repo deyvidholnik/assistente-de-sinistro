@@ -52,7 +52,10 @@ export const authService = {
   // Escutar mudanças de autenticação
   onAuthStateChange(callback: (user: User | null) => void) {
     return supabase.auth.onAuthStateChange((event, session) => {
-      console.log('🔄 Auth state changed:', event, session?.user?.email)
+      // Apenas log para eventos importantes
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+        console.log('🔄 Auth event:', event, session?.user?.email)
+      }
       callback(session?.user || null)
     })
   },

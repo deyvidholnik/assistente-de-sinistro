@@ -2,10 +2,22 @@ import { createClient } from '@supabase/supabase-js'
 
 // Configuração do Supabase
 const supabaseUrl = 'https://nxzzzkzuupgkqmscvscn.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54enp6a3p1dXBna3Ftc2N2c2NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwNjEwODIsImV4cCI6MjA2NzYzNzA4Mn0.IBP0l4REyVvYrBbM6NMpMHX6e1E4xpeZEhx1yIE2bkI'
-
-// Criar cliente Supabase
+const supabaseAnonKey ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54enp6a3p1dXBna3Ftc2N2c2NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwNjEwODIsImV4cCI6MjA2NzYzNzA4Mn0.IBP0l4REyVvYrBbM6NMpMHX6e1E4xpeZEhx1yIE2bkI' // Service Role Key - VOCÊ PRECISA ATUALIZAR ESTA CHAVE COPIANDO DO SEU DASHBOARD SUPABASE
+// Vá em: Settings → API → service_role (secret)
+// SUBSTITUA A CHAVE ABAIXO PELA CHAVE CORRETA DO SEU DASHBOARD:
+const supabaseServiceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54enp6a3p1dXBna3Ftc2N2c2NuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjA2MTA4MiwiZXhwIjoyMDY3NjM3MDgyfQ.vh6H8JDKQW3a5Y7z_EXUqrbpANdF8F_boGm7EDfMAgc'
+// Cliente principal do Supabase para uso geral
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+// Função para criar cliente admin sob demanda (evita múltiplas instâncias)
+export function getSupabaseAdmin() {
+  return createClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  })
+}
 
 // Tipos para o banco de dados
 export interface SinistroData {

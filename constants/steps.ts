@@ -12,7 +12,8 @@ export const steps = [
   { id: 8, title: "B.O.", icon: FileText, description: "Boletim de Ocorrência" },
   { id: 9, title: "Fotos do Veículo", icon: Car, description: "Fotos guiadas" },
   { id: 10, title: "Terceiros", icon: AlertCircle, description: "Outros veículos" },
-  { id: 11, title: "Finalização", icon: CheckCircle, description: "Envio concluído" },
+  { id: 11, title: "Assistência Extra", icon: Headphones, description: "Assistência adicional" },
+  { id: 12, title: "Finalização", icon: CheckCircle, description: "Envio concluído" },
 ]
 
 export const fotoVeiculoSteps: FotoVeiculoStep[] = [

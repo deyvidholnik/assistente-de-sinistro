@@ -57,7 +57,43 @@ body {
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Cores personalizadas do app */
+    --brand-primary: 217 91% 60%;        /* Azul primário */
+    --brand-primary-foreground: 0 0% 98%;
+    --brand-secondary: 262 83% 58%;      /* Roxo secundário */
+    --brand-secondary-foreground: 0 0% 98%;
+    --brand-accent: 152 81% 96%;         /* Verde claro */
+    --brand-accent-foreground: 152 84% 20%;
+    
+    /* Gradientes principais */
+    --gradient-primary-start: 217 91% 60%;     /* from-blue-600 */
+    --gradient-primary-end: 262 83% 58%;       /* to-purple-600 */
+    --gradient-secondary-start: 152 69% 61%;   /* from-green-500 */
+    --gradient-secondary-end: 173 80% 40%;     /* to-teal-500 */
+    
+    /* Estados de status */
+    --status-success: 142 76% 36%;       /* Verde sucesso */
+    --status-success-foreground: 0 0% 98%;
+    --status-warning: 38 92% 50%;        /* Amarelo/laranja */
+    --status-warning-foreground: 0 0% 9%;
+    --status-error: 0 84% 60%;           /* Vermelho erro */
+    --status-error-foreground: 0 0% 98%;
+    --status-info: 217 91% 60%;          /* Azul info */
+    --status-info-foreground: 0 0% 98%;
+    
+    /* Backgrounds especiais */
+    --background-gradient-light: 222 84% 95%; /* Azul muito claro */
+    --background-gradient-medium: 262 52% 95%; /* Roxo muito claro */
+    --surface-elevated: 0 0% 99%;
+    --surface-hover: 217 91% 95%;
+    
+    /* Borders e separadores */
+    --border-light: 217 20% 92%;
+    --border-medium: 217 20% 84%;
+    --border-accent: 217 91% 85%;
   }
+  
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -91,6 +127,41 @@ body {
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Cores personalizadas do app - modo escuro */
+    --brand-primary: 217 91% 65%;        /* Azul mais claro no dark */
+    --brand-primary-foreground: 0 0% 9%;
+    --brand-secondary: 262 83% 65%;      /* Roxo mais claro no dark */
+    --brand-secondary-foreground: 0 0% 9%;
+    --brand-accent: 152 50% 15%;         /* Verde escuro */
+    --brand-accent-foreground: 152 81% 80%;
+    
+    /* Gradientes principais - modo escuro */
+    --gradient-primary-start: 217 91% 65%;
+    --gradient-primary-end: 262 83% 65%;
+    --gradient-secondary-start: 152 69% 55%;
+    --gradient-secondary-end: 173 80% 45%;
+    
+    /* Estados de status - modo escuro */
+    --status-success: 142 76% 45%;
+    --status-success-foreground: 0 0% 9%;
+    --status-warning: 38 92% 60%;
+    --status-warning-foreground: 0 0% 9%;
+    --status-error: 0 84% 65%;
+    --status-error-foreground: 0 0% 9%;
+    --status-info: 217 91% 65%;
+    --status-info-foreground: 0 0% 9%;
+    
+    /* Backgrounds especiais - modo escuro */
+    --background-gradient-light: 222 84% 5%;  /* Azul muito escuro */
+    --background-gradient-medium: 262 52% 8%; /* Roxo muito escuro */
+    --surface-elevated: 0 0% 8%;
+    --surface-hover: 217 91% 15%;
+    
+    /* Borders e separadores - modo escuro */
+    --border-light: 217 20% 20%;
+    --border-medium: 217 20% 25%;
+    --border-accent: 217 91% 25%;
   }
 }
 

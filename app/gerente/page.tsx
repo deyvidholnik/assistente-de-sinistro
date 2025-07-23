@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useAdminAuth } from '@/context/admin-auth-context'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -43,13 +45,16 @@ import {
   Plus,
   X,
   Headphones,
-  Wrench
+  Wrench,
+  LogOut,
+  MessageCircle
 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { AuthGuard } from "@/components/auth-guard"
 import { UserProfile } from "@/components/user-profile"
+import Link from "next/link"
 
 // Função simples para formatar datas
 const formatarData = (data: string) => {
@@ -85,12 +90,38 @@ const formatarTipoAssistencia = (tipo: string | undefined) => {
   return tipos[tipo] || tipo.replace(/_/g, ' ')
 }
 
+// Função para formatar todas as assistências (principal + adicionais)
+const formatarTodasAssistencias = (sinistro: Sinistro) => {
+  const assistencias: string[] = []
+  
+  // Adicionar assistência principal
+  if (sinistro.tipo_assistencia) {
+    assistencias.push(formatarTipoAssistencia(sinistro.tipo_assistencia))
+  }
+  
+  // Adicionar assistências adicionais
+  if (sinistro.assistencias_tipos) {
+    // Se é array, usar diretamente. Se é string, fazer split
+    const tiposAdicionais = Array.isArray(sinistro.assistencias_tipos) 
+      ? sinistro.assistencias_tipos 
+      : sinistro.assistencias_tipos.split(', ')
+    
+    const assistenciasAdicionais = tiposAdicionais
+      .filter(tipo => tipo) // Remover valores vazios
+      .map(tipo => formatarTipoAssistencia(tipo))
+    assistencias.push(...assistenciasAdicionais)
+  }
+  
+  return assistencias.length > 0 ? assistencias.join(', ') : ''
+}
+
 interface Sinistro {
   id: string
   numero_sinistro: string
   tipo_atendimento?: string
   tipo_sinistro?: string
   tipo_assistencia?: string
+  assistencia_adicional?: boolean
   status: string
   data_criacao: string
   data_atualizacao: string
@@ -105,13 +136,15 @@ interface Sinistro {
   crlv_proprio_marca?: string
   crlv_proprio_modelo?: string
   crlv_proprio_ano?: number
-  cnh_terceiro_nome?: string
-  cnh_terceiro_cpf?: string
+  cnh_terceiros_nome?: string
+  cnh_terceiros_cpf?: string
   crlv_terceiro_placa?: string
   crlv_terceiro_marca?: string
   crlv_terceiro_modelo?: string
   total_fotos: number
   total_arquivos: number
+  total_assistencias?: number
+  assistencias_tipos?: string | string[] // Pode ser string ou array
 }
 
 interface SinistroDetalhado {
@@ -136,6 +169,20 @@ export default function GerentePage() {
   const [passosPersonalizados, setPassosPersonalizados] = useState<Record<string, any[]>>({})
   const [showNovoPassoForm, setShowNovoPassoForm] = useState(false)
   const [novoPassoData, setNovoPassoData] = useState({ nome: '', descricao: '' })
+  
+  const { signOut, user } = useAdminAuth()
+  const router = useRouter()
+
+  // Função de logout
+  const handleLogout = async () => {
+    try {
+      await signOut()
+      router.push('/')
+    } catch (error) {
+      console.error('Erro no logout:', error)
+      router.push('/')
+    }
+  }
 
   // Carregar lista de sinistros
   const carregarSinistros = async (isAutoRefresh = false) => {
@@ -157,10 +204,27 @@ export default function GerentePage() {
       setSinistros(data || [])
       console.log('Sinistros carregados:', data?.length || 0)
       console.log('Exemplo de sinistro:', data?.[0])
-      // Debug para assistências
+      
+      // Debug específico para assistências adicionais
+      const comAssistenciaAdicional = data?.filter(s => s.assistencia_adicional === true) || []
+      const comTiposAssistencia = data?.filter(s => s.assistencias_tipos) || []
+      
+      console.log('🎯 DEBUG ASSISTÊNCIAS ADICIONAIS:', {
+        totalSinistros: data?.length || 0,
+        comAssistenciaAdicional: comAssistenciaAdicional.length,
+        comTiposAssistencia: comTiposAssistencia.length,
+        exemploComAssistencia: comAssistenciaAdicional[0],
+        exemploComTipos: comTiposAssistencia[0]
+      })
+      
+      // Debug para assistências normais
       const assistencias = data?.filter(s => s.tipo_atendimento === 'assistencia')
       if (assistencias?.length > 0) {
         console.log('Assistências encontradas:', assistencias)
+        console.log('Primeira assistência com formatação:', {
+          original: assistencias[0],
+          formatado: formatarTodasAssistencias(assistencias[0])
+        })
       }
     } catch (err: any) {
       console.error('Erro ao carregar sinistros:', err)
@@ -633,34 +697,67 @@ export default function GerentePage() {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen bg-gradient-to-br from-background-gradient-light to-background">
         <main className="container mx-auto px-3 py-4 sm:p-4 lg:p-6 space-y-3 sm:space-y-4 lg:space-y-6">
         {/* Header */}
         <header className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-6 mb-3 sm:mb-6">
           <div className="flex items-center justify-between gap-3">
-            {/* Logo da empresa */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+            {/* Logo e Título - Centro */}
+            <div className="flex items-center gap-2 sm:gap-3">
               <img 
                 src="/images/logo.png" 
                 alt="PV Auto Proteção" 
                 className="h-10 w-10 sm:h-14 sm:w-14 object-cover rounded-full border-2 border-gray-200 shadow-sm flex-shrink-0"
               />
-              <div className="min-w-0 flex-1">
-                <h1 className="text-base sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 truncate leading-tight">
+              <div>
+                <h1 className="text-base sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">
                   PV Auto Proteção
                 </h1>
-                <p className="text-gray-600 text-xs sm:text-sm lg:text-base truncate leading-tight">
+                <p className="text-gray-600 text-xs sm:text-sm lg:text-base leading-tight">
                   Gerenciamento de Ocorrências
                 </p>
               </div>
             </div>
+         
             
-            {/* Perfil do usuário */}
-            <div className="flex-shrink-0">
-              <UserProfile />
+            {/* User Info e Logout */}
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-medium text-gray-900">
+                  {user?.full_name || user?.email}
+                </p>
+                <p className="text-xs text-gray-500 capitalize">
+                  {user?.user_level}
+                </p>
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+                className="flex items-center gap-2 hover:bg-red-50 hover:border-red-200 hover:text-red-600"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Sair</span>
+              </Button>
             </div>
           </div>
         </header>
+
+                 {/* Acesso Rápido WhatsApp */}
+      <div className="flex justify-center my-6">
+        <Link href="/whatsapp?from=gerente">
+          <Button
+            size="lg"
+            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 px-8 py-4 rounded-xl"
+          >
+            <MessageCircle className="w-8 h-8 mr-3" />
+            <div className="flex flex-col items-start">
+              <span className="text-lg font-semibold">WhatsApp</span>
+            </div>
+          </Button>
+        </Link>
+      </div>
 
       {/* Estatísticas */}
       <div className=" grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 lg:gap-4">
@@ -766,6 +863,8 @@ export default function GerentePage() {
           </CardContent>
         </Card>
       </div>
+
+
 
       {/* Filtros */}
       <Card className="border-l-4 border-l-indigo-400">
@@ -918,27 +1017,44 @@ export default function GerentePage() {
                         {(() => {
                           // Verificar assistência
                           if (sinistro.tipo_atendimento === 'assistencia') {
+                            const todasAssistencias = formatarTodasAssistencias(sinistro)
                             return (
                               <>
                                 <Headphones className="w-3 h-3" /> 
-                                Assistência - {formatarTipoAssistencia(sinistro.tipo_assistencia)}
+                                Assistência - {todasAssistencias}
+
                               </>
                             )
                           }
                           
                           // Verificar tipos de sinistro
-                          switch (sinistro.tipo_sinistro) {
-                            case 'colisao':
-                              return <><Car className="w-3 h-3" /> Colisão</>
-                            case 'furto':
-                              return <><Shield className="w-3 h-3" /> Furto</>
-                            case 'roubo':
-                              return <><AlertTriangle className="w-3 h-3" /> Roubo</>
-                            case 'pequenos_reparos':
-                              return <><Wrench className="w-3 h-3" /> Pequenos Reparos</>
-                            default:
-                              return <>Tipo não identificado</>
-                          }
+                          const baseElement = (() => {
+                            switch (sinistro.tipo_sinistro) {
+                              case 'colisao':
+                                return <><Car className="w-3 h-3" /> Colisão</>
+                              case 'furto':
+                                return <><Shield className="w-3 h-3" /> Furto</>
+                              case 'roubo':
+                                return <><AlertTriangle className="w-3 h-3" /> Roubo</>
+                              case 'pequenos_reparos':
+                                return <><Wrench className="w-3 h-3" /> Pequenos Reparos</>
+                              default:
+                                return <>Tipo não identificado</>
+                            }
+                          })()
+                          
+                          // Adicionar assistências adicionais se existirem
+                          return (
+                            <>
+                              {baseElement}
+                              {sinistro.assistencias_tipos && sinistro.assistencias_tipos.length > 0 && (
+                                <span className="ml-1 text-xs text-gray-600">
+                                  - {formatarTodasAssistencias(sinistro)}
+                                </span>
+                              )}
+
+                            </>
+                          )
                         })()}
                       </div>
                     </Badge>
@@ -1103,27 +1219,44 @@ export default function GerentePage() {
                             {(() => {
                               // Verificar assistência
                               if (sinistro.tipo_atendimento === 'assistencia') {
+                                const todasAssistencias = formatarTodasAssistencias(sinistro)
                                 return (
                                   <>
                                     <Headphones className="w-3 h-3" /> 
-                                    Assistência - {formatarTipoAssistencia(sinistro.tipo_assistencia)}
+                                    Assistência - {todasAssistencias}
+
                                   </>
                                 )
                               }
                               
                               // Verificar tipos de sinistro
-                              switch (sinistro.tipo_sinistro) {
-                                case 'colisao':
-                                  return <><Car className="w-3 h-3" /> Colisão</>
-                                case 'furto':
-                                  return <><Shield className="w-3 h-3" /> Furto</>
-                                case 'roubo':
-                                  return <><AlertTriangle className="w-3 h-3" /> Roubo</>
-                                case 'pequenos_reparos':
-                                  return <><Wrench className="w-3 h-3" /> Pequenos Reparos</>
-                                default:
-                                  return <>Tipo não identificado</>
-                              }
+                              const baseElement = (() => {
+                                switch (sinistro.tipo_sinistro) {
+                                  case 'colisao':
+                                    return <><Car className="w-3 h-3" /> Colisão</>
+                                  case 'furto':
+                                    return <><Shield className="w-3 h-3" /> Furto</>
+                                  case 'roubo':
+                                    return <><AlertTriangle className="w-3 h-3" /> Roubo</>
+                                  case 'pequenos_reparos':
+                                    return <><Wrench className="w-3 h-3" /> Pequenos Reparos</>
+                                  default:
+                                    return <>Tipo não identificado</>
+                                }
+                              })()
+                              
+                              // Adicionar assistências adicionais se existirem
+                              return (
+                                <>
+                                  {baseElement}
+                                  {sinistro.assistencias_tipos && sinistro.assistencias_tipos.length > 0 && (
+                                    <span className="ml-1 text-xs text-gray-600">
+                                      - {formatarTodasAssistencias(sinistro)}
+                                    </span>
+                                  )}
+
+                                </>
+                              )
                             })()}
                           </div>
                         </Badge>
@@ -1389,34 +1522,44 @@ function DetalhesSinistro({
                 <Calendar className="w-3 h-3" />
                 <span>{formatarData(sinistro.data_criacao)}</span>
               </div>
-              <div className="text-sm font-medium text-gray-900">
+                              <div className="text-sm font-medium text-gray-900">
                 {sinistro.tipo_atendimento === 'assistencia' ? (
                   <>
                     <Headphones className="w-4 h-4 inline mr-1" />
-                    {formatarTipoAssistencia(sinistro.tipo_assistencia)}
-                  </>
-                ) : sinistro.tipo_sinistro === 'colisao' ? (
-                  <>
-                    <Car className="w-4 h-4 inline mr-1" />
-                    Colisão
-                  </>
-                ) : sinistro.tipo_sinistro === 'furto' ? (
-                  <>
-                    <Shield className="w-4 h-4 inline mr-1" />
-                    Furto
-                  </>
-                ) : sinistro.tipo_sinistro === 'roubo' ? (
-                  <>
-                    <AlertTriangle className="w-4 h-4 inline mr-1" />
-                    Roubo
-                  </>
-                ) : sinistro.tipo_sinistro === 'pequenos_reparos' ? (
-                  <>
-                    <Wrench className="w-4 h-4 inline mr-1" />
-                    Pequenos Reparos
+                    {formatarTodasAssistencias(sinistro)}
                   </>
                 ) : (
-                  'Tipo não identificado'
+                  <>
+                    {sinistro.tipo_sinistro === 'colisao' ? (
+                      <>
+                        <Car className="w-4 h-4 inline mr-1" />
+                        Colisão
+                      </>
+                    ) : sinistro.tipo_sinistro === 'furto' ? (
+                      <>
+                        <Shield className="w-4 h-4 inline mr-1" />
+                        Furto
+                      </>
+                    ) : sinistro.tipo_sinistro === 'roubo' ? (
+                      <>
+                        <AlertTriangle className="w-4 h-4 inline mr-1" />
+                        Roubo
+                      </>
+                    ) : sinistro.tipo_sinistro === 'pequenos_reparos' ? (
+                      <>
+                        <Wrench className="w-4 h-4 inline mr-1" />
+                        Pequenos Reparos
+                      </>
+                    ) : (
+                      'Tipo não identificado'
+                    )}
+                    {/* Mostrar assistências adicionais para sinistros */}
+                    {sinistro.assistencias_tipos && sinistro.assistencias_tipos.length > 0 && (
+                      <span className="ml-2 text-sm text-gray-600">
+                        - {formatarTodasAssistencias(sinistro)}
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -1471,10 +1614,13 @@ function DetalhesSinistro({
                 </div>
                 <div className="text-lg font-semibold text-gray-900 capitalize flex items-center gap-2">
                   {sinistro.tipo_atendimento === 'assistencia' ? (
-                    <>
-                      <Headphones className="w-5 h-5" />
-                      {formatarTipoAssistencia(sinistro.tipo_assistencia)}
-                    </>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <Headphones className="w-5 h-5" />
+                        {formatarTodasAssistencias(sinistro)}
+                      </div>
+
+                    </div>
                   ) : sinistro.tipo_sinistro === 'colisao' ? (
                     <>
                       <Car className="w-5 h-5" />
@@ -1580,6 +1726,51 @@ function DetalhesSinistro({
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Seção Assistências Adicionais */}
+        {sinistro.assistencia_adicional && sinistro.assistencias_tipos && sinistro.assistencias_tipos.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-base md:text-lg font-semibold text-gray-900 px-1">Assistências Adicionais</h3>
+            <div className="border border-blue-200 bg-blue-50 rounded-lg p-3 md:p-6">
+              <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-6">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Headphones className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
+                </div>
+                <div>
+                  <h4 className="text-base md:text-lg font-semibold text-blue-900">Serviços Adicionais Solicitados</h4>
+                  <p className="text-xs md:text-sm text-blue-700 hidden md:block">Lista de assistências extras solicitadas pelo cliente</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {(Array.isArray(sinistro.assistencias_tipos) ? sinistro.assistencias_tipos : 
+                  typeof sinistro.assistencias_tipos === 'string' ? sinistro.assistencias_tipos.split(',') : []
+                ).map((tipo: string, index: number) => {
+                  const tipoLimpo = tipo.trim()
+                  const assistenciaInfo: { [key: string]: { label: string; icon: string; color: string } } = {
+                    'guincho': { label: 'Guincho', icon: '🚛', color: 'bg-blue-100 text-blue-800 border-blue-200' },
+                    'taxi': { label: 'Táxi', icon: '🚕', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+                    'hotel': { label: 'Hotel', icon: '🏨', color: 'bg-purple-100 text-purple-800 border-purple-200' },
+                    'mecanica': { label: 'Mecânica', icon: '🔧', color: 'bg-green-100 text-green-800 border-green-200' },
+                    'vidraceiro': { label: 'Vidraceiro', icon: '🪟', color: 'bg-indigo-100 text-indigo-800 border-indigo-200' },
+                    'borracheiro': { label: 'Borracheiro', icon: '🛞', color: 'bg-orange-100 text-orange-800 border-orange-200' },
+                    'eletricista': { label: 'Eletricista', icon: '⚡', color: 'bg-red-100 text-red-800 border-red-200' }
+                  }
+                  const info = assistenciaInfo[tipoLimpo] || { label: tipoLimpo, icon: '🛠️', color: 'bg-gray-100 text-gray-800 border-gray-200' }
+
+                  return (
+                    <div key={index} className={`p-3 rounded-lg ${info.color} border shadow-sm`}>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{info.icon}</span>
+                        <span className="font-medium text-sm">{info.label}</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </div>
         )}

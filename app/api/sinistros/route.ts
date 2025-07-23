@@ -46,6 +46,8 @@ export async function POST(req: NextRequest) {
       tipoAtendimento: dadosFormulario.tipoAtendimento,
       tipoSinistro: dadosFormulario.tipoSinistro,
       tipoAssistencia: dadosFormulario.tipoAssistencia,
+      assistenciaAdicional: dadosFormulario.assistenciaAdicional,
+      assistenciasAdicionais: dadosFormulario.assistenciasAdicionais,
       cnhData: dadosFormulario.cnhData ? 'Presente' : 'Ausente'
     })
 
@@ -86,6 +88,15 @@ export async function POST(req: NextRequest) {
       sinistroData.placa_veiculo_furto = dadosFormulario.dadosFurtoSemDocumentos.placaVeiculo
     }
 
+    // Adicionar campos de assistência adicional
+    if (dadosFormulario.assistenciaAdicional !== undefined) {
+      sinistroData.assistencia_adicional = dadosFormulario.assistenciaAdicional
+    }
+    if (dadosFormulario.assistenciasAdicionais && dadosFormulario.assistenciasAdicionais.length > 0) {
+      sinistroData.total_assistencias = dadosFormulario.assistenciasAdicionais.length
+      sinistroData.assistencias_tipos = dadosFormulario.assistenciasAdicionais
+    }
+
     console.log('📝 Dados do sinistro a serem inseridos:', sinistroData)
 
     let sinistro
@@ -100,6 +111,31 @@ export async function POST(req: NextRequest) {
       
       sinistro = result.data
       sinistroError = result.error
+
+      // Se erro relacionado a campos inexistentes, tentar sem campos de assistência adicional
+      if (sinistroError && (
+        sinistroError.message?.includes('assistencia_adicional') ||
+        sinistroError.message?.includes('total_assistencias') ||
+        sinistroError.message?.includes('assistencias_tipos')
+      )) {
+        console.log('⚠️ Tentando inserir sem campos de assistência adicional...')
+        
+        // Remover campos que podem não existir
+        const sinistroDataSemAssistencia = { ...sinistroData }
+        delete sinistroDataSemAssistencia.assistencia_adicional
+        delete sinistroDataSemAssistencia.total_assistencias
+        delete sinistroDataSemAssistencia.assistencias_tipos
+        
+        const resultRetry = await supabase
+          .from('sinistros')
+          .insert([sinistroDataSemAssistencia])
+          .select()
+          .single()
+        
+        sinistro = resultRetry.data
+        sinistroError = resultRetry.error
+      }
+      
     } catch (insertError) {
       console.error('❌ Erro ao executar insert:', insertError)
       return NextResponse.json({ 
@@ -126,7 +162,33 @@ export async function POST(req: NextRequest) {
     console.log('✅ Sinistro criado com sucesso:', sinistro.numero_sinistro)
     const sinistroId = sinistro.id
 
-    // 2. Salvar dados da CNH (próprio)
+    // 2. Salvar assistências adicionais se existirem (e se tabela existir)
+    if (dadosFormulario.assistenciasAdicionais && dadosFormulario.assistenciasAdicionais.length > 0) {
+      try {
+        const assistenciasParaSalvar = dadosFormulario.assistenciasAdicionais.map((tipo, index) => ({
+          sinistro_id: sinistroId,
+          tipo_assistencia: tipo,
+          ordem_assistencia: index + 1,
+          created_at: dataAtualBrasilia
+        }))
+
+        const { error: assistenciasError } = await supabase
+          .from('sinistros_assistencias')
+          .insert(assistenciasParaSalvar)
+
+        if (assistenciasError) {
+          console.error('❌ Erro ao salvar assistências adicionais:', assistenciasError)
+          console.log('💡 Possível causa: tabela sinistros_assistencias não existe. Execute o script SQL de assistências adicionais.')
+        } else {
+          console.log('✅ Assistências adicionais salvas:', dadosFormulario.assistenciasAdicionais)
+        }
+      } catch (error) {
+        console.error('❌ Erro geral ao processar assistências adicionais:', error)
+        console.log('💡 Tabela sinistros_assistencias pode não existir no banco de dados')
+      }
+    }
+
+    // 3. Salvar dados da CNH (próprio)
     if (dadosFormulario.cnhData && dadosFormulario.cnhData.nome) {
       const cnhProprio: DadosCNHDB = {
         sinistro_id: sinistroId,
@@ -149,7 +211,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 3. Salvar dados da CNH (terceiro)
+    // 4. Salvar dados da CNH (terceiro)
     if (dadosFormulario.cnhDataTerceiros && dadosFormulario.cnhDataTerceiros.nome) {
       const cnhTerceiro: DadosCNHDB = {
         sinistro_id: sinistroId,
@@ -172,7 +234,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 4. Salvar dados do CRLV (próprio)
+    // 5. Salvar dados do CRLV (próprio)
     if (dadosFormulario.crlvData && dadosFormulario.crlvData.placa) {
       const crlvProprio: DadosCRLVDB = {
         sinistro_id: sinistroId,
@@ -198,7 +260,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 5. Salvar dados do CRLV (terceiro)
+    // 6. Salvar dados do CRLV (terceiro)
     if (dadosFormulario.crlvDataTerceiros && dadosFormulario.crlvDataTerceiros.placa) {
       const crlvTerceiro: DadosCRLVDB = {
         sinistro_id: sinistroId,
@@ -224,7 +286,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 6. Salvar arquivos
+    // 7. Salvar arquivos
     const arquivosParaSalvar: ArquivoSinistro[] = []
     
     // Processar arquivos enviados
@@ -348,15 +410,20 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 7. Registrar log
+    // 8. Registrar log
     const tipoDescricao = dadosFormulario.tipoAtendimento === 'assistencia' 
       ? `Assistência: ${dadosFormulario.tipoAssistencia}`
       : `Sinistro: ${dadosFormulario.tipoSinistro}`
     
+    // Adicionar informação sobre assistências adicionais se existirem
+    const assistenciasExtras = dadosFormulario.assistenciasAdicionais && dadosFormulario.assistenciasAdicionais.length > 0
+      ? ` + ${dadosFormulario.assistenciasAdicionais.length} assistências adicionais (${dadosFormulario.assistenciasAdicionais.join(', ')})`
+      : ''
+    
     await supabase.from('log_atividades').insert([{
       sinistro_id: sinistroId,
       acao: dadosFormulario.tipoAtendimento === 'assistencia' ? 'ASSISTENCIA_CRIADA' : 'SINISTRO_CRIADO',
-      descricao: `${dadosFormulario.tipoAtendimento === 'assistencia' ? 'Assistência' : 'Sinistro'} criado via formulário web - ${tipoDescricao}`,
+      descricao: `${dadosFormulario.tipoAtendimento === 'assistencia' ? 'Assistência' : 'Sinistro'} criado via formulário web - ${tipoDescricao}${assistenciasExtras}`,
       status_novo: 'pendente',
       usuario_nome: 'Sistema Web',
       created_at: dataAtualBrasilia

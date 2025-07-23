@@ -22,10 +22,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Verificar sessão atual na inicialização
     const checkSession = async () => {
       try {
-        console.log('Verificando sessão atual...')
         const currentUser = await authService.getCurrentUser()
         setUser(currentUser)
-        console.log('Usuário atual:', currentUser?.email || 'Não logado')
+        // Remover log desnecessário na inicialização
       } catch (error) {
         console.error('Erro ao verificar sessão:', error)
       } finally {
@@ -37,7 +36,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Escutar mudanças de autenticação
     const { data: { subscription } } = authService.onAuthStateChange((user) => {
-      console.log('Estado de auth mudou:', user?.email || 'logout')
+      // Apenas log quando há mudança significativa
+      if (user) {
+        console.log('✅ Usuário logado:', user.email)
+      } else {
+        console.log('🚪 Usuário deslogado')
+      }
       setUser(user)
       setLoading(false)
     })

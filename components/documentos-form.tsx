@@ -61,6 +61,10 @@ const StepTerceiros = dynamic(() => import("@/components/steps/step-terceiros").
 const StepFotos = dynamic(() => import("@/components/steps/step-fotos").then((mod) => mod.StepFotos), {
   loading: () => <StepLoading />,
 })
+const StepAssistenciaAdicional = dynamic(
+  () => import("@/components/steps/step-assistencia-adicional").then((mod) => mod.StepAssistenciaAdicional),
+  { loading: () => <StepLoading /> },
+)
 const StepFinalizacao = dynamic(
   () => import("@/components/steps/step-finalizacao").then((mod) => mod.StepFinalizacao),
   { loading: () => <StepLoading /> },
@@ -104,18 +108,19 @@ export default function DocumentosForm() {
 
   /* ---------- cálculo de progresso ---------- */
   function getProgress() {
-    // Agora temos 11 steps no total
-    const totalSteps = 11
-    const normalizedStep = currentStep === 12 ? 11 : currentStep
+    // Agora temos 12 steps no total
+    const totalSteps = 12
+    const normalizedStep = currentStep === 13 ? 12 : currentStep
     const completedSteps = normalizedStep - 1
     
     if (tipoAtendimento === "assistencia") {
-      // Para assistência, o fluxo é: steps 1, 2, 4, 6, 11
+      // Para assistência, o fluxo é: steps 1, 2, 4, 6, 11, 12
       if (currentStep === 1) return 0
-      if (currentStep === 2) return 20
-      if (currentStep === 4) return 40
-      if (currentStep === 6) return 60
-      if (currentStep === 11) return 100
+      if (currentStep === 2) return 16.7
+      if (currentStep === 4) return 33.3
+      if (currentStep === 6) return 50
+      if (currentStep === 11) return 83.3
+      if (currentStep === 12) return 100
     }
     
     if (tipoSinistro === "pequenos_reparos") {
@@ -180,11 +185,13 @@ export default function DocumentosForm() {
       case 10:
         return <StepTerceiros />
       case 11:
+        return <StepAssistenciaAdicional />
+      case 12:
         if ((tipoSinistro === "furto" || tipoSinistro === "roubo") && documentosFurtados) {
           return <StepFurtoSemDocumentos />
         }
         return <StepFinalizacao />
-      case 12:
+      case 13:
         return <StepFinalizacao />
       default:
         return null
@@ -201,7 +208,7 @@ export default function DocumentosForm() {
       const titles: { [key: number]: string } = { 6: "CNH do Terceiro", 7: "CRLV do Terceiro" }
       return titles[currentStep] || steps[currentStep - 1].title
     }
-    const stepIndex = currentStep === 12 ? 10 : currentStep - 1
+    const stepIndex = currentStep === 13 ? 11 : currentStep - 1
     return steps[stepIndex]?.title || "Finalização"
   }
 
@@ -221,7 +228,7 @@ export default function DocumentosForm() {
       }
       return descriptions[currentStep] || steps[currentStep - 1].description
     }
-    const stepIndex = currentStep === 12 ? 10 : currentStep - 1
+    const stepIndex = currentStep === 13 ? 11 : currentStep - 1
     return steps[stepIndex]?.description || "Envio concluído"
   }
 
@@ -272,7 +279,7 @@ export default function DocumentosForm() {
             {/* Versão mobile - mostra apenas step atual e total */}
             <div className="flex sm:hidden justify-between w-full">
               <span className="text-xs text-gray-600">
-                Passo {currentStep === 12 ? 11 : currentStep} de {tipoAtendimento === "assistencia" ? "5" : "11"}
+                Passo {currentStep === 13 ? 12 : currentStep} de {tipoAtendimento === "assistencia" ? "6" : "12"}
               </span>
               <span className="text-xs text-blue-600 font-medium">
                 {getStepTitle()}
@@ -309,7 +316,7 @@ export default function DocumentosForm() {
         </Card>
 
         {/* BOTÕES NAVEGAÇÃO */}
-        {currentStep !== 1 && currentStep !== 11 && currentStep !== 12 && isReadyToProceed && !isProcessingOCR && (
+        {currentStep !== 1 && currentStep !== 11 && currentStep !== 12 && currentStep !== 13 && isReadyToProceed && !isProcessingOCR && (
           <div
             ref={navigationRef}
             className="bg-white border-t border-gray-200 p-3 mt-4 sm:bg-transparent sm:border-t-0 sm:p-0"

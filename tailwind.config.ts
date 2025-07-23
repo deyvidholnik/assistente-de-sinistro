@@ -62,6 +62,39 @@ const config: Config = {
   				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
+  			},
+  			// Cores personalizadas do app
+  			brand: {
+  				primary: 'hsl(var(--brand-primary))',
+  				'primary-foreground': 'hsl(var(--brand-primary-foreground))',
+  				secondary: 'hsl(var(--brand-secondary))',
+  				'secondary-foreground': 'hsl(var(--brand-secondary-foreground))',
+  				accent: 'hsl(var(--brand-accent))',
+  				'accent-foreground': 'hsl(var(--brand-accent-foreground))'
+  			},
+  			gradient: {
+  				'primary-start': 'hsl(var(--gradient-primary-start))',
+  				'primary-end': 'hsl(var(--gradient-primary-end))',
+  				'secondary-start': 'hsl(var(--gradient-secondary-start))',
+  				'secondary-end': 'hsl(var(--gradient-secondary-end))'
+  			},
+  			status: {
+  				success: 'hsl(var(--status-success))',
+  				'success-foreground': 'hsl(var(--status-success-foreground))',
+  				warning: 'hsl(var(--status-warning))',
+  				'warning-foreground': 'hsl(var(--status-warning-foreground))',
+  				error: 'hsl(var(--status-error))',
+  				'error-foreground': 'hsl(var(--status-error-foreground))',
+  				info: 'hsl(var(--status-info))',
+  				'info-foreground': 'hsl(var(--status-info-foreground))'
+  			},
+  			surface: {
+  				elevated: 'hsl(var(--surface-elevated))',
+  				hover: 'hsl(var(--surface-hover))'
+  			},
+  			'background-gradient': {
+  				light: 'hsl(var(--background-gradient-light))',
+  				medium: 'hsl(var(--background-gradient-medium))'
   			}
   		},
   		borderRadius: {

@@ -27,7 +27,9 @@ export function StepFinalizacao() {
     dadosFurtoSemDocumentos,
     documentos,
     documentosTerceiros,
-    fotoStepFiles
+    fotoStepFiles,
+    assistenciaAdicional,
+    assistenciasAdicionais
   } = useForm()
 
   const handleEnvioSinistro = async () => {
@@ -47,7 +49,9 @@ export function StepFinalizacao() {
         cnhDataTerceiros,
         crlvDataTerceiros,
         dadosFurtoSemDocumentos,
-        fotoSteps: fotoVeiculoSteps
+        fotoSteps: fotoVeiculoSteps,
+        assistenciaAdicional,
+        assistenciasAdicionais
       }
 
       // Criar FormData para envio
