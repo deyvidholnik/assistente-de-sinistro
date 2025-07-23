@@ -74,12 +74,8 @@ export default function AdminCallsPage() {
 
   const handleGoBack = () => {
     console.log('🔙 Voltando para dashboard admin...')
-    try {
-      router.push('/admin/dashboard')
-    } catch (error) {
-      console.error('❌ Erro no router, usando window.location:', error)
-      window.location.href = '/admin/dashboard'
-    }
+    // Usar router.replace para evitar problemas de navegação
+    router.replace('/admin/dashboard')
   }
 
   const loadCalls = async () => {

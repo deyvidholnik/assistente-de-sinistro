@@ -261,24 +261,33 @@ export default function AdminDashboardPage() {
 
   // Verificar autenticação
   useEffect(() => {
-    // Verificar se está autenticado via contexto em vez de localStorage
-    if (!loading && !isAuthenticated) {
+    // Se ainda está carregando, aguardar
+    if (loading) return
+
+    // Verificar se está autenticado via contexto
+    if (!isAuthenticated) {
+      console.log('🚪 Usuário não autenticado no dashboard, redirecionando para login')
       router.push('/admin/login')
       return
     }
 
-    if (!loading && isAuthenticated && user) {
-      setAdminUser({
-        id: typeof user.id === 'string' ? parseInt(user.id) : (user.id || 0),
-        username: user.email || '',
-        email: user.email || '',
-        full_name: user.full_name || '',
-        user_level: user.user_level || '',
-        last_login: user.last_login || null
-      })
-      // loadMetrics() será chamado pelo useEffect de dateFrom/dateTo quando adminUser for definido
-    }
-  }, [loading, isAuthenticated, user, router])
+    // Se está autenticado mas não tem dados do usuário ainda, aguardar
+    if (!user) return
+
+    // Se já tem adminUser configurado, não reconfigurar
+    if (adminUser && adminUser.email === user.email) return
+
+    // Configurar dados do usuário admin
+    setAdminUser({
+      id: typeof user.id === 'string' ? parseInt(user.id) : (user.id || 0),
+      username: user.email || '',
+      email: user.email || '',
+      full_name: user.full_name || '',
+      user_level: user.user_level || '',
+      last_login: user.last_login || null
+    })
+    // loadMetrics() será chamado pelo useEffect de dateFrom/dateTo quando adminUser for definido
+  }, [loading, isAuthenticated, user, router, adminUser])
 
   const loadMetrics = useCallback(async () => {
     // Evitar chamadas simultâneas

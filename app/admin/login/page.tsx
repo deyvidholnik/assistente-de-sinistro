@@ -35,20 +35,30 @@ export default function AdminLoginPage() {
   const router = useRouter()
   const redirectAttempted = useRef(false)
 
-  // Timeout de segurança para evitar loading infinito
+  // Timeout de segurança para evitar loading infinito - apenas na página de login
   useEffect(() => {
+    if (window.location.pathname !== '/admin/login') return
+
     const timeoutId = setTimeout(() => {
       if (loading) {
-        // Se ainda estiver carregando após 8 segundos, algo está errado
+        // Se ainda estiver carregando após 10 segundos, algo está errado
         setError('Tempo limite de inicialização excedido. Tente fazer login.')
+        setInitialCheckDone(true)
       }
-    }, 8000) // 8 segundos
+    }, 10000) // 10 segundos
 
     return () => clearTimeout(timeoutId)
   }, [loading])
 
   // Verificação imediata do localStorage na montagem do componente
   useEffect(() => {
+    // IMPORTANTE: Só fazer redirecionamento se estivermos REALMENTE na página de login
+    const currentPath = window.location.pathname
+    if (currentPath !== '/admin/login') {
+      setInitialCheckDone(true)
+      return
+    }
+
     // Verificar localStorage imediatamente para usuários já logados
     const checkLocalStorageAuth = () => {
       try {
@@ -70,7 +80,7 @@ export default function AdminLoginPage() {
       return false
     }
     
-    // Verificação imediata
+    // Verificação imediata apenas se estiver na página de login
     const wasRedirected = checkLocalStorageAuth()
     
     // Marcar que a verificação inicial foi feita se não houve redirecionamento
@@ -79,7 +89,7 @@ export default function AdminLoginPage() {
     }
     
     // Se não foi redirecionado via localStorage, aguardar contexto
-    if (!wasRedirected && !loading && isAuthenticated && user) {
+    if (!wasRedirected && !loading && isAuthenticated && user && currentPath === '/admin/login') {
       const targetPath = user.user_level === 'admin' ? '/admin/dashboard' : '/gerente'
       console.log('🚀 Usuário logado detectado via contexto, redirecionando para:', targetPath)
       

@@ -101,6 +101,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         const localUser = checkLocalStorage()
         if (localUser && mounted) {
           setUser(localUser)
+          setLoading(false) // Parar loading se já tem usuário no localStorage
           // Continuar verificação do Supabase em segundo plano para sincronizar
         }
 
@@ -163,6 +164,14 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       // Reduzir logs - apenas quando há mudança significativa
       if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
         console.log('🔄 Auth state change:', event, session?.user?.email)
+      }
+      
+      // Se é apenas um TOKEN_REFRESHED e já temos usuário, não fazer nada
+      if (event === 'TOKEN_REFRESHED' && user && session?.user) {
+        console.log('🔄 Token refreshed, mantendo estado atual')
+        setSession(session)
+        setAuthUser(session.user)
+        return
       }
       
       setSession(session)

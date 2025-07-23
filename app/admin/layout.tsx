@@ -29,17 +29,19 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   // Verificar localStorage como fallback
-  const adminData = localStorage.getItem('adminLogado')
   let hasLocalStorageAuth = false
   
-  if (adminData) {
-    try {
+  try {
+    const adminData = localStorage.getItem('adminLogado')
+    if (adminData) {
       const parsed = JSON.parse(adminData)
       // CRÍTICO: Apenas ADMIN pode acessar /admin/* 
       hasLocalStorageAuth = parsed?.user?.user_level === 'admin'
-    } catch (error) {
-      console.error('❌ Erro ao parsear adminLogado do localStorage:', error)
     }
+  } catch (error) {
+    console.error('❌ Erro ao parsear adminLogado do localStorage:', error)
+    // Se há erro no localStorage, limpá-lo
+    localStorage.removeItem('adminLogado')
   }
 
   // CRÍTICO: Permitir acesso APENAS para ADMIN (não manager)
