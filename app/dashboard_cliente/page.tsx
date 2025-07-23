@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import ProfessionalLoading from '@/components/professional-loading'
 
 import { useTheme } from 'next-themes'
 import { 
@@ -249,14 +250,11 @@ export default function DashboardClientePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center transition-all duration-300 bg-gradient-to-br from-background-gradient-light via-background-gradient-medium to-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mb-4"></div>
-          <p className="transition-colors duration-300 text-foreground">
-            Carregando...
-          </p>
-        </div>
-      </div>
+      <ProfessionalLoading 
+        variant="dashboard"
+        message="Acessando sua área do cliente"
+        submessage="Verificando dados de proteção veicular e sinistros"
+      />
     )
   }
 
