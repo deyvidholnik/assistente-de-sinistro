@@ -7,7 +7,6 @@ import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import ProfessionalLoading from '@/components/professional-loading'
 
 import { useTheme } from 'next-themes'
 import { 
@@ -250,11 +249,57 @@ export default function DashboardClientePage() {
 
   if (loading) {
     return (
-      <ProfessionalLoading 
-        variant="dashboard"
-        message="Acessando sua área do cliente"
-        submessage="Verificando dados de proteção veicular e sinistros"
-      />
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-slate-50 to-blue-50 flex items-center justify-center">
+        <div className="w-full max-w-md mx-auto p-8 bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20">
+          {/* Logo e Branding */}
+          <div className="text-center mb-8">
+            <div className="relative w-20 h-20 mx-auto mb-6">
+              <Image
+                src="/images/logo.png"
+                alt="PV Auto Proteção"
+                width={80}
+                height={80}
+                className="object-contain rounded-full shadow-lg"
+                style={{ width: 'auto', height: 'auto' }}
+              />
+            </div>
+            
+            {/* Nome da empresa */}
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-800 to-blue-800 bg-clip-text text-transparent mb-2">
+              PV Auto Proteção
+            </h1>
+            <p className="text-slate-600 text-sm font-medium tracking-wide">
+              ÁREA DO CLIENTE
+            </p>
+          </div>
+
+          {/* Loading Animation */}
+          <div className="relative mb-8">
+            {/* Spinner corporativo */}
+            <div className="flex justify-center mb-4">
+              <div className="relative">
+                <div className="w-12 h-12 border-4 border-slate-200 rounded-full"></div>
+                <div className="absolute top-0 left-0 w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            </div>
+            
+            {/* Barra de progresso sutil */}
+            <div className="w-full h-0.5 bg-slate-200 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full animate-pulse w-3/4"></div>
+            </div>
+          </div>
+
+          {/* Mensagem */}
+          <div className="text-center">
+            <p className="text-slate-800 font-semibold mb-1">
+              Carregando dados
+            </p>
+            <p className="text-slate-600 text-sm font-medium">
+              Aguarde um momento...
+            </p>
+          </div>
+        </div>
+      </div>
     )
   }
 

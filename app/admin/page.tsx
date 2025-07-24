@@ -16,17 +16,17 @@ export default function AdminRedirectPage() {
         const parsed = JSON.parse(adminData)
         if (parsed.user && parsed.user.user_level === 'admin') {
           // Redirecionar para dashboard
-          router.push('/admin/dashboard')
+          router.replace('/admin/dashboard')
         } else {
           // Redirecionar para login
-          router.push('/admin/login')
+          router.replace('/admin/login')
         }
       } catch (error) {
-        router.push('/admin/login')
+        router.replace('/admin/login')
       }
     } else {
       // Redirecionar para login
-      router.push('/admin/login')
+      router.replace('/admin/login')
     }
   }, [router])
 

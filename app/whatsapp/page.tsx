@@ -193,8 +193,13 @@ export default function AdminWhatsAppPage() {
 
   // Verificar autenticação
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push('/admin/login')
+    // Se ainda está carregando, aguardar
+    if (authLoading) return
+
+    // Se não está autenticado, redirecionar para login
+    if (!isAuthenticated) {
+      console.log('🚪 Usuário não autenticado no WhatsApp, redirecionando para login')
+      router.replace('/admin/login')
       return
     }
   }, [authLoading, isAuthenticated, router])
@@ -343,11 +348,11 @@ export default function AdminWhatsAppPage() {
     switch (fromPage) {
       case 'gerente':
         console.log('🏢 Redirecionando para /gerente')
-        router.push('/gerente')
+        router.replace('/gerente')
         break
       case 'dashboard':
         console.log('📊 Redirecionando para /admin/dashboard')
-        router.push('/admin/dashboard')
+        router.replace('/admin/dashboard')
         break
       default:
         console.log('⬅️ Usando router.back() - fromPage:', fromPage)

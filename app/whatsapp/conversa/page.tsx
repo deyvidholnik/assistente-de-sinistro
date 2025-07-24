@@ -69,8 +69,13 @@ export default function WhatsAppConversaPage() {
 
   // Verificar autenticação
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push('/admin/login')
+    // Se ainda está carregando, aguardar
+    if (authLoading) return
+
+    // Se não está autenticado, redirecionar para login
+    if (!isAuthenticated) {
+      console.log('🚪 Usuário não autenticado na conversa WhatsApp, redirecionando para login')
+      router.replace('/admin/login')
       return
     }
   }, [authLoading, isAuthenticated, router])
@@ -386,7 +391,7 @@ export default function WhatsAppConversaPage() {
     // Preservar o fromPage quando voltar para a lista principal
     const url = fromPage ? `/whatsapp?from=${fromPage}` : '/whatsapp'
     console.log('🔄 Voltando para WhatsApp principal com fromPage preservado:', url)
-    router.push(url)
+    router.replace(url)
   }
 
   const formatarHora = (timestamp: string) => {

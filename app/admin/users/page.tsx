@@ -71,7 +71,8 @@ export default function UsersManagementPage() {
     // Verificar se é admin
     const adminData = localStorage.getItem('adminLogado')
     if (!adminData) {
-      router.push('/admin/login')
+      console.log('🚪 Usuário não autenticado na página de usuários, redirecionando para login')
+      router.replace('/admin/login')
       return
     }
 
@@ -286,7 +287,7 @@ export default function UsersManagementPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 md:space-x-3">
               <Button 
-                onClick={() => router.push('/admin/dashboard')}
+                onClick={() => router.replace('/admin/dashboard')}
                 variant="ghost" 
                 size="sm" 
                 className={`hover:bg-opacity-20 transition-all duration-300 ${isDark ? 'hover:bg-white text-gray-300' : 'hover:bg-blue-50 text-gray-700'}`}
