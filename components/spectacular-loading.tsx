@@ -26,8 +26,6 @@ export default function SpectacularLoading({ onComplete }: SpectacularLoadingPro
     '🚀 Preparando para decolagem!'
   ]
 
-  const carEmojis = ['🚗', '🚙', '🚕', '🚌', '🚚', '🏎️', '🚓', '🚑']
-  const funEmojis = ['🌟', '⭐', '✨', '💫', '🎉', '🎊', '🔥', '💎']
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -102,65 +100,8 @@ export default function SpectacularLoading({ onComplete }: SpectacularLoadingPro
         ))}
       </div>
 
-      {/* Floating Cars */}
-      <AnimatePresence>
-        {showCars && (
-          <div className="absolute inset-0 pointer-events-none">
-            {carEmojis.map((car, i) => (
-              <motion.div
-                key={i}
-                className="absolute text-4xl"
-                initial={{ x: -100, y: Math.random() * window.innerHeight }}
-                animate={{ 
-                  x: window.innerWidth + 100,
-                  y: Math.random() * window.innerHeight,
-                  rotate: [0, 10, -10, 0]
-                }}
-                transition={{
-                  duration: Math.random() * 3 + 4,
-                  repeat: Infinity,
-                  delay: i * 0.5,
-                  ease: "easeInOut"
-                }}
-              >
-                {car}
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </AnimatePresence>
+    
 
-      {/* Floating Fun Emojis */}
-      <AnimatePresence>
-        {showEmojis && (
-          <div className="absolute inset-0 pointer-events-none">
-            {funEmojis.map((emoji, i) => (
-              <motion.div
-                key={i}
-                className="absolute text-2xl"
-                initial={{ 
-                  x: Math.random() * window.innerWidth,
-                  y: window.innerHeight + 50,
-                  scale: 0
-                }}
-                animate={{
-                  y: -50,
-                  scale: [0, 1.5, 1, 0],
-                  rotate: [0, 180, 360],
-                  x: Math.random() * window.innerWidth
-                }}
-                transition={{
-                  duration: Math.random() * 4 + 3,
-                  repeat: Infinity,
-                  delay: Math.random() * 2
-                }}
-              >
-                {emoji}
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* Main Content */}
       <div className="text-center z-10 px-8">
@@ -315,7 +256,7 @@ export default function SpectacularLoading({ onComplete }: SpectacularLoadingPro
         </div>
 
         {/* Final Message */}
-        {progress >= 90 && (
+        {progress >= 80 && (
           <motion.div
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}

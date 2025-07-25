@@ -678,10 +678,10 @@ export default function WhatsAppConversaPage() {
   )
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex justify-center">
-      <div className="w-full max-w-[800px] flex flex-col h-screen relative">
+    <div className="min-h-screen bg-gray-900 text-white flex justify-center overflow-hidden touch-pan-y">
+      <div className="w-full max-w-[800px] flex flex-col relative" style={{ height: '100dvh', maxHeight: '100dvh' }}>
         {/* Header */}
-        <div className="bg-gray-800 border-b border-gray-700 p-4">
+        <div className="bg-gray-800 border-b border-gray-700 p-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Button
@@ -745,7 +745,7 @@ export default function WhatsAppConversaPage() {
 
         {/* Separador Fixo no Topo */}
         {separadorFixo && (
-          <div className="sticky top-0 z-20 py-2">
+          <div className="sticky top-0 z-20 py-2 flex-shrink-0">
             <div className="flex justify-center">
               <div className="bg-gray-800 text-gray-300 px-4 py-1 rounded-full text-sm font-medium shadow-lg">
                 {separadorFixo}
@@ -758,8 +758,17 @@ export default function WhatsAppConversaPage() {
         <div 
           ref={messagesContainerRef}
           onScroll={handleScroll}
-          className="flex-1 overflow-y-auto p-4 space-y-4" 
-          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23374151' fill-opacity='0.1'%3E%3Cpath d='m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` }}
+          className="p-4 space-y-4"
+          style={{ 
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23374151' fill-opacity='0.1'%3E%3Cpath d='m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            minHeight: 0,
+            // ✅ MOBILE: Altura responsiva para garantir header e footer visíveis simultaneamente
+            // Header fixo + Footer fixo + margem de segurança para mobile
+            height: 'calc(100dvh - 180px)',
+            maxHeight: 'calc(100dvh - 180px)',
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch' // iOS smooth scrolling
+          }}
         >
           {filteredMessages.length === 0 && hasInitialLoad ? (
             <div className="flex justify-center py-8">
@@ -864,7 +873,7 @@ export default function WhatsAppConversaPage() {
 
         {/* Botão para ir às mensagens mais recentes */}
         {hasNewMessages && (
-          <div className="absolute bottom-20 right-4 z-10">
+          <div className="absolute bottom-32 right-4 z-10">
             <Button
               onClick={goToLatestMessages}
               className="bg-green-600 hover:bg-green-700 text-white rounded-full p-3 shadow-lg animate-pulse"
@@ -879,7 +888,7 @@ export default function WhatsAppConversaPage() {
         )}
 
         {/* Input de Mensagem */}
-        <div className="bg-gray-800 border-t border-gray-700 p-4">
+        <div className="bg-gray-800 border-t border-gray-700 p-4 flex-shrink-0">
           <div className="flex items-center space-x-3">
             {/* Input de arquivo oculto */}
             <input
