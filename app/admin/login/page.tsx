@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
 import { useTheme } from 'next-themes'
 import { useAdminAuth } from '@/context/admin-auth-context'
 import { 
@@ -19,7 +18,8 @@ import {
   Moon,
   AlertCircle,
   Loader2,
-  Mail
+  Mail,
+  ArrowLeft
 } from 'lucide-react'
 
 export default function AdminLoginPage() {
@@ -216,8 +216,8 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen transition-all duration-300 bg-gradient-to-br from-background-gradient-light via-background-gradient-medium to-background">
-      {/* Header Simplificado */}
-      <header className="backdrop-blur-sm border-b transition-all duration-300 bg-card/80 border-border">
+      {/* Header */}
+      <header className="backdrop-blur-sm border-b sticky top-0 z-50 transition-all duration-300 bg-card/80 border-border">
         <div className="container mx-auto px-4 py-3 md:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 md:space-x-3">
@@ -225,33 +225,35 @@ export default function AdminLoginPage() {
                 <Image
                   src="/images/logo.png"
                   alt="PV Auto Proteção"
-                  fill
-                  className="object-contain"
+                  width={56}
+                  height={56}
+                  className="object-contain rounded-full"
+                  style={{ width: 'auto', height: 'auto' }}
                 />
               </div>
               <div>
                 <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">
                   PV Auto Proteção
                 </h1>
-                <p className="text-xs md:text-sm text-muted-foreground">
-                  Sistema de Gestão
-                </p>
+                <p className={`text-xs md:text-sm transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Sistema de Gestão</p>
               </div>
             </div>
-            
-            <div className="flex items-center space-x-4">
-              <Badge variant="secondary" className="hidden md:flex bg-brand-primary text-brand-primary-foreground">
-                <Shield className="w-3 h-3 mr-1" />
-                Sistema Interno
-              </Badge>
-              
+            <div className="flex items-center space-x-2 md:space-x-4">
               <Button
                 variant="ghost"
-                size="icon"
+                size="sm"
                 onClick={() => setTheme(isDark ? 'light' : 'dark')}
                 className="hover:bg-surface-hover hover:text-accent-foreground transition-all duration-300"
               >
-                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </Button>
+              <Button 
+                variant="ghost" 
+                onClick={() => router.push('/')}
+                className="hover:bg-surface-hover hover:text-accent-foreground transition-all duration-300"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Voltar
               </Button>
             </div>
           </div>
@@ -362,7 +364,7 @@ export default function AdminLoginPage() {
 
           <div className="mt-6 text-center">
             <p className="text-xs text-muted-foreground">
-              © 2024 PV Auto Proteção. Todos os direitos reservados.
+              © 2025 PV Auto Proteção. Todos os direitos reservados.
             </p>
           </div>
         </div>

@@ -235,7 +235,7 @@ export default function LoginClientePage() {
                 </Link>
               </div>
             <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-              © 2024 PV Auto Proteção. Todos os direitos reservados.
+              © 2025 PV Auto Proteção. Todos os direitos reservados.
             </p>
           </div>
         </div>

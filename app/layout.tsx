@@ -8,6 +8,7 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from '@/components/ui/toaster'
 import ClientOnly from '@/components/client-only'
 import AppLoadingWrapper from '@/components/app-loading-wrapper'
+import ThemeWrapper from '@/components/theme-wrapper'
 
 export const metadata: Metadata = {
   title: 'PV Auto Proteção',
@@ -22,25 +23,66 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  function getThemePreference() {
+                    if (typeof localStorage !== 'undefined' && localStorage.getItem('pv-auto-theme')) {
+                      const saved = localStorage.getItem('pv-auto-theme')
+                      if (saved === 'system') {
+                        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+                      }
+                      return saved
+                    }
+                    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+                  }
+                  
+                  const theme = getThemePreference()
+                  const isDark = theme === 'dark'
+                  
+                  if (isDark) {
+                    document.documentElement.classList.add('dark')
+                  } else {
+                    document.documentElement.classList.remove('dark')
+                  }
+                  
+                  document.documentElement.style.colorScheme = theme
+                } catch (error) {
+                  // Fallback para dark mode se houver erro
+                  document.documentElement.classList.add('dark')
+                  document.documentElement.style.colorScheme = 'dark'
+                }
+              })()
+            `,
+          }}
+        />
+      </head>
       <body suppressHydrationWarning={true}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
+          defaultTheme="dark"
+          enableSystem={true}
+          disableTransitionOnChange={false}
+          storageKey="pv-auto-theme"
+          themes={['light', 'dark', 'system']}
         >
-          <AuthProvider>
-            <AdminAuthProvider>
-              <FormProvider>
-                <ClientOnly>
-                  <AppLoadingWrapper>
-                    {children}
-                  </AppLoadingWrapper>
-                  <Toaster />
-                </ClientOnly>
-              </FormProvider>
-            </AdminAuthProvider>
-          </AuthProvider>
+          <ThemeWrapper>
+            <AuthProvider>
+              <AdminAuthProvider>
+                <FormProvider>
+                  <ClientOnly>
+                    <AppLoadingWrapper>
+                      {children}
+                    </AppLoadingWrapper>
+                    <Toaster />
+                  </ClientOnly>
+                </FormProvider>
+              </AdminAuthProvider>
+            </AuthProvider>
+          </ThemeWrapper>
         </ThemeProvider>
       </body>
     </html>

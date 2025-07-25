@@ -471,7 +471,7 @@ export default function LandingPage() {
           </div>
           
           <div className="border-t border-gray-800 mt-6 md:mt-8 pt-6 md:pt-8 text-center text-gray-400">
-            <p className="text-sm md:text-base">&copy; 2024 PV Auto Proteção. Todos os direitos reservados.</p>
+            <p className="text-sm md:text-base">&copy; 2025 PV Auto Proteção. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>
