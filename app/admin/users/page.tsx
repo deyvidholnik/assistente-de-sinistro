@@ -27,7 +27,8 @@ import {
   Loader2,
   ArrowLeft,
   Sun,
-  Moon
+  Moon,
+  Lock
 } from 'lucide-react'
 
 interface UserInfo {
@@ -324,14 +325,7 @@ export default function UsersManagementPage() {
                 {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </Button>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-                className={`hover:bg-opacity-20 transition-all duration-300 ${isDark ? 'hover:bg-white text-gray-300' : 'hover:bg-blue-50 text-gray-700'}`}
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
+           
             </div>
           </div>
         </div>
@@ -421,12 +415,22 @@ export default function UsersManagementPage() {
                 </div>
                 
                 <div>
-                  <Label htmlFor="email">Email</Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="email">Email</Label>
+                    {editingUser && (
+                      <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Lock className="w-3 h-3" />
+                        (não editável)
+                      </span>
+                    )}
+                  </div>
                   <Input
                     id="email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    disabled={!!editingUser}
+                    className={editingUser ? "bg-muted/50 cursor-not-allowed text-muted-foreground" : ""}
                     required
                   />
                 </div>

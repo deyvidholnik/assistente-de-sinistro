@@ -5,7 +5,7 @@ import { Loader2, Shield } from 'lucide-react'
 import { AdminAuthProvider, useAdminAuth } from '@/context/admin-auth-context'
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
-  const { loading, isAuthenticated, isAdmin, user } = useAdminAuth()
+  const { loading, isAuthenticated, user, initializing } = useAdminAuth()
   const pathname = usePathname()
 
   // Não verificar autenticação na página de login
@@ -13,8 +13,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     return <>{children}</>
   }
 
-  // Mostrar loading enquanto verifica autenticação
-  if (loading) {
+  // ✅ CORRIGIDO: Mostrar loading enquanto verifica autenticação ou inicializa
+  if (loading || initializing) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background-gradient-light via-background-gradient-medium to-background">
         <div className="text-center">
@@ -44,7 +44,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('adminLogado')
   }
 
-  // CRÍTICO: Permitir acesso APENAS para ADMIN (não manager)
+  // ✅ CRÍTICO: Permitir acesso APENAS para ADMIN (não manager)
+  const isAdmin = user?.user_level === 'admin'
   const shouldAllowAccess = (isAuthenticated && isAdmin) || hasLocalStorageAuth
 
   // Bloquear renderização se não autenticado em nenhum dos sistemas

@@ -1,327 +1,336 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { useRouter } from 'next/navigation'
 
-export interface AdminUser {
+interface UserInfo {
   id: number
   username: string
   email: string
-  user_level: string
   full_name: string
+  user_level: 'admin' | 'manager' | 'user'
   created_at: string
   updated_at: string
-  last_login: string | null
+  last_login?: string
   is_active: boolean
-  uid_auth: string
+  uid_auth?: string
 }
 
 interface AdminAuthContextType {
-  user: AdminUser | null
+  user: UserInfo | null
   authUser: User | null
   session: Session | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<void>
-  signOut: () => Promise<void>
+  // ✅ NOVO: Estado de inicialização para evitar redirects prematuros
+  initializing: boolean
+  // ✅ CORRIGIDO: isAuthenticated agora considera localStorage
   isAuthenticated: boolean
-  isAdmin: boolean
+  signIn: (email: string, password: string) => Promise<UserInfo>
+  signOut: () => Promise<void>
+  refreshUser: () => Promise<void>
 }
 
-const AdminAuthContext = createContext<AdminAuthContextType | null>(null)
+const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined)
 
 export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AdminUser | null>(null)
+  const [user, setUser] = useState<UserInfo | null>(null)
   const [authUser, setAuthUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
+  // ✅ NOVO: Controle de inicialização
+  const [initializing, setInitializing] = useState(true)
+  
+  const mounted = useRef(true)
+  const router = useRouter()
 
-  // Função para buscar dados do usuário - memoizada para evitar re-criação
-  const fetchUserInfo = useCallback(async (userId: string) => {
+  // ✅ CORRIGIDO: isAuthenticated considera localStorage + inicialização
+  const isAuthenticated = !initializing && !!user && (user.user_level === 'admin' || user.user_level === 'manager')
+
+  // Buscar informações do usuário
+  const fetchUserInfo = async (uid: string): Promise<UserInfo | null> => {
     try {
       const { data: userInfo, error } = await supabase
         .from('user_info')
         .select('*')
-        .eq('uid_auth', userId)
-        .eq('is_active', true)
-        .maybeSingle() // Usar maybeSingle() ao invés de single() para permitir resultados vazios
-      
+        .eq('uid_auth', uid)
+        .maybeSingle()
+
       if (error) {
-        console.error('❌ Erro ao buscar user_info:', error)
+        console.error('❌ Erro ao buscar informações do usuário:', error)
         return null
       }
-      
-      // Se não encontrou usuário, não é erro - apenas não é admin/manager
+
       if (!userInfo) {
+        console.log('⚠️ Usuário não encontrado na tabela user_info')
         return null
       }
-      
-      if (userInfo && (userInfo.user_level === 'admin' || userInfo.user_level === 'manager')) {
-        return userInfo
-      }
-      
-      return null
-    } catch (err) {
-      console.error('❌ Erro crítico ao processar dados do usuário:', err)
-      return null
-    }
-  }, [])
 
-  useEffect(() => {
-    let mounted = true
-
-    // Timeout de segurança para evitar loading infinito
-    const loadingTimeout = setTimeout(() => {
-      if (mounted && loading) {
-        setLoading(false)
+      if (userInfo.user_level !== 'admin' && userInfo.user_level !== 'manager') {
+        console.log('⚠️ Usuário não tem permissão de admin/manager')
+        return null
       }
-    }, 5000) // 5 segundos
 
-    // Verificar localStorage primeiro para detecção mais rápida
-    const checkLocalStorage = () => {
-      try {
-        const adminData = localStorage.getItem('adminLogado')
-        if (adminData) {
-          const parsed = JSON.parse(adminData)
-          if (parsed?.user && (parsed.user.user_level === 'admin' || parsed.user.user_level === 'manager')) {
-            console.log('⚡ Usuário detectado via localStorage (inicialização rápida)')
-            return parsed.user
-          }
-        }
-      } catch (error) {
-        console.error('❌ Erro ao verificar localStorage na inicialização:', error)
-      }
+      return userInfo
+    } catch (error) {
+      console.error('❌ Erro na busca de informações do usuário:', error)
       return null
     }
+  }
 
-    // Verificar sessão atual na inicialização
-    const checkSession = async () => {
-      try {
-        // Verificação rápida via localStorage primeiro
-        const localUser = checkLocalStorage()
-        if (localUser && mounted) {
-          setUser(localUser)
-          setLoading(false) // Parar loading se já tem usuário no localStorage
-          // Continuar verificação do Supabase em segundo plano para sincronizar
-        }
+  // ✅ NOVO: Verificação segura do localStorage
+  const getLocalStorageUser = (): UserInfo | null => {
+    try {
+      if (typeof window === 'undefined') return null
+      
+      const adminData = localStorage.getItem('adminLogado')
+      if (!adminData) return null
 
-        const { data: { session } } = await supabase.auth.getSession()
+      const parsed = JSON.parse(adminData)
+      if (parsed?.user && (parsed.user.user_level === 'admin' || parsed.user.user_level === 'manager')) {
+        return parsed.user
+      }
+    } catch (error) {
+      console.error('❌ Erro ao verificar localStorage:', error)
+      localStorage.removeItem('adminLogado')
+    }
+    return null
+  }
+
+  // ✅ NOVO: Verificação inicial sem race conditions
+  const initializeAuth = async () => {
+    console.log('🚀 Inicializando autenticação admin...')
+    
+    try {
+      // 1. Verificar localStorage primeiro (rápido)
+      const localUser = getLocalStorageUser()
+      if (localUser) {
+        console.log('⚡ Usuário detectado via localStorage')
+        setUser(localUser)
+        // ✅ IMPORTANTE: Marcar como não inicializando para permitir acesso
+        setInitializing(false)
         
-        if (!mounted) return
-        
-        if (session?.user) {
-          setAuthUser(session.user)
-          setSession(session)
-          
-          // Buscar informações do usuário
-          const userInfo = await fetchUserInfo(session.user.id)
-          
-          if (!mounted) return
-          
-          // Se usuário está logado mas não tem permissões, fazer logout
-          if (!userInfo) {
-            await supabase.auth.signOut()
-            localStorage.removeItem('adminLogado') // Limpar localStorage também
-            setUser(null)
-            setAuthUser(null)
-            setSession(null)
-          } else {
-            setUser(userInfo)
-            // Sincronizar localStorage com dados atualizados
-            const adminData = {
-              user: userInfo,
-              timestamp: new Date().toISOString()
+        // 2. Verificar sessão Supabase em background (sem bloquear)
+        setTimeout(async () => {
+          try {
+            const { data: { session } } = await supabase.auth.getSession()
+            if (session?.user) {
+              console.log('🔄 Sincronizando com sessão Supabase')
+              setAuthUser(session.user)
+              setSession(session)
+              
+              // Atualizar dados do usuário se necessário
+              const userInfo = await fetchUserInfo(session.user.id)
+              if (userInfo && mounted.current) {
+                setUser(userInfo)
+                localStorage.setItem('adminLogado', JSON.stringify({ 
+                  user: userInfo, 
+                  timestamp: Date.now() 
+                }))
+              }
             }
-            localStorage.setItem('adminLogado', JSON.stringify(adminData))
+          } catch (error) {
+            console.error('❌ Erro na sincronização background:', error)
           }
-        } else {
-          // Se não há sessão no Supabase, limpar localStorage também
-          localStorage.removeItem('adminLogado')
-          setUser(null)
-          setAuthUser(null)
-          setSession(null)
-        }
-      } catch (error) {
-        console.error('❌ Erro ao verificar sessão admin:', error)
-        if (mounted) {
-          setUser(null)
-          setAuthUser(null)
-          setSession(null)
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false)
-        }
-      }
-    }
-
-    checkSession()
-
-    // Escutar mudanças de autenticação
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return
-      
-      // Reduzir logs - apenas quando há mudança significativa
-      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-        console.log('🔄 Auth state change:', event, session?.user?.email)
-      }
-      
-      // Se é apenas um TOKEN_REFRESHED e já temos usuário, não fazer nada
-      if (event === 'TOKEN_REFRESHED' && user && session?.user) {
-        console.log('🔄 Token refreshed, mantendo estado atual')
-        setSession(session)
-        setAuthUser(session.user)
+        }, 100)
+        
         return
       }
+
+      // 3. Se não há localStorage, verificar sessão Supabase
+      const { data: { session } } = await supabase.auth.getSession()
       
-      setSession(session)
-      setAuthUser(session?.user || null)
-      
-      let userInfo = null
       if (session?.user) {
-        userInfo = await fetchUserInfo(session.user.id)
-        if (mounted) {
-          // Se usuário está logado mas não tem permissões, fazer logout
-          if (!userInfo) {
-            console.log('🚪 Usuário sem permissões admin/manager, fazendo logout automático')
-            await supabase.auth.signOut()
-            setUser(null)
-            setAuthUser(null)
-            setSession(null)
-            return
-          }
-          
+        console.log('🔐 Sessão Supabase detectada')
+        setAuthUser(session.user)
+        setSession(session)
+
+        const userInfo = await fetchUserInfo(session.user.id)
+        if (userInfo && mounted.current) {
           setUser(userInfo)
-        }
-      } else {
-        if (mounted) {
-          setUser(null)
+          localStorage.setItem('adminLogado', JSON.stringify({ 
+            user: userInfo, 
+            timestamp: Date.now() 
+          }))
         }
       }
-      
-      if (mounted) {
-        setLoading(false)
-        console.log('🏁 Auth state change finalizado:', { 
-          isAuthenticated: !!userInfo && !!session?.user,
-          userLevel: userInfo?.user_level 
-        })
-      }
-    })
 
-    return () => {
-      mounted = false
-      clearTimeout(loadingTimeout)
-      subscription.unsubscribe()
+    } catch (error) {
+      console.error('❌ Erro na inicialização da autenticação:', error)
+    } finally {
+      // ✅ SEMPRE marcar inicialização como completa
+      if (mounted.current) {
+        setInitializing(false)
+      }
     }
-  }, [fetchUserInfo])
+  }
 
-  const signIn = useCallback(async (email: string, password: string) => {
+  // Login
+  const signIn = async (email: string, password: string): Promise<UserInfo> => {
     setLoading(true)
     try {
-      console.log('🔐 Fazendo login direto no cliente via Supabase Auth...')
-      
-      // Fazer login direto no cliente
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       })
 
-      if (authError || !authData.user) {
-        console.error('❌ Erro de autenticação:', authError)
-        throw new Error(authError?.message || 'Credenciais inválidas')
+      if (error) {
+        // ✅ Traduzir mensagens de erro para português
+        let errorMessage = error.message
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = 'Email ou senha incorretos'
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = 'Email não confirmado'
+        } else if (error.message.includes('Too many requests')) {
+          errorMessage = 'Muitas tentativas de login. Tente novamente em alguns minutos'
+        } else if (error.message.includes('User not found')) {
+          errorMessage = 'Usuário não encontrado'
+        } else if (error.message.includes('signup_disabled')) {
+          errorMessage = 'Cadastro de novos usuários desabilitado'
+        } else if (error.message.includes('email_address_invalid')) {
+          errorMessage = 'Endereço de email inválido'
+        } else if (error.message.includes('password_too_short')) {
+          errorMessage = 'Senha muito curta'
+        } else if (error.message.includes('Network request failed')) {
+          errorMessage = 'Erro de conexão. Verifique sua internet'
+        } else if (error.message.includes('timeout')) {
+          errorMessage = 'Tempo limite de conexão excedido'
+        }
+        throw new Error(errorMessage)
       }
+      
+      if (!data.user) throw new Error('Usuário não encontrado')
 
-      console.log('✅ Login no Supabase Auth bem-sucedido')
-
-      // Buscar informações do usuário na tabela user_info
-      const userInfo = await fetchUserInfo(authData.user.id)
-
+      const userInfo = await fetchUserInfo(data.user.id)
       if (!userInfo) {
-        console.error('❌ Usuário não encontrado na tabela user_info')
         await supabase.auth.signOut()
-        throw new Error('Usuário não encontrado no sistema')
+        throw new Error('Usuário não tem permissões de administrador')
       }
 
-      // Verificar se tem permissão de admin ou manager
-      if (userInfo.user_level !== 'admin' && userInfo.user_level !== 'manager') {
-        console.error('❌ Usuário sem permissão de acesso:', userInfo.user_level)
-        await supabase.auth.signOut()
-        throw new Error('Usuário sem permissão de acesso administrativo')
-      }
-
-      console.log('✅ Login bem-sucedido para:', userInfo.user_level)
-      
-      // Salvar no localStorage para compatibilidade com dashboard
-      const adminData = {
-        user: userInfo,
-        timestamp: new Date().toISOString()
-      }
-      
-      console.log('💾 Salvando dados no localStorage:', adminData)
-      localStorage.setItem('adminLogado', JSON.stringify(adminData))
-      
-      // Verificar se foi salvo corretamente
-      const savedData = localStorage.getItem('adminLogado')
-      console.log('🔍 Dados salvos verificados:', savedData ? JSON.parse(savedData) : 'NULL')
-      
-      console.log('💾 Dados salvos no localStorage')
-
-      // Atualizar contexto
+      // Atualizar estados
+      setAuthUser(data.user)
+      setSession(data.session)
       setUser(userInfo)
-      setAuthUser(authData.user)
-      setSession(authData.session)
 
-      console.log('🎯 Contexto atualizado - isAuthenticated será true agora')
+      // Salvar no localStorage
+      localStorage.setItem('adminLogado', JSON.stringify({ 
+        user: userInfo, 
+        timestamp: Date.now() 
+      }))
+
+      console.log('✅ Login admin realizado com sucesso')
+      return userInfo
 
     } catch (error: any) {
-      console.error('❌ Erro no login:', error)
+      console.error('❌ Erro no login admin:', error)
       throw error
     } finally {
       setLoading(false)
     }
-  }, [])
+  }
 
-  const signOut = useCallback(async () => {
+  // Logout
+  const signOut = async (): Promise<void> => {
     setLoading(true)
     try {
-      console.log('🚪 Fazendo logout completo...')
-      
-      // Limpar localStorage primeiro
-      localStorage.removeItem('adminLogado')
-      console.log('🗑️ localStorage limpo')
-      
-      // Limpar estado imediatamente
+      // Limpar estados
       setUser(null)
       setAuthUser(null)
       setSession(null)
-      console.log('🧹 Estado local limpo')
       
-      // Logout do Supabase por último
+      // Limpar localStorage
+      localStorage.removeItem('adminLogado')
+      localStorage.removeItem('clienteLogado')
+      
+      // Fazer logout no Supabase
       await supabase.auth.signOut()
-      console.log('🚪 Sessão Supabase encerrada')
       
-      console.log('✅ Logout completo realizado com sucesso')
+      console.log('✅ Logout realizado com sucesso')
+      
+      // Redirecionar
+      router.replace('/admin/login')
+      
     } catch (error) {
-      console.error('❌ Erro ao fazer logout:', error)
-      // Mesmo com erro, garantir que o estado local está limpo
-      setUser(null)
-      setAuthUser(null)
-      setSession(null)
-      localStorage.removeItem('adminLogado')
+      console.error('❌ Erro no logout:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  // Refresh user
+  const refreshUser = async (): Promise<void> => {
+    if (!authUser) return
+
+    try {
+      const userInfo = await fetchUserInfo(authUser.id)
+      if (userInfo && mounted.current) {
+        setUser(userInfo)
+        localStorage.setItem('adminLogado', JSON.stringify({ 
+          user: userInfo, 
+          timestamp: Date.now() 
+        }))
+      }
+    } catch (error) {
+      console.error('❌ Erro ao atualizar usuário:', error)
+    }
+  }
+
+  // Inicialização
+  useEffect(() => {
+    mounted.current = true
+    initializeAuth()
+    
+    return () => {
+      mounted.current = false
+    }
   }, [])
 
-  const value = {
+  // ✅ CORRIGIDO: Listener de mudanças de auth mais robusto
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔄 Auth state change:', event)
+      
+      if (!mounted.current) return
+
+      if (event === 'SIGNED_OUT') {
+        setUser(null)
+        setAuthUser(null)
+        setSession(null)
+        localStorage.removeItem('adminLogado')
+      } else if (event === 'SIGNED_IN' && session?.user) {
+        setAuthUser(session.user)
+        setSession(session)
+        
+        // Buscar informações do usuário apenas se não existir
+        if (!user) {
+          const userInfo = await fetchUserInfo(session.user.id)
+          if (userInfo && mounted.current) {
+            setUser(userInfo)
+            localStorage.setItem('adminLogado', JSON.stringify({ 
+              user: userInfo, 
+              timestamp: Date.now() 
+            }))
+          }
+        }
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [user]) // ✅ Dependência do user para evitar loops
+
+  const value: AdminAuthContextType = {
     user,
     authUser,
     session,
     loading,
+    initializing,
+    isAuthenticated,
     signIn,
     signOut,
-    isAuthenticated: !!user && !!authUser,
-    isAdmin: user?.user_level === 'admin' // CRÍTICO: APENAS ADMIN pode acessar /admin/*
+    refreshUser
   }
 
   return (
@@ -333,7 +342,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAdminAuth() {
   const context = useContext(AdminAuthContext)
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useAdminAuth deve ser usado dentro de AdminAuthProvider')
   }
   return context

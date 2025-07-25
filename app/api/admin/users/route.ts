@@ -149,45 +149,67 @@ export async function PUT(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Preparar dados para atualização
+    // Buscar dados atuais do usuário para comparar o email
+    const { data: currentUser, error: currentUserError } = await supabase
+      .from('user_info')
+      .select('email, uid_auth')
+      .eq('id', id)
+      .single()
+
+    if (currentUserError) {
+      return NextResponse.json({
+        success: false,
+        error: 'Usuário não encontrado'
+      }, { status: 404 })
+    }
+
+    // Preparar dados para atualização (não incluir email se não mudou)
     const updateData: any = {
       username,
-      email,
       user_level,
       full_name,
       updated_at: new Date().toISOString()
     }
 
-    // Se senha foi fornecida, atualizar no auth também
-    if (password && password.trim() !== '') {
-      // Buscar uid_auth do usuário
-      const { data: userInfo, error: fetchError } = await supabase
-        .from('user_info')
-        .select('uid_auth')
-        .eq('id', id)
-        .single()
+    // ✅ Só incluir email se realmente mudou
+    if (email && email !== currentUser.email) {
+      updateData.email = email
+      console.log('📧 Email será atualizado de', currentUser.email, 'para', email)
+    } else {
+      console.log('📧 Email não mudou, mantendo:', currentUser.email)
+    }
 
-      if (fetchError) {
-        return NextResponse.json({
-          success: false,
-          error: 'Usuário não encontrado'
-        }, { status: 404 })
-      }
+    // Atualizar no Supabase Auth se necessário (senha ou email)
+    if ((password && password.trim() !== '') || (email && email !== currentUser.email)) {
+      if (currentUser.uid_auth) {
+        const authUpdateData: any = {}
+        
+        // Adicionar senha se fornecida
+        if (password && password.trim() !== '') {
+          authUpdateData.password = password
+          console.log('🔑 Senha será atualizada no Auth')
+        }
+        
+        // Adicionar email se mudou
+        if (email && email !== currentUser.email) {
+          authUpdateData.email = email
+          console.log('📧 Email será atualizado no Auth:', currentUser.email, '->', email)
+        }
 
-      // Atualizar senha no auth
-      if (userInfo.uid_auth) {
         const { error: authError } = await getSupabaseAdmin().auth.admin.updateUserById(
-          userInfo.uid_auth,
-          { password }
+          currentUser.uid_auth,
+          authUpdateData
         )
 
         if (authError) {
-          console.error('Erro ao atualizar senha:', authError)
+          console.error('❌ Erro ao atualizar no Supabase Auth:', authError)
           return NextResponse.json({
             success: false,
-            error: 'Erro ao atualizar senha: ' + authError.message
+            error: 'Erro ao atualizar autenticação: ' + authError.message
           }, { status: 500 })
         }
+        
+        console.log('✅ Dados atualizados no Supabase Auth com sucesso')
       }
     }
 

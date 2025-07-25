@@ -191,7 +191,7 @@ export default function CallDetailsPage() {
             className="mb-6 flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Voltar para Chamadas
+            Voltar
           </Button>
           
           <Card className="border-red-200 bg-red-50">
@@ -216,7 +216,7 @@ export default function CallDetailsPage() {
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Voltar para Chamadas
+            Voltar
           </Button>
           
           <h1 className={`text-2xl font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>

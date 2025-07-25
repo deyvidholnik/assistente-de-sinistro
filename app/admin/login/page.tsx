@@ -31,7 +31,7 @@ export default function AdminLoginPage() {
   const [initialCheckDone, setInitialCheckDone] = useState(false)
   
   const { theme, setTheme } = useTheme()
-  const { isAuthenticated, user, loading, signIn, signOut } = useAdminAuth()
+  const { isAuthenticated, user, loading, initializing, signIn, signOut } = useAdminAuth()
   const router = useRouter()
   const redirectAttempted = useRef(false)
 
@@ -88,8 +88,8 @@ export default function AdminLoginPage() {
       setInitialCheckDone(true)
     }
     
-    // Se não foi redirecionado via localStorage, aguardar contexto
-    if (!wasRedirected && !loading && isAuthenticated && user && currentPath === '/admin/login') {
+    // ✅ CORRIGIDO: Aguardar inicialização antes de verificar autenticação
+    if (!wasRedirected && !initializing && !loading && isAuthenticated && user && currentPath === '/admin/login') {
       const targetPath = user.user_level === 'admin' ? '/admin/dashboard' : '/gerente'
       console.log('🚀 Usuário logado detectado via contexto, redirecionando para:', targetPath)
       
@@ -103,7 +103,7 @@ export default function AdminLoginPage() {
         }
       }, 1000) // 1 segundo de timeout
     }
-  }, [loading, isAuthenticated, user, router])
+  }, [loading, initializing, isAuthenticated, user, router])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()

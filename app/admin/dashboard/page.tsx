@@ -127,7 +127,7 @@ export default function AdminDashboardPage() {
   const [loadingDetalhes, setLoadingDetalhes] = useState(false)
   
   const { theme, setTheme } = useTheme()
-  const { signOut, loading, isAuthenticated, user } = useAdminAuth()
+  const { signOut, loading, isAuthenticated, user, initializing } = useAdminAuth()
 
   // Função simples para formatar datas
   const formatarData = (data: string) => {
@@ -259,23 +259,37 @@ export default function AdminDashboardPage() {
   // Ref para evitar duplas chamadas
   const loadingRef = useRef(false)
 
-  // Verificar autenticação
+  // ✅ CORRIGIDO: Verificar autenticação sem race conditions
   useEffect(() => {
-    // Se ainda está carregando, aguardar
-    if (loading) return
+    // ✅ IMPORTANTE: Aguardar inicialização completa
+    if (initializing) {
+      console.log('⏳ Aguardando inicialização da autenticação...')
+      return
+    }
 
-    // Verificar se está autenticado via contexto
+    // ✅ IMPORTANTE: Aguardar loading também
+    if (loading) {
+      console.log('⏳ Aguardando carregamento...')
+      return
+    }
+
+    // ✅ Verificar se está autenticado APÓS inicialização
     if (!isAuthenticated) {
       console.log('🚪 Usuário não autenticado no dashboard, redirecionando para login')
-      router.push('/admin/login')
+      router.replace('/admin/login')
       return
     }
 
     // Se está autenticado mas não tem dados do usuário ainda, aguardar
-    if (!user) return
+    if (!user) {
+      console.log('⏳ Aguardando dados do usuário...')
+      return
+    }
 
     // Se já tem adminUser configurado, não reconfigurar
     if (adminUser && adminUser.email === user.email) return
+
+    console.log('✅ Configurando dados do usuário admin:', user.username)
 
     // Configurar dados do usuário admin
     setAdminUser({
@@ -287,7 +301,7 @@ export default function AdminDashboardPage() {
       last_login: user.last_login || null
     })
     // loadMetrics() será chamado pelo useEffect de dateFrom/dateTo quando adminUser for definido
-  }, [loading, isAuthenticated, user, router, adminUser])
+  }, [loading, isAuthenticated, user, router, adminUser, initializing])
 
   const loadMetrics = useCallback(async () => {
     // Evitar chamadas simultâneas
