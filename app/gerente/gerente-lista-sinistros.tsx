@@ -93,13 +93,13 @@ export function GerenteListaSinistros({
   return (
     <div className="grid gap-4">
       {sinistrosFiltrados.length === 0 ? (
-        <Card className="border-dashed border-2 border-gray-300">
+        <Card className="border-dashed border-2 border-border">
           <CardContent className="p-8 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="w-8 h-8 text-gray-400" />
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">Nenhum sinistro encontrado</h3>
-            <p className="text-sm text-gray-500">Tente ajustar os filtros de busca para encontrar sinistros</p>
+            <h3 className="text-lg font-semibold text-foreground mb-2">Nenhum sinistro encontrado</h3>
+            <p className="text-sm text-muted-foreground">Tente ajustar os filtros de busca para encontrar sinistros</p>
           </CardContent>
         </Card>
       ) : (
@@ -230,36 +230,36 @@ export function GerenteListaSinistros({
                 </div>
 
                 {/* Linha 3: Informações principais */}
-                <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+                <div className="bg-muted/50 dark:bg-muted/20 rounded-lg p-3 space-y-2">
                   <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                    <User className="w-4 h-4 text-primary flex-shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs text-gray-500">Condutor</div>
-                      <div className="text-sm font-medium truncate">
+                      <div className="text-xs text-muted-foreground">Condutor</div>
+                      <div className="text-sm font-medium truncate text-foreground">
                         {sinistro.cnh_proprio_nome || sinistro.nome_completo_furto || 'Nome não informado'}
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Car className="w-4 h-4 text-green-600 flex-shrink-0" />
+                    <Car className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs text-gray-500">Veículo</div>
-                      <div className="text-sm font-medium font-mono">
+                      <div className="text-xs text-muted-foreground">Veículo</div>
+                      <div className="text-sm font-medium font-mono text-foreground">
                         {sinistro.crlv_proprio_placa || sinistro.placa_veiculo_furto || 'N/A'}
                       </div>
-                      <div className="text-xs text-gray-600 truncate">
+                      <div className="text-xs text-muted-foreground truncate">
                         {sinistro.crlv_proprio_marca && sinistro.crlv_proprio_modelo
                           ? `${sinistro.crlv_proprio_marca} ${sinistro.crlv_proprio_modelo}`
                           : 'Modelo não identificado'}
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+                  <div className="flex items-center justify-between pt-2 border-t border-border">
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-purple-600 flex-shrink-0" />
-                      <div className="text-xs text-gray-500">{formatarData(sinistro.data_criacao)}</div>
+                      <Calendar className="w-4 h-4 text-violet-600 dark:text-violet-400 flex-shrink-0" />
+                      <div className="text-xs text-muted-foreground">{formatarData(sinistro.data_criacao)}</div>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <FileText className="w-3 h-3" />
                       <span>{sinistro.total_arquivos} arquivos</span>
                     </div>
@@ -442,20 +442,20 @@ export function GerenteListaSinistros({
                   {/* Informações principais em layout desktop */}
                   <div className="grid grid-cols-4 gap-4 text-sm">
                     <div>
-                      <span className="text-gray-500">Condutor:</span>
-                      <div className="font-medium">{sinistro.cnh_proprio_nome || 'N/A'}</div>
+                      <span className="text-muted-foreground">Condutor:</span>
+                      <div className="font-medium text-foreground">{sinistro.cnh_proprio_nome || 'N/A'}</div>
                     </div>
                     <div>
-                      <span className="text-gray-500">Veículo:</span>
-                      <div className="font-mono">{sinistro.crlv_proprio_placa || 'N/A'}</div>
+                      <span className="text-muted-foreground">Veículo:</span>
+                      <div className="font-mono text-foreground">{sinistro.crlv_proprio_placa || 'N/A'}</div>
                     </div>
                     <div>
-                      <span className="text-gray-500">Data:</span>
-                      <div>{formatarData(sinistro.data_criacao)}</div>
+                      <span className="text-muted-foreground">Data:</span>
+                      <div className="text-foreground">{formatarData(sinistro.data_criacao)}</div>
                     </div>
                     <div>
-                      <span className="text-gray-500">Arquivos:</span>
-                      <div>{sinistro.total_arquivos}</div>
+                      <span className="text-muted-foreground">Arquivos:</span>
+                      <div className="text-foreground">{sinistro.total_arquivos}</div>
                     </div>
                   </div>
                 </div>

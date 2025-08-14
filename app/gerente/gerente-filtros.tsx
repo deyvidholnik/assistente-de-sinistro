@@ -36,13 +36,13 @@ export function GerenteFiltros({
           <div className="lg:col-span-1">
             <Label
               htmlFor="search"
-              className="text-sm font-medium text-gray-700 flex items-center gap-1"
+              className="text-sm font-medium text-foreground flex items-center gap-1"
             >
               <Search className="w-3 h-3" />
               Buscar Ocorrência
             </Label>
             <div className="relative mt-2">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 id="search"
                 placeholder="Número, nome, placa ou CPF..."
@@ -55,7 +55,7 @@ export function GerenteFiltros({
           <div>
             <Label
               htmlFor="status"
-              className="text-sm font-medium text-gray-700 flex items-center gap-1"
+              className="text-sm font-medium text-foreground flex items-center gap-1"
             >
               <Badge className="w-3 h-3 rounded-full p-0" />
               Status da Ocorrência
@@ -67,7 +67,7 @@ export function GerenteFiltros({
                 console.log('Mudando status filter de', statusFilter, 'para', e.target.value)
                 setStatusFilter(e.target.value)
               }}
-              className="mt-2 h-10 w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="mt-2 h-10 w-full px-3 py-2 border border-input rounded-md bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
             >
               <option value="todos">Todos os status</option>
               <option value="pendente">Pendente</option>
@@ -80,7 +80,7 @@ export function GerenteFiltros({
           <div>
             <Label
               htmlFor="tipo"
-              className="text-sm font-medium text-gray-700 flex items-center gap-1"
+              className="text-sm font-medium text-foreground flex items-center gap-1"
             >
               <Car className="w-3 h-3" />
               Tipo de Atendimento
@@ -92,7 +92,7 @@ export function GerenteFiltros({
                 console.log('Mudando tipo filter de', tipoFilter, 'para', e.target.value)
                 setTipoFilter(e.target.value)
               }}
-              className="mt-2 h-10 w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="mt-2 h-10 w-full px-3 py-2 border border-input rounded-md bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
             >
               <option value="todos">Todos os tipos</option>
               <option value="assistencia">Assistência</option>
