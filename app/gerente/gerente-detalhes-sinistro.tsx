@@ -1,3 +1,117 @@
+"use client"
+
+import { useState } from "react"
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { 
+  Info,
+  Clock4,
+  Eye,
+  CheckCircle,
+  XCircle,
+  Calendar,
+  Headphones,
+  Car,
+  Shield,
+  AlertTriangle,
+  Wrench,
+  User,
+  Users,
+  FileText,
+  Activity,
+  Plus,
+  X,
+  Loader2,
+  Download,
+  Image as ImageIcon,
+  FolderOpen,
+  ChevronDown,
+  ChevronUp,
+  MapPin,
+  Phone,
+  Clock,
+  TrendingUp,
+  Settings,
+  FileCheck,
+  PlayCircle,
+  Camera
+} from "lucide-react"
+
+// Função simples para formatar datas
+const formatarData = (data: string) => {
+  try {
+    return format(new Date(data), 'dd/MM/yyyy HH:mm', { locale: ptBR })
+  } catch (error) {
+    return 'Data inválida'
+  }
+}
+
+const formatarDataSemHora = (data: string) => {
+  try {
+    return format(new Date(data), 'dd/MM/yyyy', { locale: ptBR })
+  } catch (error) {
+    return 'Data inválida'
+  }
+}
+
+// Função para formatar tipo de assistência
+const formatarTipoAssistencia = (tipo: string | undefined) => {
+  if (!tipo) return ''
+  
+  const tipos: { [key: string]: string } = {
+    'hotel': 'Hotel',
+    'guincho': 'Guincho',
+    'taxi': 'Táxi',
+    'pane_seca': 'Pane Seca',
+    'pane_mecanica': 'Pane Mecânica',
+    'pane_eletrica': 'Pane Elétrica',
+    'trocar_pneu': 'Trocar Pneu'
+  }
+  
+  return tipos[tipo] || tipo.replace(/_/g, ' ')
+}
+
+// Função para formatar todas as assistências (principal + adicionais)
+const formatarTodasAssistencias = (sinistro: any) => {
+  const assistencias: string[] = []
+  
+  // Adicionar assistência principal
+  if (sinistro.tipo_assistencia) {
+    assistencias.push(formatarTipoAssistencia(sinistro.tipo_assistencia))
+  }
+  
+  // Adicionar assistências adicionais
+  if (sinistro.assistencias_tipos) {
+    // Se é array, usar diretamente. Se é string, fazer split
+    const tiposAdicionais = Array.isArray(sinistro.assistencias_tipos)
+      ? sinistro.assistencias_tipos
+      : sinistro.assistencias_tipos.split(', ')
+    
+    const assistenciasAdicionais = tiposAdicionais
+      .filter((tipo: string) => tipo) // Remover valores vazios
+      .map((tipo: string) => formatarTipoAssistencia(tipo))
+    assistencias.push(...assistenciasAdicionais)
+  }
+  
+  return assistencias.length > 0 ? assistencias.join(', ') : ''
+}
+
+interface SinistroDetalhado {
+  sinistro: any
+  dadosCnh: any[]
+  dadosCrlv: any[]
+  arquivos: any[]
+  logs: any[]
+}
+
 // Componente para detalhes do sinistro
 interface DetalhesSinistroProps {
   dados: SinistroDetalhado
@@ -11,9 +125,7 @@ interface DetalhesSinistroProps {
   novoPassoData?: { nome: string; descricao: string }
   onNovoPassoChange?: (data: { nome: string; descricao: string }) => void
   onToggleNovoPassoForm?: (show: boolean) => void
-}
-
-function DetalhesSinistro({
+}function DetalhesSinistro({
   dados,
   andamento = [],
   loadingAndamento = false,
@@ -1378,3 +1490,6 @@ function DetalhesSinistro({
     </div>
   )
 }
+
+
+export { DetalhesSinistro }

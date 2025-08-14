@@ -404,7 +404,39 @@ export function GerenteListaSinistros({
                           Ver Detalhes
                         </Button>
                       </DialogTrigger>
-                      {/* Mesmo DialogContent do mobile */}
+                      <DialogContent
+                        className="w-[95vw] max-w-6xl h-[90vh] overflow-hidden flex flex-col"
+                        aria-describedby="dialog-description"
+                      >
+                        <DialogHeader>
+                          <DialogTitle>Detalhes do Sinistro {sinistro.numero_sinistro}</DialogTitle>
+                          <div
+                            id="dialog-description"
+                            className="sr-only"
+                          >
+                            Visualização completa dos dados do sinistro incluindo documentos, fotos e histórico
+                          </div>
+                        </DialogHeader>
+                        {loadingDetalhes ? (
+                          <div className="flex items-center justify-center p-8">
+                            <Loader2 className="w-8 h-8 animate-spin" />
+                          </div>
+                        ) : selectedSinistro ? (
+                          <DetalhesSinistro
+                            dados={selectedSinistro}
+                            andamento={andamentoSinistro}
+                            loadingAndamento={loadingAndamento}
+                            onAtualizarStatus={atualizarStatusSinistro}
+                            onAtualizarAndamento={atualizarAndamentoPasso}
+                            onAdicionarNovoPasso={adicionarNovoPasso}
+                            onRemoverPasso={removerPassoPersonalizado}
+                            showNovoPassoForm={showNovoPassoForm}
+                            novoPassoData={novoPassoData}
+                            onNovoPassoChange={setNovoPassoData}
+                            onToggleNovoPassoForm={setShowNovoPassoForm}
+                          />
+                        ) : null}
+                      </DialogContent>
                     </Dialog>
                   </div>
                   {/* Informações principais em layout desktop */}
