@@ -2,9 +2,13 @@
   "permissions": {
     "allow": [
       "WebSearch",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm run dev:*)",
+      "Bash(mv:*)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "defaultMode": "acceptEdits"
   }
 }

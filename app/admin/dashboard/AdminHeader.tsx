@@ -3,28 +3,36 @@
 import React from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { Sun, Moon, LogOut } from 'lucide-react'
-import { useAdminAuth } from '@/context/admin-auth-context'
-import { useRouter } from 'next/navigation'
-import { useTheme } from 'next-themes'
+import { Sun, Moon, RefreshCw, LogOut } from 'lucide-react'
 
-export function GerenteHeader() {
-  const { user, signOut } = useAdminAuth()
-  const router = useRouter()
-  const { theme, setTheme } = useTheme()
-  const isDark = theme === 'dark'
+interface AdminUser {
+  id: number
+  username: string
+  email: string
+  full_name: string
+  user_level: string
+  last_login: string | null
+}
 
-  const handleLogout = async () => {
-    try {
-      await signOut()
-    } catch (error) {
-      console.error('Erro no logout:', error)
-      // Fallback caso o signOut falhe
-      localStorage.removeItem('adminLogado')
-      router.push('/admin/login')
-    }
-  }
+interface AdminHeaderProps {
+  adminUser: AdminUser | null
+  theme: string | undefined
+  setTheme: (theme: string) => void
+  handleLogout: () => void
+  loadMetrics: () => void
+  metricsLoading: boolean
+  isDark: boolean
+}
 
+export function AdminHeader({
+  adminUser,
+  theme,
+  setTheme,
+  handleLogout,
+  loadMetrics,
+  metricsLoading,
+  isDark,
+}: AdminHeaderProps) {
   return (
     <header
       className={`backdrop-blur-sm border-b sticky top-0 z-50 transition-all duration-300 ${
@@ -53,7 +61,7 @@ export function GerenteHeader() {
                   isDark ? 'text-gray-300' : 'text-gray-600'
                 } hidden md:block`}
               >
-                Gerenciamento de Ocorrências
+                Dashboard Administrativo
               </p>
             </div>
           </div>
@@ -80,7 +88,7 @@ export function GerenteHeader() {
                 } mr-2 truncate max-w-[100px] md:max-w-none`}
               >
                 <span className='hidden md:inline'>Olá, </span>
-                {user?.full_name || user?.email}
+                {adminUser?.full_name}
               </div>
 
               {/* Botão logout */}
@@ -91,7 +99,7 @@ export function GerenteHeader() {
                 className={`hover:bg-opacity-20 transition-all duration-300 ${
                   isDark ? 'hover:bg-white text-gray-300' : 'hover:bg-blue-50 text-gray-700'
                 } p-2`}
-                title={`Sair (${user?.full_name || user?.email})`}
+                title={`Sair (${adminUser?.full_name})`}
               >
                 <LogOut className='w-4 h-4' />
               </Button>

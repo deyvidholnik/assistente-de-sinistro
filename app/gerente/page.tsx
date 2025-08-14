@@ -690,8 +690,8 @@ export default function GerentePage() {
   return (
     <AuthGuard>
       <div className='min-h-screen bg-gradient-to-br from-background-gradient-light to-background'>
+        <GerenteHeader />
         <main className='container mx-auto px-3 py-4 sm:p-4 lg:p-6 space-y-3 sm:space-y-4 lg:space-y-6'>
-          <GerenteHeader />
 
           <GerenteEstatisticas sinistros={sinistros} />
 
