@@ -138,6 +138,26 @@ O formulário principal (`/registro_ocorrencia`) é um wizard de 12 etapas:
 
 **Motivo:** Melhorar a experiência do usuário em dark mode e padronizar o código
 
+### 16/08/2025 - Melhorias Visuais em Detalhes de Sinistro
+**Commit:** `cbafc44` - refactor: padronização e melhorias visuais em gerente-detalhes-sinistro
+
+**Arquivo Modificado:**
+- `app/gerente/gerente-detalhes-sinistro.tsx` - Refatoração completa do componente de detalhes
+
+**Principais Mudanças:**
+1. **Formatação:** Conversão completa de aspas duplas para simples
+2. **Design System:** 
+   - Implementação de gradiente de fundo responsivo (dark: gray-900/blue-900/purple-900, light: blue-50/indigo-50/purple-50)
+   - Substituição de `border border-gray-200 bg-white` por `bg-card/50` para melhor integração com tema
+   - Adição de padding e border-radius no container principal
+3. **Dark Mode:** 
+   - Mudança de classes de cor para `text-foreground` e `text-muted-foreground`
+   - Melhor contraste e legibilidade em modo escuro
+4. **Responsividade:** Ajustes de espaçamento e layout para mobile/desktop
+5. **Limpeza:** Remoção de linhas vazias desnecessárias e formatação consistente
+
+**Motivo:** Modernizar a interface visual do componente de detalhes de sinistro com melhor suporte a temas e design mais polido
+
 ## Processo de Documentação de Alterações Manuais
 
 **IMPORTANTE**: Sempre que o usuário informar que fez alterações manuais no código, seguir automaticamente este processo:

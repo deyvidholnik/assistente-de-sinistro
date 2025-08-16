@@ -174,6 +174,10 @@ export default function GerentePage() {
   const [passosPersonalizados, setPassosPersonalizados] = useState<Record<string, any[]>>({})
   const [showNovoPassoForm, setShowNovoPassoForm] = useState(false)
   const [novoPassoData, setNovoPassoData] = useState({ nome: '', descricao: '' })
+  
+  // Estados de paginação
+  const [paginaAtual, setPaginaAtual] = useState(1)
+  const [itensPorPagina, setItensPorPagina] = useState(20)
 
   const { signOut, user } = useAdminAuth()
   const router = useRouter()
@@ -671,6 +675,28 @@ export default function GerentePage() {
     }
   }, [sinistros]) // Executa sempre que sinistros mudar
 
+  // Lógica de paginação
+  const totalItens = sinistrosFiltrados.length
+  const totalPaginas = Math.ceil(totalItens / itensPorPagina)
+  const indiceInicio = (paginaAtual - 1) * itensPorPagina
+  const indiceFim = indiceInicio + itensPorPagina
+  const sinistrosPaginados = sinistrosFiltrados.slice(indiceInicio, indiceFim)
+
+  // Handlers de paginação
+  const handleMudarPagina = (novaPagina: number) => {
+    setPaginaAtual(novaPagina)
+  }
+
+  const handleMudarItensPorPagina = (novaQuantidade: number) => {
+    setItensPorPagina(novaQuantidade)
+    setPaginaAtual(1) // Reset para primeira página
+  }
+
+  // Reset página quando filtros mudam
+  useEffect(() => {
+    setPaginaAtual(1)
+  }, [statusFilter, tipoFilter, searchTerm])
+
   // Log para debug dos filtros
   useEffect(() => {
     console.log('Filtros alterados:', { statusFilter, tipoFilter })
@@ -706,7 +732,7 @@ export default function GerentePage() {
           />
 
           <GerenteListaSinistros
-            sinistrosFiltrados={sinistrosFiltrados}
+            sinistrosFiltrados={sinistrosPaginados}
             passosPersonalizados={passosPersonalizados}
             formatarData={formatarData}
             formatarTodasAssistencias={formatarTodasAssistencias}
@@ -725,6 +751,13 @@ export default function GerentePage() {
             setNovoPassoData={setNovoPassoData}
             setShowNovoPassoForm={setShowNovoPassoForm}
             DetalhesSinistro={DetalhesSinistro}
+            // Props de paginação
+            paginaAtual={paginaAtual}
+            totalPaginas={totalPaginas}
+            itensPorPagina={itensPorPagina}
+            totalItens={totalItens}
+            onMudarPagina={handleMudarPagina}
+            onMudarItensPorPagina={handleMudarItensPorPagina}
           />
           {/* Error Alert */}
           {error && (

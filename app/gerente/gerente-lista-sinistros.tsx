@@ -20,7 +20,9 @@ import {
   Shield,
   Headphones,
   Wrench,
-  Loader2
+  Loader2,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react"
 
 interface Sinistro {
@@ -67,6 +69,13 @@ interface GerenteListaSinistrosProps {
   setNovoPassoData: (data: { nome: string; descricao: string }) => void
   setShowNovoPassoForm: (value: boolean) => void
   DetalhesSinistro: any
+  // Paginação
+  paginaAtual: number
+  totalPaginas: number
+  itensPorPagina: number
+  totalItens: number
+  onMudarPagina: (pagina: number) => void
+  onMudarItensPorPagina: (quantidade: number) => void
 }
 
 export function GerenteListaSinistros({
@@ -88,7 +97,14 @@ export function GerenteListaSinistros({
   novoPassoData,
   setNovoPassoData,
   setShowNovoPassoForm,
-  DetalhesSinistro
+  DetalhesSinistro,
+  // Paginação
+  paginaAtual,
+  totalPaginas,
+  itensPorPagina,
+  totalItens,
+  onMudarPagina,
+  onMudarItensPorPagina
 }: GerenteListaSinistrosProps) {
   return (
     <div className="grid gap-4">
@@ -375,19 +391,126 @@ export function GerenteListaSinistros({
                 </div>
               </div>
 
-              {/* Desktop Layout - Versão simplificada para não ser muito extenso */}
+              {/* Desktop Layout - Compacto horizontal */}
               <div className="hidden lg:block">
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 flex-wrap">
+                  {/* Linha 1: Header compacto com todas as informações principais */}
+                  <div className="flex items-center justify-between gap-4">
+                    {/* Lado esquerdo: Badges principais */}
+                    <div className="flex items-center gap-3 flex-wrap">
                       <Badge
                         variant="outline"
                         className="font-mono text-sm font-bold bg-blue-50 border-blue-200 text-blue-800 px-3 py-1"
                       >
                         #{sinistro.numero_sinistro}
                       </Badge>
-                      {/* Status e tipo badges similares ao mobile */}
+                      <Badge
+                        variant={
+                          sinistro.status === 'concluido'
+                            ? 'default'
+                            : sinistro.status === 'aprovado'
+                            ? 'secondary'
+                            : sinistro.status === 'em_analise'
+                            ? 'outline'
+                            : sinistro.status === 'rejeitado'
+                            ? 'destructive'
+                            : 'secondary'
+                        }
+                        className={`text-xs px-2 py-1 ${{
+                          concluido: 'bg-green-100 text-green-800 border-green-200',
+                          aprovado: 'bg-blue-100 text-blue-800 border-blue-200',
+                          em_analise: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                          rejeitado: 'bg-red-100 text-red-800 border-red-200'
+                        }[sinistro.status] || 'bg-gray-100 text-gray-800 border-gray-200'}`}
+                      >
+                        <div className="flex items-center gap-1">
+                          {sinistro.status === 'concluido' ? (
+                            <>
+                              <CheckCircle className="w-3 h-3" /> Concluído
+                            </>
+                          ) : sinistro.status === 'aprovado' ? (
+                            <>
+                              <CheckCircle className="w-3 h-3" /> Aprovado
+                            </>
+                          ) : sinistro.status === 'em_analise' ? (
+                            <>
+                              <Eye className="w-3 h-3" /> Em Análise
+                            </>
+                          ) : sinistro.status === 'rejeitado' ? (
+                            <>
+                              <XCircle className="w-3 h-3" /> Rejeitado
+                            </>
+                          ) : (
+                            <>
+                              <Clock4 className="w-3 h-3" /> Pendente
+                            </>
+                          )}
+                        </div>
+                      </Badge>
+                      <Badge
+                        variant={
+                          sinistro.tipo_atendimento === 'assistencia'
+                            ? 'default'
+                            : sinistro.tipo_sinistro === 'colisao'
+                            ? 'destructive'
+                            : sinistro.tipo_sinistro === 'pequenos_reparos'
+                            ? 'outline'
+                            : 'secondary'
+                        }
+                        className={`text-xs px-2 py-1 ${{
+                          assistencia: 'bg-purple-100 text-purple-800 border-purple-200',
+                          colisao: 'bg-red-100 text-red-800 border-red-200',
+                          furto: 'bg-orange-100 text-orange-800 border-orange-200',
+                          roubo: 'bg-red-100 text-red-800 border-red-200',
+                          pequenos_reparos: 'bg-green-100 text-green-800 border-green-200'
+                        }[sinistro.tipo_atendimento === 'assistencia' ? 'assistencia' : sinistro.tipo_sinistro || ''] || 'bg-gray-100 text-gray-800 border-gray-200'}`}
+                      >
+                        <div className="flex items-center gap-1">
+                          {(() => {
+                            if (sinistro.tipo_atendimento === 'assistencia') {
+                              const todasAssistencias = formatarTodasAssistencias(sinistro)
+                              return (
+                                <>
+                                  <Headphones className="w-3 h-3" />
+                                  Assistência - {todasAssistencias}
+                                </>
+                              )
+                            }
+
+                            switch (sinistro.tipo_sinistro) {
+                              case 'colisao':
+                                return (
+                                  <>
+                                    <Car className="w-3 h-3" /> Colisão
+                                  </>
+                                )
+                              case 'furto':
+                                return (
+                                  <>
+                                    <Shield className="w-3 h-3" /> Furto
+                                  </>
+                                )
+                              case 'roubo':
+                                return (
+                                  <>
+                                    <AlertTriangle className="w-3 h-3" /> Roubo
+                                  </>
+                                )
+                              case 'pequenos_reparos':
+                                return (
+                                  <>
+                                    <Wrench className="w-3 h-3" /> Pequenos Reparos
+                                  </>
+                                )
+                              default:
+                                return <>Tipo não identificado</>
+                            }
+                          })()}
+                        </div>
+                      </Badge>
                     </div>
+                    
+                    {/* Lado direito: Botão */}
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button
@@ -399,6 +522,7 @@ export function GerenteListaSinistros({
                               await carregarAndamento(sinistro.id)
                             }
                           }}
+                          className="hover:bg-blue-50 hover:border-blue-300 flex-shrink-0"
                         >
                           <Eye className="w-4 h-4 mr-2" />
                           Ver Detalhes
@@ -439,30 +563,196 @@ export function GerenteListaSinistros({
                       </DialogContent>
                     </Dialog>
                   </div>
-                  {/* Informações principais em layout desktop */}
-                  <div className="grid grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Condutor:</span>
-                      <div className="font-medium text-foreground">{sinistro.cnh_proprio_nome || 'N/A'}</div>
+
+                  {/* Linha 2: Grid de informações principais + metadados */}
+                  <div className="grid grid-cols-4 gap-4 bg-muted/50 dark:bg-muted/20 rounded-lg p-3">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-primary flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs text-muted-foreground">Condutor</div>
+                        <div className="text-sm font-medium text-foreground truncate">
+                          {sinistro.cnh_proprio_nome || sinistro.nome_completo_furto || 'Nome não informado'}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-muted-foreground">Veículo:</span>
-                      <div className="font-mono text-foreground">{sinistro.crlv_proprio_placa || 'N/A'}</div>
+                    <div className="flex items-center gap-2">
+                      <Car className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs text-muted-foreground">Veículo</div>
+                        <div className="text-sm font-medium font-mono text-foreground">
+                          {sinistro.crlv_proprio_placa || sinistro.placa_veiculo_furto || 'N/A'}
+                        </div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {sinistro.crlv_proprio_marca && sinistro.crlv_proprio_modelo
+                            ? `${sinistro.crlv_proprio_marca} ${sinistro.crlv_proprio_modelo}`
+                            : 'Modelo não identificado'}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-muted-foreground">Data:</span>
-                      <div className="text-foreground">{formatarData(sinistro.data_criacao)}</div>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-violet-600 dark:text-violet-400 flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs text-muted-foreground">Data</div>
+                        <div className="text-sm text-foreground">{formatarData(sinistro.data_criacao)}</div>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-muted-foreground">Arquivos:</span>
-                      <div className="text-foreground">{sinistro.total_arquivos}</div>
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs text-muted-foreground">Arquivos</div>
+                        <div className="text-sm text-foreground">{sinistro.total_arquivos} arquivos</div>
+                      </div>
                     </div>
                   </div>
+
+                  {/* Linha 3: Tags especiais - só aparece se houver tags */}
+                  {(sinistro.outros_veiculos_envolvidos || sinistro.documentos_furtados || (passosPersonalizados[sinistro.id] && passosPersonalizados[sinistro.id].length > 0)) && (
+                    <div className="flex flex-wrap gap-2">
+                      {sinistro.outros_veiculos_envolvidos && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs bg-blue-50 border-blue-200 text-blue-700"
+                        >
+                          <Users className="w-3 h-3 mr-1" />
+                          Terceiros
+                        </Badge>
+                      )}
+                      {sinistro.documentos_furtados && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs bg-red-50 border-red-200 text-red-700"
+                        >
+                          <AlertTriangle className="w-3 h-3 mr-1" />
+                          Docs Furtados
+                        </Badge>
+                      )}
+
+                      {/* Tags de passos personalizados */}
+                      {passosPersonalizados[sinistro.id]?.slice(0, 3).map((passo, index) => (
+                        <Badge
+                          key={index}
+                          variant="outline"
+                          className={`text-xs font-medium ${{
+                            concluido: 'bg-green-50 border-green-200 text-green-700',
+                            em_andamento: 'bg-blue-50 border-blue-200 text-blue-700'
+                          }[passo.status] || 'bg-gray-50 border-gray-200 text-gray-700'}`}
+                        >
+                          {passo.status === 'concluido' ? (
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                          ) : passo.status === 'em_andamento' ? (
+                            <PlayCircle className="w-3 h-3 mr-1" />
+                          ) : (
+                            <Clock4 className="w-3 h-3 mr-1" />
+                          )}
+                          {passo.nome}
+                        </Badge>
+                      ))}
+
+                      {/* Indicador de mais passos */}
+                      {passosPersonalizados[sinistro.id] && passosPersonalizados[sinistro.id].length > 3 && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs bg-gray-50 border-gray-200 text-gray-700"
+                        >
+                          +{passosPersonalizados[sinistro.id].length - 3} mais
+                        </Badge>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
           </Card>
         ))
+      )}
+      
+      {/* Componente de Paginação */}
+      {sinistrosFiltrados.length > 0 && (
+        <Card className="border-t-2 border-t-blue-200">
+          <CardContent className="p-4">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              {/* Informações e seletor de itens por página */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <span>Mostrando</span>
+                  <span className="font-medium text-foreground">
+                    {(paginaAtual - 1) * itensPorPagina + 1}
+                  </span>
+                  <span>-</span>
+                  <span className="font-medium text-foreground">
+                    {Math.min(paginaAtual * itensPorPagina, totalItens)}
+                  </span>
+                  <span>de</span>
+                  <span className="font-medium text-foreground">{totalItens}</span>
+                  <span>sinistros</span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <span>Itens por página:</span>
+                  <select 
+                    value={itensPorPagina.toString()} 
+                    onChange={(e) => onMudarItensPorPagina(parseInt(e.target.value))}
+                    className="w-20 h-8 px-2 py-1 text-sm border border-border rounded bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  >
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Navegação de páginas */}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onMudarPagina(paginaAtual - 1)}
+                  disabled={paginaAtual <= 1}
+                  className="h-8 w-8 p-0"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, totalPaginas) }, (_, i) => {
+                    let pageNumber;
+                    if (totalPaginas <= 5) {
+                      pageNumber = i + 1;
+                    } else if (paginaAtual <= 3) {
+                      pageNumber = i + 1;
+                    } else if (paginaAtual >= totalPaginas - 2) {
+                      pageNumber = totalPaginas - 4 + i;
+                    } else {
+                      pageNumber = paginaAtual - 2 + i;
+                    }
+                    
+                    return (
+                      <Button
+                        key={pageNumber}
+                        variant={paginaAtual === pageNumber ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => onMudarPagina(pageNumber)}
+                        className="h-8 w-8 p-0"
+                      >
+                        {pageNumber}
+                      </Button>
+                    );
+                  })}
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onMudarPagina(paginaAtual + 1)}
+                  disabled={paginaAtual >= totalPaginas}
+                  className="h-8 w-8 p-0"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   )
