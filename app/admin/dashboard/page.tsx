@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
@@ -7,14 +7,15 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useTheme } from 'next-themes'
-import { PhoneCall, Users, MessageCircle, RefreshCw } from 'lucide-react'
-import { supabase } from "@/lib/supabase"
+import { RefreshCw } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 import { AdminPageWrapper } from './AdminPageWrapper'
 import { AdminHeader } from './AdminHeader'
 import { MetricsCards } from './MetricsCards'
 import { OccurrencesList } from './OccurrencesList'
 import { formatarTodasAssistencias } from './admin-formatters'
 import { Clock } from 'lucide-react'
+import { NavigationButtons } from './NavigationButtons'
 
 interface AdminUser {
   id: number
@@ -81,7 +82,7 @@ export default function AdminDashboardPage() {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
   const [selectedSinistro, setSelectedSinistro] = useState<SinistroDetalhado | null>(null)
   const [loadingDetalhes, setLoadingDetalhes] = useState(false)
-  
+
   const { theme, setTheme } = useTheme()
   const { signOut, loading, isAuthenticated, user, initializing } = useAdminAuth()
 
@@ -90,7 +91,7 @@ export default function AdminDashboardPage() {
   // Carregar detalhes da ocorrência
   const carregarDetalhes = async (sinistroId: string) => {
     setLoadingDetalhes(true)
-    
+
     try {
       // Buscar dados da ocorrência
       const { data: sinistroData, error: sinistroError } = await supabase
@@ -141,9 +142,8 @@ export default function AdminDashboardPage() {
         dadosCnh: cnhData || [],
         dadosCrlv: crlvData || [],
         arquivos: arquivosData || [],
-        logs: logsData || []
+        logs: logsData || [],
       })
-
     } catch (err: any) {
       console.error('Erro ao carregar detalhes:', err)
       setError('Erro ao carregar detalhes da ocorrência')
@@ -151,7 +151,7 @@ export default function AdminDashboardPage() {
       setLoadingDetalhes(false)
     }
   }
-  
+
   const isDark = theme === 'dark'
   const router = useRouter()
 
@@ -192,12 +192,12 @@ export default function AdminDashboardPage() {
 
     // Configurar dados do usuário admin
     setAdminUser({
-      id: typeof user.id === 'string' ? parseInt(user.id) : (user.id || 0),
+      id: typeof user.id === 'string' ? parseInt(user.id) : user.id || 0,
       username: user.email || '',
       email: user.email || '',
       full_name: user.full_name || '',
       user_level: user.user_level || '',
-      last_login: user.last_login || null
+      last_login: user.last_login || null,
     })
     // loadMetrics() será chamado pelo useEffect de dateFrom/dateTo quando adminUser for definido
   }, [loading, isAuthenticated, user, router, adminUser, initializing])
@@ -214,12 +214,12 @@ export default function AdminDashboardPage() {
       console.log('🚀 INICIANDO loadMetrics()', {
         time: new Date().toISOString(),
         dateFrom,
-        dateTo
+        dateTo,
       })
-      
+
       setError(null)
       const params = new URLSearchParams()
-      
+
       if (dateFrom) params.set('dateFrom', dateFrom)
       if (dateTo) params.set('dateTo', dateTo)
 
@@ -230,28 +230,27 @@ export default function AdminDashboardPage() {
         setMetrics(data)
         setLastUpdate(new Date())
         console.log('✅ Métricas carregadas com sucesso')
-        
+
         // Debug específico para assistências adicionais
         const logs = data.logs || []
         const comAssistenciaAdicional = logs.filter((log: any) => log.assistencia_adicional === true)
         const comTiposAssistencia = logs.filter((log: any) => log.assistencias_tipos)
-        
+
         console.log('🎯 DEBUG ADMIN DASHBOARD - ASSISTÊNCIAS ADICIONAIS:', {
           totalLogs: logs.length,
           comAssistenciaAdicional: comAssistenciaAdicional.length,
           comTiposAssistencia: comTiposAssistencia.length,
           exemploComAssistencia: comAssistenciaAdicional[0],
-          exemploComTipos: comTiposAssistencia[0]
+          exemploComTipos: comTiposAssistencia[0],
         })
-        
+
         // Testar formatação
         if (comAssistenciaAdicional.length > 0) {
           console.log('Formatação teste:', {
             original: comAssistenciaAdicional[0],
-            formatado: formatarTodasAssistencias(comAssistenciaAdicional[0])
+            formatado: formatarTodasAssistencias(comAssistenciaAdicional[0]),
           })
         }
-        
       } else {
         setError(data.error || 'Erro ao carregar métricas')
       }
@@ -277,11 +276,11 @@ export default function AdminDashboardPage() {
   // Carregar métricas quando adminUser estiver definido ou filtros mudarem
   useEffect(() => {
     if (adminUser) {
-      console.log('📊 Carregando métricas...', { 
-        adminUser: adminUser.email, 
-        dateFrom, 
+      console.log('📊 Carregando métricas...', {
+        adminUser: adminUser.email,
+        dateFrom,
         dateTo,
-        trigger: 'useEffect dependency change'
+        trigger: 'useEffect dependency change',
       })
       loadMetrics()
     }
@@ -291,7 +290,7 @@ export default function AdminDashboardPage() {
     try {
       // Usar o método signOut do contexto admin
       await signOut()
-      
+
       // Redirecionar para home
       router.push('/')
     } catch (error) {
@@ -305,9 +304,15 @@ export default function AdminDashboardPage() {
 
   if ((loading || metricsLoading) && !metrics) {
     return (
-      <div className={`min-h-screen flex items-center justify-center transition-all duration-300 ${isDark ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'}`}>
-        <div className="text-center">
-          <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
+      <div
+        className={`min-h-screen flex items-center justify-center transition-all duration-300 ${
+          isDark
+            ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900'
+            : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
+        }`}
+      >
+        <div className='text-center'>
+          <RefreshCw className='w-8 h-8 animate-spin mx-auto mb-4 text-blue-600' />
           <p className={`text-lg ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
             Carregando dashboard administrativo...
           </p>
@@ -318,7 +323,7 @@ export default function AdminDashboardPage() {
 
   return (
     <AdminPageWrapper isDark={isDark}>
-      <AdminHeader 
+      <AdminHeader
         adminUser={adminUser}
         theme={theme}
         setTheme={setTheme}
@@ -328,24 +333,28 @@ export default function AdminDashboardPage() {
         isDark={isDark}
       />
 
-      <div className="container mx-auto px-4 py-6 md:py-8">
+      <div className='container mx-auto px-4 py-6 md:py-8'>
         {/* Título e período */}
-        <div className="text-center mb-8 md:mb-12">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+        <div className='text-center mb-8 md:mb-12'>
+          <h1 className='text-3xl md:text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent'>
             Dashboard Administrativo
           </h1>
-          <p className={`text-lg md:text-xl mb-4 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+          <p
+            className={`text-lg md:text-xl mb-4 transition-colors duration-300 ${
+              isDark ? 'text-gray-300' : 'text-gray-600'
+            }`}
+          >
             Monitoramento completo do sistema PV Auto Proteção
           </p>
-          
+
           {metrics && (
-            <div className="flex flex-wrap justify-center gap-2">
-              <Badge variant="outline" className={`text-xs ${isDark ? 'border-gray-500 text-gray-300' : 'border-gray-300 text-gray-600'}`}>
-                Período: {new Date(metrics.periodo.de).toLocaleDateString('pt-BR')} a {new Date(metrics.periodo.ate).toLocaleDateString('pt-BR')}
-              </Badge>
+            <div className='flex flex-wrap justify-center gap-2'>
               {lastUpdate && (
-                <Badge variant="outline" className={`text-xs ${isDark ? 'border-gray-500 text-gray-300' : 'border-gray-300 text-gray-600'}`}>
-                  <Clock className="w-3 h-3 mr-1" />
+                <Badge
+                  variant='outline'
+                  className={`text-xs ${isDark ? 'border-gray-500 text-gray-300' : 'border-gray-300 text-gray-600'}`}
+                >
+                  <Clock className='w-3 h-3 mr-1' />
                   Última atualização: {lastUpdate.toLocaleTimeString('pt-BR')}
                 </Badge>
               )}
@@ -353,58 +362,31 @@ export default function AdminDashboardPage() {
           )}
         </div>
 
-        {/* Botões de Navegação */}
-        <div className="flex justify-center flex-wrap gap-4 md:gap-6 mb-8">
-          <a href="/admin/calls">
-            <Button 
-              size="lg" 
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3"
-            >
-              <PhoneCall className="w-5 h-5 mr-3" />
-              Chamadas IA
-            </Button>
-          </a>
-          
-          <a href="/admin/users">
-            <Button 
-              size="lg" 
-              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3"
-            >
-              <Users className="w-5 h-5 mr-3" />
-              Usuários
-            </Button>
-          </a>
-
-                                  <a href="/whatsapp?from=dashboard">
-            <Button 
-              size="lg" 
-              className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-3"
-            >
-              <MessageCircle className="w-5 h-5 mr-3" />
-              WhatsApp
-            </Button>
-          </a>
-        </div>
+        <NavigationButtons />
 
         {error && (
-          <Card className="border-red-200 bg-red-50 mb-6">
-            <CardContent className="p-4">
-              <p className="text-red-700 text-center">{error}</p>
+          <Card className='border-red-200 bg-red-50 mb-6'>
+            <CardContent className='p-4'>
+              <p className='text-red-700 text-center'>{error}</p>
             </CardContent>
           </Card>
         )}
 
         {metrics && (
           <>
-            <MetricsCards metrics={metrics} isDark={isDark} />
+            <MetricsCards
+              metrics={metrics}
+              isDark={isDark}
+            />
 
-            <OccurrencesList 
+            <OccurrencesList
               metrics={metrics}
               isDark={isDark}
               carregarDetalhes={carregarDetalhes}
               selectedSinistro={selectedSinistro}
               loadingDetalhes={loadingDetalhes}
-            />{/* Lista de Ocorrências Substituída */}
+            />
+            {/* Lista de Ocorrências Substituída */}
           </>
         )}
       </div>

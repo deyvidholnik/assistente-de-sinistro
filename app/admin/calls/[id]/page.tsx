@@ -349,7 +349,7 @@ export default function CallDetailsPage() {
                     variant="outline"
                     size="lg"
                     onClick={togglePlayPause}
-                    className="flex items-center gap-2"
+                    className="flex  items-center gap-2"
                   >
                     {isPlaying ? (
                       <Pause className="w-5 h-5" />
