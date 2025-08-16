@@ -1,5 +1,6 @@
 'use client'
 
+// Alteração manual 16/08/2025: Padronização de aspas e adição de classes text-foreground para dark mode
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'

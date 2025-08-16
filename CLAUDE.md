@@ -115,3 +115,25 @@ O formulário principal (`/registro_ocorrencia`) é um wizard de 12 etapas:
 - `/constants` - constantes (steps, configurações)
 - `/context` - provedores de contexto
 - `/sql` - scripts de banco de dados
+
+## Alterações Manuais Recentes
+
+### 16/08/2025 - Padronização e Dark Mode
+**Commit:** `034cf1c` - refactor: padronização de formatação e ajustes de tema dark mode
+
+**Arquivos Modificados:**
+- `components/ui/card.tsx` - Ajuste de background com opacity para melhor visualização em dark mode
+- `app/gerente/gerente-filtros.tsx` - Adição de classes `text-foreground` para visibilidade em tema escuro
+- `app/gerente/gerente-estatisticas.tsx` - Formatação de código (aspas simples)
+- `app/gerente/page.tsx` - Ajustes menores de formatação
+- `app/admin/calls/page.tsx` - Padronização de código
+- `app/globals.css` - Adições de estilo global
+
+**Principais Mudanças:**
+1. **Formatação:** Padronização de aspas duplas para simples em componentes React
+2. **Dark Mode:** Implementação de melhor suporte ao tema escuro com:
+   - Background com opacity em cards (`bg-card-foreground/50`)
+   - Classes `text-foreground` para garantir contraste adequado
+3. **Reorganização:** Reformatação de componentes para melhor legibilidade
+
+**Motivo:** Melhorar a experiência do usuário em dark mode e padronizar o código

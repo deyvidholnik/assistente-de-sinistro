@@ -2,6 +2,8 @@ import * as React from 'react'
 
 import { cn } from '@/lib/utils'
 
+// Alteração manual 16/08/2025: Ajuste de background com opacity para melhor suporte a dark mode
+// Original: bg-card com border | Novo: bg-card-foreground/50 sem border
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
   <div
     ref={ref}
