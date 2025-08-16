@@ -137,3 +137,21 @@ O formulário principal (`/registro_ocorrencia`) é um wizard de 12 etapas:
 3. **Reorganização:** Reformatação de componentes para melhor legibilidade
 
 **Motivo:** Melhorar a experiência do usuário em dark mode e padronizar o código
+
+## Processo de Documentação de Alterações Manuais
+
+**IMPORTANTE**: Sempre que o usuário informar que fez alterações manuais no código, seguir automaticamente este processo:
+
+1. **Analisar mudanças** com `git status` e `git diff`
+2. **Criar commit descritivo** com todas as alterações
+3. **Atualizar esta seção** do CLAUDE.md com:
+   - Data da alteração
+   - Arquivos modificados
+   - Descrição das mudanças
+   - Motivo/contexto
+4. **Adicionar comentários** nos arquivos principais modificados indicando:
+   - Data da alteração manual
+   - Breve descrição da mudança
+   - Diferença do código original (quando relevante)
+
+Este processo garante rastreabilidade e contexto para futuras manutenções.
