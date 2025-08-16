@@ -1,17 +1,17 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { format } from "date-fns"
-import { ptBR } from "date-fns/locale"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { 
+import { useState } from 'react'
+import { format } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import {
   Info,
   Clock4,
   Eye,
@@ -42,8 +42,8 @@ import {
   Settings,
   FileCheck,
   PlayCircle,
-  Camera
-} from "lucide-react"
+  Camera,
+} from 'lucide-react'
 
 // Função simples para formatar datas
 const formatarData = (data: string) => {
@@ -65,42 +65,42 @@ const formatarDataSemHora = (data: string) => {
 // Função para formatar tipo de assistência
 const formatarTipoAssistencia = (tipo: string | undefined) => {
   if (!tipo) return ''
-  
+
   const tipos: { [key: string]: string } = {
-    'hotel': 'Hotel',
-    'guincho': 'Guincho',
-    'taxi': 'Táxi',
-    'pane_seca': 'Pane Seca',
-    'pane_mecanica': 'Pane Mecânica',
-    'pane_eletrica': 'Pane Elétrica',
-    'trocar_pneu': 'Trocar Pneu'
+    hotel: 'Hotel',
+    guincho: 'Guincho',
+    taxi: 'Táxi',
+    pane_seca: 'Pane Seca',
+    pane_mecanica: 'Pane Mecânica',
+    pane_eletrica: 'Pane Elétrica',
+    trocar_pneu: 'Trocar Pneu',
   }
-  
+
   return tipos[tipo] || tipo.replace(/_/g, ' ')
 }
 
 // Função para formatar todas as assistências (principal + adicionais)
 const formatarTodasAssistencias = (sinistro: any) => {
   const assistencias: string[] = []
-  
+
   // Adicionar assistência principal
   if (sinistro.tipo_assistencia) {
     assistencias.push(formatarTipoAssistencia(sinistro.tipo_assistencia))
   }
-  
+
   // Adicionar assistências adicionais
   if (sinistro.assistencias_tipos) {
     // Se é array, usar diretamente. Se é string, fazer split
     const tiposAdicionais = Array.isArray(sinistro.assistencias_tipos)
       ? sinistro.assistencias_tipos
       : sinistro.assistencias_tipos.split(', ')
-    
+
     const assistenciasAdicionais = tiposAdicionais
       .filter((tipo: string) => tipo) // Remover valores vazios
       .map((tipo: string) => formatarTipoAssistencia(tipo))
     assistencias.push(...assistenciasAdicionais)
   }
-  
+
   return assistencias.length > 0 ? assistencias.join(', ') : ''
 }
 
@@ -125,7 +125,8 @@ interface DetalhesSinistroProps {
   novoPassoData?: { nome: string; descricao: string }
   onNovoPassoChange?: (data: { nome: string; descricao: string }) => void
   onToggleNovoPassoForm?: (show: boolean) => void
-}function DetalhesSinistro({
+}
+function DetalhesSinistro({
   dados,
   andamento = [],
   loadingAndamento = false,
@@ -142,10 +143,10 @@ interface DetalhesSinistroProps {
   const [historicoAberto, setHistoricoAberto] = useState(false)
 
   return (
-    <div className='flex flex-col h-full overflow-y-auto space-y-3 md:space-y-3 '>
+    <div className='flex flex-col px-4 py-4 rounded-sm h-full overflow-y-auto space-y-3 md:space-y-3 dark:bg-gradient-to-br dark:from-gray-900 dark:via-blue-900 dark:to-purple-900 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 '>
       {/* Seção Geral */}
       {/* Header Principal */}
-      <div className='border border-gray-200 rounded-lg bg-white p-3 md:p-6'>
+      <div className=' rounded-lg bg-card/50 p-3 md:p-6'>
         {/* Mobile Layout */}
         <div className='md:hidden space-y-3'>
           <div className='flex items-center justify-between'>
@@ -244,7 +245,7 @@ interface DetalhesSinistroProps {
         </div>
 
         {/* Desktop Layout */}
-        <div className='hidden md:flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 md:gap-6'>
+        <div className='hidden  md:flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 md:gap-6'>
           <div className='space-y-1'>
             <div className='flex items-center gap-2 text-sm text-gray-500'>
               <Info className='w-4 h-4' />
@@ -340,9 +341,9 @@ interface DetalhesSinistroProps {
       </div>
 
       {/* Métricas rápidas */}
-      <div className='grid grid-cols-2 gap-2 md:gap-4'>
+      <div className='grid grid-cols-2  gap-2 md:gap-4'>
         <div
-          className='border border-gray-200 rounded-lg bg-white p-2 md:p-4 text-center cursor-pointer hover:shadow-md hover:border-blue-300 transition-all duration-200'
+          className=' rounded-lg bg-card/50 p-2 md:p-4 text-center cursor-pointer hover:shadow-md hover:border-blue-300 transition-all duration-200'
           onClick={() => {
             const arquivosSection = document.getElementById('arquivos-section')
             if (arquivosSection) {
@@ -351,18 +352,18 @@ interface DetalhesSinistroProps {
           }}
         >
           <FolderOpen className='w-4 h-4 md:w-6 md:h-6 text-blue-500 mx-auto mb-1 md:mb-2' />
-          <div className='text-lg md:text-2xl font-bold text-gray-900'>{sinistro.total_arquivos || 0}</div>
-          <div className='text-xs md:text-sm text-gray-500'>Arquivos</div>
+          <div className='text-lg md:text-2xl font-bold text-foreground'>{sinistro.total_arquivos || 0}</div>
+          <div className='text-xs md:text-sm text-muted-foreground'>Arquivos</div>
           <div className='text-xs text-blue-600 mt-1 hidden md:block opacity-0 hover:opacity-100 transition-opacity'>
             Clique para ver arquivos
           </div>
         </div>
-        <div className='border border-gray-200 rounded-lg bg-white p-2 md:p-4 text-center'>
+        <div className=' rounded-lg bg-card/50 p-2 md:p-4 text-center'>
           <Clock className='w-4 h-4 md:w-6 md:h-6 text-gray-400 mx-auto mb-1 md:mb-2' />
-          <div className='text-lg md:text-2xl font-bold text-gray-900'>
+          <div className='text-lg md:text-2xl font-bold text-foreground'>
             {Math.ceil((new Date().getTime() - new Date(sinistro.data_criacao).getTime()) / (1000 * 60 * 60 * 24))}
           </div>
-          <div className='text-xs md:text-sm text-gray-500'>Dias</div>
+          <div className='text-xs md:text-sm text-muted-foreground'>Dias</div>
         </div>
       </div>
 
@@ -487,7 +488,7 @@ interface DetalhesSinistroProps {
       )}
 
       {/* Timeline de progresso */}
-      <div className='border border-gray-200 rounded-lg bg-white p-3 md:p-6'>
+      <div className=' rounded-lg bg-card/50 p-3 md:p-6'>
         <div className='flex items-center gap-2 md:gap-3 mb-3 md:mb-6'>
           <TrendingUp className='w-4 h-4 md:w-5 md:h-5 text-gray-600' />
           <div>
@@ -596,7 +597,7 @@ interface DetalhesSinistroProps {
       {/* Seção Gestão */}
       <div className='space-y-3 md:space-y-6'>
         {/* Gestão de Status */}
-        <div className='border border-gray-200 rounded-lg bg-white p-3 md:p-6'>
+        <div className=' rounded-lg bg-card/50 p-3 md:p-6'>
           <div className='flex items-center gap-2 md:gap-3 mb-3 md:mb-6'>
             <div className='w-8 h-8 md:w-10 md:h-10 bg-gray-100 rounded-lg flex items-center justify-center'>
               <Settings className='w-4 h-4 md:w-5 md:h-5 text-gray-600' />
@@ -623,7 +624,7 @@ interface DetalhesSinistroProps {
                     onAtualizarStatus(sinistro.id, e.target.value)
                   }
                 }}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200'
+                className='w-full px-3 py-2 border border-gray-300 rounded-lg bg-card/50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200'
               >
                 <option value='pendente'>Pendente</option>
                 <option value='em_analise'>Em Análise</option>
@@ -672,7 +673,7 @@ interface DetalhesSinistroProps {
 
         {/* Andamento do Processo - Para sinistros em análise, aprovados e rejeitados */}
         {['em_analise', 'aprovado', 'rejeitado'].includes(sinistro.status) && (
-          <Card className='border border-gray-200'>
+          <Card className=''>
             <CardHeader className='pb-3'>
               <CardTitle className='text-lg flex items-center gap-2'>
                 <Activity className='w-5 h-5 text-gray-600' />
@@ -694,7 +695,7 @@ interface DetalhesSinistroProps {
                     .map((item, index) => (
                       <Card
                         key={item.id}
-                        className='border border-gray-200'
+                        className=''
                       >
                         <CardContent className='p-4'>
                           {/* Header do Passo - Mobile First */}
@@ -763,7 +764,7 @@ interface DetalhesSinistroProps {
                                     onAtualizarAndamento(item.id.toString(), e.target.value)
                                   }
                                 }}
-                                className='px-2 py-1 text-xs border border-gray-300 rounded bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 lg:ml-auto'
+                                className='px-2 py-1 text-xs border border-gray-300 rounded bg-card/50 focus:outline-none focus:ring-1 focus:ring-blue-500 lg:ml-auto'
                               >
                                 <option value='pendente'>Pendente</option>
                                 <option value='em_andamento'>Em Andamento</option>
@@ -899,7 +900,7 @@ interface DetalhesSinistroProps {
 
       {/* Seção Condutores */}
       <div className='space-y-3 md:space-y-6'>
-        <div className='border border-gray-200 rounded-lg bg-white p-3 md:p-6'>
+        <div className=' rounded-lg bg-card/50 p-3 md:p-6'>
           <div className='flex items-center gap-2 md:gap-3 mb-3 md:mb-6'>
             <div className='w-8 h-8 md:w-10 md:h-10 bg-gray-100 rounded-lg flex items-center justify-center'>
               <User className='w-4 h-4 md:w-5 md:h-5 text-gray-600' />
@@ -1033,7 +1034,7 @@ interface DetalhesSinistroProps {
 
       {/* Seção Veículos */}
       <div className='space-y-3 md:space-y-6'>
-        <div className='border border-gray-200 rounded-lg bg-white p-3 md:p-6'>
+        <div className=' rounded-lg bg-card/50 p-3 md:p-6'>
           <div className='flex items-center gap-2 md:gap-3 mb-3 md:mb-6'>
             <div className='w-8 h-8 md:w-10 md:h-10 bg-gray-100 rounded-lg flex items-center justify-center'>
               <Car className='w-4 h-4 md:w-5 md:h-5 text-gray-600' />
@@ -1073,7 +1074,7 @@ interface DetalhesSinistroProps {
                   <div className='lg:hidden space-y-3'>
                     <div className='bg-green-50 rounded-lg p-3 border border-green-200'>
                       <div className='text-xs text-green-700 mb-1 text-center font-medium'>Placa do Veículo</div>
-                      <div className='font-mono text-lg font-bold text-center text-green-800 bg-white py-2 rounded border'>
+                      <div className='font-mono text-lg font-bold text-center text-green-800 bg-card/50 py-2 rounded border'>
                         {crlv.placa}
                       </div>
                     </div>
@@ -1230,7 +1231,7 @@ interface DetalhesSinistroProps {
         id='arquivos-section'
         className='space-y-3 md:space-y-6'
       >
-        <div className='border border-gray-200 rounded-lg bg-white p-3 md:p-6'>
+        <div className=' rounded-lg bg-card/50 p-3 md:p-6'>
           <div className='flex items-center gap-2 md:gap-3 mb-3 md:mb-6'>
             <div className='w-8 h-8 md:w-10 md:h-10 bg-gray-100 rounded-lg flex items-center justify-center'>
               <FolderOpen className='w-4 h-4 md:w-5 md:h-5 text-gray-600' />
@@ -1246,7 +1247,7 @@ interface DetalhesSinistroProps {
             {arquivos.map((arquivo, index) => (
               <div
                 key={index}
-                className='group relative overflow-hidden rounded-lg md:rounded-2xl bg-white border border-gray-200/50 hover:border-indigo-300/50 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10'
+                className='group relative overflow-hidden rounded-lg md:rounded-2xl bg-card/50 /50 hover:border-indigo-300/50 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10'
               >
                 {/* Preview da imagem ou ícone */}
                 <div className='relative h-32 md:h-48 bg-gradient-to-br from-gray-50 to-gray-100'>
@@ -1317,7 +1318,7 @@ interface DetalhesSinistroProps {
                         variant='outline'
                         size='sm'
                         onClick={() => window.open(arquivo.url_arquivo, '_blank')}
-                        className='h-8 w-8 p-0 bg-white/90 border-gray-200 hover:bg-white hover:scale-105 transition-all duration-200 shadow-sm'
+                        className='h-8 w-8 p-0 bg-card/50/90 border-gray-200 hover:bg-card/50 hover:scale-105 transition-all duration-200 shadow-sm'
                         title='Abrir arquivo'
                       >
                         <Download className='w-3 h-3' />
@@ -1371,7 +1372,7 @@ interface DetalhesSinistroProps {
           open={historicoAberto}
           onOpenChange={setHistoricoAberto}
         >
-          <div className='border border-gray-200 rounded-lg bg-white p-3 md:p-6'>
+          <div className=' rounded-lg bg-card/50 p-3 md:p-6'>
             <CollapsibleTrigger asChild>
               <div className='flex items-center justify-between cursor-pointer hover:bg-gray-50 -m-1 md:-m-2 p-1 md:p-2 rounded-lg transition-colors'>
                 <div className='flex items-center gap-2 md:gap-3'>
@@ -1490,6 +1491,5 @@ interface DetalhesSinistroProps {
     </div>
   )
 }
-
 
 export { DetalhesSinistro }
