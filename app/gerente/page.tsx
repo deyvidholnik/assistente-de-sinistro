@@ -640,7 +640,6 @@ export default function GerentePage() {
     return matchesSearch && matchesStatus && matchesTipo
   })
 
-
   useEffect(() => {
     carregarSinistros()
 
@@ -689,10 +688,12 @@ export default function GerentePage() {
 
   return (
     <AuthGuard>
-      <div className='min-h-screen bg-gradient-to-br from-background-gradient-light to-background'>
+      <div
+        className={`min-h-screen  dark:bg-gradient-to-br dark:from-gray-900 dark:via-blue-900 dark:to-purple-900 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50
+        `}
+      >
         <GerenteHeader />
         <main className='container mx-auto px-3 py-4 sm:p-4 lg:p-6 space-y-3 sm:space-y-4 lg:space-y-6'>
-
           <GerenteEstatisticas sinistros={sinistros} />
 
           <GerenteFiltros
@@ -737,4 +738,3 @@ export default function GerentePage() {
     </AuthGuard>
   )
 }
-

@@ -5,7 +5,8 @@
       "Bash(sed:*)",
       "Bash(mkdir:*)",
       "Bash(npm run dev:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": [],

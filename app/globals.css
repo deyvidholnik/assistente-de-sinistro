@@ -225,6 +225,7 @@ body > div:last-of-type[style*='position: fixed'][style*='z-index'] {
 /* Estilos simples para selects nativos */
 select {
   cursor: pointer;
+  color: #99a1af;
 }
 
 select:focus {

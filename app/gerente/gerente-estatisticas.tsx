@@ -31,7 +31,7 @@ export function GerenteEstatisticas({ sinistros }: GerenteEstatisticasProps) {
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 lg:gap-4">
-      <Card className="hover:shadow-lg transition-all border-l-4 border-l-violet-400 hover:border-l-violet-600">
+      <Card >
         <CardContent className="p-3 sm:p-4">
           <div className="flex items-center justify-between">
             <div>

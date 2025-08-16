@@ -364,7 +364,7 @@ export default function AdminCallsPage() {
                 value={selectedAgent}
                 onChange={(e) => setSelectedAgent(e.target.value)}
                 className={`w-full px-3 py-3  rounded-md text-sm ${
-                  isDark ? 'bg-input border-gray-600 text-muted-foreground' : 'bg-input border-gray-300 text-gray-500'
+                  isDark ? 'bg-input border-gray-600 ' : 'bg-input border-gray-300 text-gray-500'
                 }`}
               >
                 <option value='all'>Todos os agentes</option>
