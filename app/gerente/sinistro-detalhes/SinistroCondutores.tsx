@@ -60,7 +60,7 @@ export default function SinistroCondutores({
           <div className='space-y-4'>
             {dadosCnh.map((cnh, index) => (
               <CondutorCard 
-                key={cnh.id || index} 
+                key={cnh.id || `condutor-${index}`} 
                 cnh={cnh} 
                 index={index}
                 onEditar={onEditarCondutor}

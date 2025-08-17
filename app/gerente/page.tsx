@@ -252,14 +252,17 @@ export default function GerentePage() {
     setLoadingDetalhes(true)
 
     try {
-      // Buscar dados do sinistro
-      const { data: sinistroData, error: sinistroError } = await supabase
+      // Buscar dados do sinistro - removendo .single() para evitar erro de múltiplas linhas
+      const { data: sinistroResponse, error: sinistroError } = await supabase
         .from('view_sinistros_completos')
         .select('*')
         .eq('id', sinistroId)
-        .single()
+        .limit(1)
 
       if (sinistroError) throw sinistroError
+      
+      // Usar a primeira linha se houver múltiplas (fallback para evitar erro)
+      const sinistroData = Array.isArray(sinistroResponse) ? sinistroResponse[0] : sinistroResponse
 
       // Buscar dados CNH
       const { data: cnhData, error: cnhError } = await supabase
@@ -268,6 +271,7 @@ export default function GerentePage() {
         .eq('sinistro_id', sinistroId)
 
       if (cnhError) throw cnhError
+
 
       // Buscar dados CRLV
       const { data: crlvData, error: crlvError } = await supabase
@@ -630,19 +634,8 @@ export default function GerentePage() {
       (sinistro.tipo_atendimento === 'assistencia' && tipoFilter === 'assistencia') ||
       (sinistro.tipo_atendimento !== 'assistencia' && sinistro.tipo_sinistro === tipoFilter)
 
-    // Debug dos filtros
-    console.log(`Filtro Debug - Sinistro ${sinistro.numero_sinistro}:`, {
-      statusFilter,
-      tipoFilter,
-      sinistroStatus: sinistro.status,
-      sinistroTipo: sinistro.tipo_sinistro,
-      matchesStatus,
-      matchesTipo,
-      incluido: matchesSearch && matchesStatus && matchesTipo,
-    })
-
-    // Auto-refresh
-    console.log('Auto-refresh executando...')
+    // Debug reduzido apenas quando necessário (pode ser ativado via flag)
+    // console.log(`Filtro Debug - Sinistro ${sinistro.numero_sinistro}:`, { matchesSearch, matchesStatus, matchesTipo })
 
     // Filtros alterados
     return matchesSearch && matchesStatus && matchesTipo
@@ -701,12 +694,12 @@ export default function GerentePage() {
     setPaginaAtual(1)
   }, [statusFilter, tipoFilter, searchTerm])
 
-  // Log para debug dos filtros
-  useEffect(() => {
-    console.log('Filtros alterados:', { statusFilter, tipoFilter })
-    console.log('Total sinistros:', sinistros.length)
-    console.log('Sinistros filtrados:', sinistrosFiltrados.length)
-  }, [statusFilter, tipoFilter, sinistros])
+  // Log para debug dos filtros (comentado para reduzir spam no console)
+  // useEffect(() => {
+  //   console.log('Filtros alterados:', { statusFilter, tipoFilter })
+  //   console.log('Total sinistros:', sinistros.length)
+  //   console.log('Sinistros filtrados:', sinistrosFiltrados.length)
+  // }, [statusFilter, tipoFilter, sinistros])
 
   if (loading) {
     return (

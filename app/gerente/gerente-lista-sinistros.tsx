@@ -3,7 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog'
 import {
   AlertCircle,
   CheckCircle,
@@ -335,7 +335,7 @@ export function GerenteListaSinistros({
                     {/* Tags de passos personalizados */}
                     {passosPersonalizados[sinistro.id]?.slice(0, 2).map((passo, index) => (
                       <Badge
-                        key={index}
+                        key={`mobile-${sinistro.id}-passo-${passo.id || index}`}
                         variant='outline'
                         className={`text-xs font-medium ${
                           {
@@ -387,16 +387,12 @@ export function GerenteListaSinistros({
                       </DialogTrigger>
                       <DialogContent
                         className='w-[95vw] max-w-6xl max-h-[90vh] overflow-y-auto'
-                        aria-describedby='dialog-description'
                       >
                         <DialogHeader>
                           <DialogTitle>Detalhes do Sinistro {sinistro.numero_sinistro}</DialogTitle>
-                          <div
-                            id='dialog-description'
-                            className='sr-only'
-                          >
+                          <DialogDescription>
                             Visualização completa dos dados do sinistro incluindo documentos, fotos e histórico
-                          </div>
+                          </DialogDescription>
                         </DialogHeader>
                         {loadingDetalhes ? (
                           <div className='flex items-center justify-center p-8'>
@@ -415,6 +411,7 @@ export function GerenteListaSinistros({
                             novoPassoData={novoPassoData}
                             onNovoPassoChange={setNovoPassoData}
                             onToggleNovoPassoForm={setShowNovoPassoForm}
+                            onRefreshDados={() => carregarDetalhes(selectedSinistro.sinistro.id)}
                           />
                         ) : null}
                       </DialogContent>
@@ -582,16 +579,12 @@ export function GerenteListaSinistros({
                           </DialogTrigger>
                           <DialogContent
                             className='w-[95vw] max-w-6xl max-h-[90vh] overflow-y-auto'
-                            aria-describedby='dialog-description'
                           >
                             <DialogHeader>
                               <DialogTitle>Detalhes do Sinistro {sinistro.numero_sinistro}</DialogTitle>
-                              <div
-                                id='dialog-description'
-                                className='sr-only'
-                              >
+                              <DialogDescription>
                                 Visualização completa dos dados do sinistro incluindo documentos, fotos e histórico
-                              </div>
+                              </DialogDescription>
                             </DialogHeader>
                             {loadingDetalhes ? (
                               <div className='flex items-center justify-center p-8'>
@@ -610,6 +603,7 @@ export function GerenteListaSinistros({
                                 novoPassoData={novoPassoData}
                                 onNovoPassoChange={setNovoPassoData}
                                 onToggleNovoPassoForm={setShowNovoPassoForm}
+                                onRefreshDados={() => carregarDetalhes(selectedSinistro.sinistro.id)}
                               />
                             ) : null}
                           </DialogContent>
@@ -685,7 +679,7 @@ export function GerenteListaSinistros({
                         {/* Tags de passos personalizados */}
                         {passosPersonalizados[sinistro.id]?.slice(0, 3).map((passo, index) => (
                           <Badge
-                            key={index}
+                            key={`${sinistro.id}-desktop-passo-${passo.id || index}`}
                             variant='outline'
                             className={`text-xs font-medium ${
                               {

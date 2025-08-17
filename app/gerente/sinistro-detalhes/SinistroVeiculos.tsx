@@ -62,7 +62,7 @@ export default function SinistroVeiculos({
           <div className='space-y-4'>
             {dadosCrlv.map((crlv, index) => (
               <VeiculoCard 
-                key={crlv.id || index} 
+                key={crlv.id || `veiculo-${index}`} 
                 crlv={crlv} 
                 index={index}
                 onEditar={onEditarVeiculo}
