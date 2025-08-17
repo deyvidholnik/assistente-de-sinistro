@@ -16,6 +16,13 @@ export const metadata: Metadata = {
   generator: 'v0.dev',
 }
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -60,7 +67,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body suppressHydrationWarning={true}>
+      <body suppressHydrationWarning={true} className="overflow-x-hidden w-full max-w-full box-border">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

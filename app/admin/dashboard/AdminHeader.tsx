@@ -39,7 +39,7 @@ export function AdminHeader({
         isDark ? 'bg-gray-900/80 border-gray-700' : 'bg-white/80 border-blue-100'
       }`}
     >
-      <div className='container mx-auto px-4 py-3 md:py-4'>
+      <div className='w-full px-4 py-3 md:py-4'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center space-x-2 md:space-x-3 min-w-0 flex-1'>
             <div className='relative w-10 h-10 md:w-14 md:h-14 flex-shrink-0'>

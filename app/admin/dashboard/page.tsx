@@ -12,7 +12,10 @@ import { supabase } from '@/lib/supabase'
 import { AdminPageWrapper } from './AdminPageWrapper'
 import { AdminHeader } from './AdminHeader'
 import { MetricsCards } from './MetricsCards'
-import { OccurrencesList } from './OccurrencesList'
+import { DateRangeFilter } from './DateRangeFilter'
+import { DashboardGrid, ResponsiveWrapper, GridSection } from './DashboardGrid'
+import { SinistrosChart, ChamadasChart, UsuariosChart } from './charts'
+import { TrendAnalysis } from './insights'
 import { formatarTodasAssistencias } from './admin-formatters'
 import { Clock } from 'lucide-react'
 import { NavigationButtons } from './NavigationButtons'
@@ -64,13 +67,6 @@ interface DashboardMetrics {
   }>
 }
 
-interface SinistroDetalhado {
-  sinistro: any
-  dadosCnh: any[]
-  dadosCrlv: any[]
-  arquivos: any[]
-  logs: any[]
-}
 
 export default function AdminDashboardPage() {
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null)
@@ -80,77 +76,11 @@ export default function AdminDashboardPage() {
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
-  const [selectedSinistro, setSelectedSinistro] = useState<SinistroDetalhado | null>(null)
-  const [loadingDetalhes, setLoadingDetalhes] = useState(false)
 
   const { theme, setTheme } = useTheme()
   const { signOut, loading, isAuthenticated, user, initializing } = useAdminAuth()
 
   // Funções utilitárias foram movidas para lib/utils/admin-formatters.ts
-
-  // Carregar detalhes da ocorrência
-  const carregarDetalhes = async (sinistroId: string) => {
-    setLoadingDetalhes(true)
-
-    try {
-      // Buscar dados da ocorrência
-      const { data: sinistroData, error: sinistroError } = await supabase
-        .from('view_sinistros_completos')
-        .select('*')
-        .eq('id', sinistroId)
-        .single()
-
-      if (sinistroError) throw sinistroError
-
-      // Buscar dados CNH
-      const { data: cnhData, error: cnhError } = await supabase
-        .from('dados_cnh')
-        .select('*')
-        .eq('sinistro_id', sinistroId)
-
-      if (cnhError) throw cnhError
-
-      // Buscar dados CRLV
-      const { data: crlvData, error: crlvError } = await supabase
-        .from('dados_crlv')
-        .select('*')
-        .eq('sinistro_id', sinistroId)
-
-      if (crlvError) throw crlvError
-
-      // Buscar arquivos
-      const { data: arquivosData, error: arquivosError } = await supabase
-        .from('arquivos_sinistro')
-        .select('*')
-        .eq('sinistro_id', sinistroId)
-
-      if (arquivosError) throw arquivosError
-
-      console.log(`Arquivos encontrados para ocorrência ${sinistroId}:`, arquivosData?.length || 0)
-
-      // Buscar logs
-      const { data: logsData, error: logsError } = await supabase
-        .from('log_atividades')
-        .select('*')
-        .eq('sinistro_id', sinistroId)
-        .order('created_at', { ascending: false })
-
-      if (logsError) throw logsError
-
-      setSelectedSinistro({
-        sinistro: sinistroData,
-        dadosCnh: cnhData || [],
-        dadosCrlv: crlvData || [],
-        arquivos: arquivosData || [],
-        logs: logsData || [],
-      })
-    } catch (err: any) {
-      console.error('Erro ao carregar detalhes:', err)
-      setError('Erro ao carregar detalhes da ocorrência')
-    } finally {
-      setLoadingDetalhes(false)
-    }
-  }
 
   const isDark = theme === 'dark'
   const router = useRouter()
@@ -333,63 +263,101 @@ export default function AdminDashboardPage() {
         isDark={isDark}
       />
 
-      <div className='container mx-auto px-4 py-6 md:py-8'>
-        {/* Título e período */}
-        <div className='text-center mb-8 md:mb-12'>
-          <h1 className='text-3xl md:text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent'>
-            Dashboard Administrativo
+      <ResponsiveWrapper className='py-6 md:py-8'>
+        {/* Título Principal */}
+        <div className='text-center mb-6 md:mb-8 lg:mb-12'>
+          <h1 className='text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold mb-3 md:mb-4 bg-gradient-to-r from-[hsl(var(--brand-primary))] via-[hsl(var(--brand-secondary))] to-[hsl(var(--brand-primary))] bg-clip-text text-transparent'>
+            Dashboard
           </h1>
-          <p
-            className={`text-lg md:text-xl mb-4 transition-colors duration-300 ${
-              isDark ? 'text-gray-300' : 'text-gray-600'
-            }`}
-          >
-            Monitoramento completo do sistema PV Auto Proteção
+          <p className='text-sm md:text-base lg:text-lg xl:text-xl mb-3 md:mb-4 text-muted-foreground px-4'>
+            Análise em tempo real do sistema PV Auto Proteção
           </p>
 
-          {metrics && (
+          {metrics && lastUpdate && (
             <div className='flex flex-wrap justify-center gap-2'>
-              {lastUpdate && (
-                <Badge
-                  variant='outline'
-                  className={`text-xs ${isDark ? 'border-gray-500 text-gray-300' : 'border-gray-300 text-gray-600'}`}
-                >
-                  <Clock className='w-3 h-3 mr-1' />
-                  Última atualização: {lastUpdate.toLocaleTimeString('pt-BR')}
-                </Badge>
-              )}
+              <Badge variant='outline' className='text-xs'>
+                <Clock className='w-3 h-3 mr-1' />
+                Atualizado: {lastUpdate.toLocaleTimeString('pt-BR')}
+              </Badge>
             </div>
           )}
         </div>
 
         <NavigationButtons />
 
+        {/* Filtros de Período */}
+        <div className='mb-6 md:mb-8'>
+          <DateRangeFilter
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
+            onRefresh={loadMetrics}
+            isLoading={metricsLoading}
+            isDark={isDark}
+          />
+        </div>
+
         {error && (
-          <Card className='border-red-200 bg-red-50 mb-6'>
+          <Card className='border-[hsl(var(--status-error))] bg-[hsl(var(--status-error))]/10 mb-6'>
             <CardContent className='p-4'>
-              <p className='text-red-700 text-center'>{error}</p>
+              <p className='text-[hsl(var(--status-error))] text-center font-medium'>{error}</p>
             </CardContent>
           </Card>
         )}
 
         {metrics && (
-          <>
-            <MetricsCards
-              metrics={metrics}
-              isDark={isDark}
-            />
+          <DashboardGrid>
+            {/* KPIs Principais */}
+            <GridSection title='Indicadores Principais' isDark={isDark}>
+              <div className='col-span-full'>
+                <MetricsCards metrics={metrics} isDark={isDark} />
+              </div>
+            </GridSection>
 
-            <OccurrencesList
-              metrics={metrics}
-              isDark={isDark}
-              carregarDetalhes={carregarDetalhes}
-              selectedSinistro={selectedSinistro}
-              loadingDetalhes={loadingDetalhes}
-            />
-            {/* Lista de Ocorrências Substituída */}
-          </>
+            {/* Análise de Tendências */}
+            <GridSection title='Análise de Tendências e Insights' isDark={isDark}>
+              <div className='col-span-full'>
+                <TrendAnalysis data={metrics} loading={metricsLoading} />
+              </div>
+            </GridSection>
+
+            {/* Gráficos de Sinistros */}
+            <GridSection title='Análise de Sinistros' isDark={isDark}>
+              <div className='col-span-full'>
+                <SinistrosChart 
+                  data={metrics.sinistros} 
+                  loading={metricsLoading}
+                />
+              </div>
+            </GridSection>
+
+            {/* Gráficos de Chamadas IA */}
+            <GridSection title='Performance de Chamadas IA' isDark={isDark}>
+              <div className='col-span-full'>
+                <ChamadasChart 
+                  data={metrics.chamadas} 
+                  loading={metricsLoading}
+                />
+              </div>
+            </GridSection>
+
+          </DashboardGrid>
         )}
-      </div>
+
+        {!metrics && !metricsLoading && (
+          <Card className='border-[hsl(var(--status-warning))] bg-[hsl(var(--status-warning))]/10'>
+            <CardContent className='p-8 text-center'>
+              <h3 className='text-lg font-semibold text-[hsl(var(--status-warning))] mb-2'>
+                Nenhum dado disponível
+              </h3>
+              <p className='text-muted-foreground'>
+                Selecione um período ou aguarde o carregamento dos dados
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </ResponsiveWrapper>
     </AdminPageWrapper>
   )
 }

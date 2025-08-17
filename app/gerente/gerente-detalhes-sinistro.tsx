@@ -53,7 +53,7 @@ function DetalhesSinistro({
   const { sinistro, dadosCnh, dadosCrlv, arquivos, logs } = dados
 
   return (
-    <div className='flex flex-col px-4 py-4 rounded-sm h-full overflow-y-auto space-y-3 md:space-y-3 dark:bg-gradient-to-br dark:from-gray-900 dark:via-blue-900 dark:to-purple-900 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'>
+    <div className='flex flex-col px-4 py-4 rounded-sm space-y-3 md:space-y-3 dark:bg-gradient-to-br dark:from-gray-900 dark:via-blue-900 dark:to-purple-900 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'>
       
       {/* Header Principal */}
       <SinistroHeader sinistro={sinistro} />

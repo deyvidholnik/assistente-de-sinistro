@@ -12,7 +12,10 @@
       "Bash(npm run build:*)",
       "WebFetch(domain:docs.anthropic.com)",
       "Bash(git push:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(npx kill-port:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": [],

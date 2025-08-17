@@ -7,16 +7,8 @@ export async function GET(request: NextRequest) {
     const dateFrom = searchParams.get('dateFrom')
     const dateTo = searchParams.get('dateTo')
 
-    // Definir período padrão (últimos 30 dias)
-    const defaultDateTo = new Date()
-    const defaultDateFrom = new Date()
-    defaultDateFrom.setDate(defaultDateFrom.getDate() - 30)
-
-    const fromDate = dateFrom ? new Date(dateFrom) : defaultDateFrom
-    const toDate = dateTo ? new Date(dateTo) : defaultDateTo
-
     // 1. Métricas de Sinistros
-    const { data: sinistros, error: sinistrosError } = await supabase
+    let sinistrosQuery = supabase
       .from('view_sinistros_completos')
       .select(`
         id, 
@@ -24,29 +16,41 @@ export async function GET(request: NextRequest) {
         tipo_atendimento, 
         tipo_sinistro, 
         tipo_assistencia, 
-        assistencia_adicional,
-        total_assistencias,
-        assistencias_tipos,
         status, 
         data_criacao,
         data_atualizacao
       `)
-      .gte('data_criacao', fromDate.toISOString())
-      .lte('data_criacao', toDate.toISOString())
+
+    // Aplicar filtros de data apenas se fornecidos
+    if (dateFrom) {
+      sinistrosQuery = sinistrosQuery.gte('data_criacao', new Date(dateFrom).toISOString())
+    }
+    if (dateTo) {
+      sinistrosQuery = sinistrosQuery.lte('data_criacao', new Date(dateTo).toISOString())
+    }
+
+    const { data: sinistros, error: sinistrosError } = await sinistrosQuery
 
     if (sinistrosError) {
       console.error('Erro ao buscar sinistros:', sinistrosError)
     }
 
     // 2. Métricas de Chamadas IA
-    const fromTimestamp = fromDate.getTime()
-    const toTimestamp = toDate.getTime()
-
-    const { data: calls, error: callsError } = await supabase
+    let callsQuery = supabase
       .from('record_calls_ai')
       .select('*')
-      .gte('start_timestamp', fromTimestamp)
-      .lte('start_timestamp', toTimestamp)
+
+    // Aplicar filtros de data apenas se fornecidos
+    if (dateFrom) {
+      const fromTimestamp = new Date(dateFrom).getTime()
+      callsQuery = callsQuery.gte('start_timestamp', fromTimestamp)
+    }
+    if (dateTo) {
+      const toTimestamp = new Date(dateTo).getTime()
+      callsQuery = callsQuery.lte('start_timestamp', toTimestamp)
+    }
+
+    const { data: calls, error: callsError } = await callsQuery
 
     if (callsError) {
       console.error('Erro ao buscar chamadas:', callsError)
@@ -67,14 +71,32 @@ export async function GET(request: NextRequest) {
       return acc
     }, {} as Record<string, number>)
 
-    // Sinistros por dia (últimos 7 dias)
-    const last7Days = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date()
-      date.setDate(date.getDate() - i)
-      return date.toISOString().split('T')[0]
-    }).reverse()
+    // Sinistros por dia - gerar dinamicamente baseado nos dados ou últimos 7 dias
+    const getDaysRange = () => {
+      if (dateFrom && dateTo) {
+        const start = new Date(dateFrom)
+        const end = new Date(dateTo)
+        const days = []
+        const current = new Date(start)
+        
+        while (current <= end) {
+          days.push(current.toISOString().split('T')[0])
+          current.setDate(current.getDate() + 1)
+        }
+        
+        return days.slice(-30) // Limitar a 30 dias para performance
+      } else {
+        // Padrão: últimos 7 dias
+        return Array.from({ length: 7 }, (_, i) => {
+          const date = new Date()
+          date.setDate(date.getDate() - i)
+          return date.toISOString().split('T')[0]
+        }).reverse()
+      }
+    }
 
-    const sinistrosPorDia = last7Days.map(date => {
+    const daysRange = getDaysRange()
+    const sinistrosPorDia = daysRange.map(date => {
       const count = (sinistros || []).filter(s => 
         s.data_criacao.startsWith(date)
       ).length
@@ -92,8 +114,8 @@ export async function GET(request: NextRequest) {
       return acc
     }, {} as Record<string, number>)
 
-    // Chamadas por dia (últimos 7 dias)
-    const callsPorDia = last7Days.map(date => {
+    // Chamadas por dia - usar o mesmo range de dias
+    const callsPorDia = daysRange.map(date => {
       const dateTimestamp = new Date(date).getTime()
       const nextDayTimestamp = dateTimestamp + (24 * 60 * 60 * 1000)
       
@@ -126,9 +148,6 @@ export async function GET(request: NextRequest) {
         tipo_atendimento,
         tipo_sinistro,
         tipo_assistencia,
-        assistencia_adicional,
-        total_assistencias,
-        assistencias_tipos,
         status,
         data_criacao,
         cnh_proprio_nome
@@ -138,8 +157,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       periodo: {
-        de: fromDate.toISOString().split('T')[0],
-        ate: toDate.toISOString().split('T')[0]
+        de: dateFrom || 'todos',
+        ate: dateTo || 'todos'
       },
       sinistros: {
         total: totalSinistros,
