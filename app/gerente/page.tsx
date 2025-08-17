@@ -322,7 +322,7 @@ export default function GerentePage() {
   }
 
   // Carregar andamento do sinistro (para sinistros aprovados)
-  const carregarAndamento = async (sinistroId: string) => {
+  const carregarAndamento = async (sinistroId: string, statusSinistro?: string) => {
     setLoadingAndamento(true)
 
     try {
@@ -332,8 +332,10 @@ export default function GerentePage() {
       if (response.ok) {
         setAndamentoSinistro(result.andamento || [])
 
-        // Atualizar passos personalizados para este sinistro
-        const passosPersonalizadosDoSinistro = (result.andamento || []).filter((passo: any) => passo.personalizado)
+        // Atualizar passos personalizados para este sinistro (filtrar por status se fornecido)
+        const passosPersonalizadosDoSinistro = (result.andamento || []).filter((passo: any) => 
+          passo.personalizado && (statusSinistro ? passo.status_sinistro === statusSinistro : true)
+        )
         setPassosPersonalizados((prev) => ({
           ...prev,
           [sinistroId]: passosPersonalizadosDoSinistro,
@@ -367,7 +369,9 @@ export default function GerentePage() {
           const response = await fetch(`/api/andamento-simples?sinistroId=${sinistro.id}`)
           if (response.ok) {
             const data = await response.json()
-            const passosPersonalizadosDoSinistro = (data.andamento || []).filter((passo: any) => passo.personalizado)
+            const passosPersonalizadosDoSinistro = (data.andamento || []).filter((passo: any) => 
+              passo.personalizado && passo.status_sinistro === sinistro.status
+            )
             if (passosPersonalizadosDoSinistro.length > 0) {
               return { sinistroId: sinistro.id, passos: passosPersonalizadosDoSinistro }
             }
@@ -421,7 +425,7 @@ export default function GerentePage() {
 
           // Se mudou para status com andamento, carregar andamento
           if (['em_analise', 'aprovado', 'rejeitado'].includes(novoStatus)) {
-            await carregarAndamento(sinistroId)
+            await carregarAndamento(sinistroId, novoStatus)
           }
         }
       } else {
@@ -455,7 +459,7 @@ export default function GerentePage() {
 
       if (response.ok) {
         // Recarregar andamento
-        await carregarAndamento(selectedSinistro.sinistro.id)
+        await carregarAndamento(selectedSinistro.sinistro.id, selectedSinistro.sinistro.status)
 
         // Recarregar dados do sinistro (pode ter mudado para concluído)
         await carregarDetalhes(selectedSinistro.sinistro.id)
@@ -491,7 +495,7 @@ export default function GerentePage() {
 
       if (response.ok) {
         // Recarregar andamento
-        await carregarAndamento(selectedSinistro.sinistro.id)
+        await carregarAndamento(selectedSinistro.sinistro.id, selectedSinistro.sinistro.status)
 
         // Limpar formulário
         setNovoPassoData({ nome: '', descricao: '' })
@@ -529,7 +533,7 @@ export default function GerentePage() {
 
       if (response.ok) {
         // Recarregar andamento
-        await carregarAndamento(selectedSinistro.sinistro.id)
+        await carregarAndamento(selectedSinistro.sinistro.id, selectedSinistro.sinistro.status)
 
         // Recarregar lista de sinistros e passos personalizados
         setTimeout(() => {

@@ -177,6 +177,7 @@ function DetalhesSinistro({
       {/* Seção Arquivos */}
       <SinistroArquivos arquivos={arquivos} />
 
+
       {/* Seção Histórico */}
       <SinistroHistorico logs={logs} />
 

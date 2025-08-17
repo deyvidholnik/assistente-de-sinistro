@@ -43,8 +43,8 @@ export default function SinistroAndamentoProcesso({
   onNovoPassoChange,
   onToggleNovoPassoForm,
 }: SinistroAndamentoProcessoProps) {
-  // Só mostra para sinistros em análise, aprovados e rejeitados
-  if (!['em_analise', 'aprovado', 'rejeitado'].includes(sinistro.status)) {
+  // Sempre mostra andamentos se existirem, independente do status
+  if (andamento.length === 0 && !['em_analise', 'aprovado', 'rejeitado'].includes(sinistro.status)) {
     return (
       <Card>
         <CardContent className='p-6 text-center'>
@@ -77,9 +77,9 @@ export default function SinistroAndamentoProcesso({
           </div>
         ) : (
           <div className='space-y-3'>
-            {/* Mostrar apenas passos personalizados */}
+            {/* Mostrar apenas passos personalizados do status atual */}
             {andamento
-              .filter((item) => item.personalizado)
+              .filter((item) => item.personalizado && item.status_sinistro === sinistro.status)
               .map((item, index) => (
                 <Card key={item.id}>
                   <CardContent className='p-4'>
@@ -167,7 +167,8 @@ export default function SinistroAndamentoProcesso({
                 </Card>
               ))}
 
-            {/* Formulário para adicionar novo passo */}
+            {/* Formulário para adicionar novo passo - só nos status permitidos */}
+            {['em_analise', 'aprovado', 'rejeitado'].includes(sinistro.status) && (
             <Card className='border-dashed border-2 border-border'>
               <CardContent className='p-4'>
                 {!showNovoPassoForm ? (
@@ -198,7 +199,7 @@ export default function SinistroAndamentoProcesso({
                           value={novoPassoData.nome}
                           onChange={(e) => onNovoPassoChange?.({ ...novoPassoData, nome: e.target.value })}
                           placeholder='Ex: Vistoria Adicional'
-                          className='focus:ring-2 focus:ring-brand-primary'
+                          className='focus:ring-2 focus:ring-brand-primary text-foreground'
                         />
                       </div>
                       <div className='space-y-2'>
@@ -213,7 +214,7 @@ export default function SinistroAndamentoProcesso({
                           value={novoPassoData.descricao}
                           onChange={(e) => onNovoPassoChange?.({ ...novoPassoData, descricao: e.target.value })}
                           placeholder='Ex: Vistoria adicional solicitada pelo cliente'
-                          className='focus:ring-2 focus:ring-brand-primary'
+                          className='focus:ring-2 focus:ring-brand-primary text-foreground'
                         />
                       </div>
                     </div>
@@ -239,6 +240,7 @@ export default function SinistroAndamentoProcesso({
                 )}
               </CardContent>
             </Card>
+            )}
           </div>
         )}
       </CardContent>

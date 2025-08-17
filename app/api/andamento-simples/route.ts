@@ -240,8 +240,28 @@ export async function PUT(req: NextRequest) {
       data_atualizacao: dataAtualBrasilia
     }
 
+    // Buscar andamento atual para preservar passos personalizados
+    const { data: currentSinistro } = await supabase
+      .from('sinistros')
+      .select('andamento')
+      .eq('id', sinistroId)
+      .single()
+
     if (['em_analise', 'aprovado', 'rejeitado'].includes(novoStatus)) {
-      updateData.andamento = criarAndamentoInicial(novoStatus)
+      // Se já tem andamento, preservar passos personalizados
+      if (currentSinistro?.andamento && currentSinistro.andamento.length > 0) {
+        // Preservar apenas os passos personalizados
+        const passosPersonalizados = currentSinistro.andamento.filter((passo: any) => passo.personalizado)
+        
+        // Criar andamento inicial para o novo status
+        const andamentoInicial = criarAndamentoInicial(novoStatus)
+        
+        // Combinar: passos padrão do novo status + passos personalizados existentes
+        updateData.andamento = [...andamentoInicial, ...passosPersonalizados]
+      } else {
+        // Se não tem andamento, criar inicial normal
+        updateData.andamento = criarAndamentoInicial(novoStatus)
+      }
     }
 
     // Atualizar status do sinistro
@@ -318,7 +338,8 @@ export async function PATCH(req: NextRequest) {
       data_conclusao: null,
       observacoes: null,
       usuario_responsavel: null,
-      personalizado: true
+      personalizado: true,
+      status_sinistro: sinistroData.status // Salvar em qual status foi criado
     }
 
     // Adicionar ao andamento

@@ -336,7 +336,7 @@ export function GerenteListaSinistros({
                     {passosPersonalizados[sinistro.id] && passosPersonalizados[sinistro.id].length > 0 && (
                       <div className='w-full'>
                         <div className='text-xs text-muted-foreground mb-2 font-medium'>Andamento do Processo:</div>
-                        <div className='w-full andamento-scroll'>
+                        <div className='w-full overflow-x-auto scrollbar-hide'>
                           <div className='flex gap-2 pb-2 andamento-container'>
                             {passosPersonalizados[sinistro.id].map((passo, index) => (
                               <Badge
@@ -679,7 +679,7 @@ export function GerenteListaSinistros({
                         {passosPersonalizados[sinistro.id] && passosPersonalizados[sinistro.id].length > 0 && (
                           <div className='col-span-full'>
                             <div className='text-xs text-muted-foreground mb-2 font-medium'>Andamento do Processo:</div>
-                            <div className='w-full andamento-scroll'>
+                            <div className='w-full overflow-x-auto scrollbar-hide'>
                               <div className='flex gap-2 pb-2 andamento-container'>
                                 {passosPersonalizados[sinistro.id].map((passo, index) => (
                                   <Badge

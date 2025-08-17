@@ -10,6 +10,7 @@ export { default as SinistroCondutores } from './SinistroCondutores'
 export { default as SinistroVeiculos } from './SinistroVeiculos'
 export { default as SinistroArquivos } from './SinistroArquivos'
 export { default as SinistroHistorico } from './SinistroHistorico'
+export { default as SinistroStatusJourney } from './SinistroStatusJourney'
 
 // Re-export das cards
 export * from './cards'
