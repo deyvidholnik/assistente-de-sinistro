@@ -59,6 +59,7 @@ import { GerenteEstatisticas } from './gerente-estatisticas'
 import { GerenteFiltros } from './gerente-filtros'
 import { GerenteListaSinistros } from './gerente-lista-sinistros'
 import { DetalhesSinistro } from './gerente-detalhes-sinistro'
+import { ModalNovaOcorrencia } from './modal-nova-ocorrencia'
 import Link from 'next/link'
 
 // Função simples para formatar datas
@@ -178,6 +179,9 @@ export default function GerentePage() {
   // Estados de paginação
   const [paginaAtual, setPaginaAtual] = useState(1)
   const [itensPorPagina, setItensPorPagina] = useState(20)
+
+  // Estado do modal de nova ocorrência
+  const [showModalNovaOcorrencia, setShowModalNovaOcorrencia] = useState(false)
 
   const { signOut, user } = useAdminAuth()
   const router = useRouter()
@@ -758,7 +762,18 @@ export default function GerentePage() {
             totalItens={totalItens}
             onMudarPagina={handleMudarPagina}
             onMudarItensPorPagina={handleMudarItensPorPagina}
+            onNovaOcorrencia={() => setShowModalNovaOcorrencia(true)}
           />
+
+          {/* Modal Nova Ocorrência */}
+          <ModalNovaOcorrencia
+            open={showModalNovaOcorrencia}
+            onOpenChange={setShowModalNovaOcorrencia}
+            onSuccess={() => {
+              carregarSinistros()
+            }}
+          />
+
           {/* Error Alert */}
           {error && (
             <Alert className='border-red-200 bg-red-50'>

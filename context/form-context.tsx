@@ -65,13 +65,45 @@ interface FormContextType {
 
 const FormContext = createContext<FormContextType | undefined>(undefined)
 
-export function FormProvider({ children }: { children: ReactNode }) {
-  const [currentStep, setCurrentStep] = useState(1)
+interface FormProviderProps {
+  children: ReactNode
+  initialData?: {
+    tipoAtendimento?: string
+    tipoSinistro?: string
+    tipoAssistencia?: string
+    nomeCompleto?: string
+    cpf?: string
+    placa?: string
+    marca?: string
+    modelo?: string
+    sinistroId?: string
+    currentStep?: number
+  }
+}
+
+export function FormProvider({ children, initialData }: FormProviderProps) {
+  // Determinar step inicial baseado nos dados pré-preenchidos
+  const getInitialStep = () => {
+    if (initialData?.currentStep) return initialData.currentStep
+    if (initialData?.tipoAtendimento && initialData?.tipoSinistro) {
+      // Se já tem dados básicos, começar na CNH (step 6)
+      return 6
+    }
+    return 1
+  }
+
+  const [currentStep, setCurrentStep] = useState(getInitialStep())
   const [currentFotoStep, setCurrentFotoStep] = useState(0)
   const [isDocumentingThirdParty, setIsDocumentingThirdParty] = useState(false)
-  const [tipoAtendimento, setTipoAtendimento] = useState<TipoAtendimento>(null)
-  const [tipoSinistro, setTipoSinistro] = useState<TipoSinistro>(null)
-  const [tipoAssistencia, setTipoAssistencia] = useState<TipoAssistencia>(null)
+  const [tipoAtendimento, setTipoAtendimento] = useState<TipoAtendimento>(
+    initialData?.tipoAtendimento as TipoAtendimento || null
+  )
+  const [tipoSinistro, setTipoSinistro] = useState<TipoSinistro>(
+    initialData?.tipoSinistro as TipoSinistro || null
+  )
+  const [tipoAssistencia, setTipoAssistencia] = useState<TipoAssistencia>(
+    initialData?.tipoAssistencia as TipoAssistencia || null
+  )
   const [documentosFurtados, setDocumentosFurtados] = useState<boolean | null>(null)
   const [documentos, setDocumentos] = useState<DocumentosData>({
     cnh: [],
@@ -86,8 +118,8 @@ export function FormProvider({ children }: { children: ReactNode }) {
     boletimOcorrencia: [],
   })
   const [cnhData, setCnhData] = useState<CNHData>({
-    nome: "",
-    cpf: "",
+    nome: initialData?.nomeCompleto || "",
+    cpf: initialData?.cpf || "",
     rg: "",
     dataNascimento: "",
     categoria: "",
@@ -95,16 +127,16 @@ export function FormProvider({ children }: { children: ReactNode }) {
     dataVencimento: "",
   })
   const [crlvData, setCrlvData] = useState<CRLVData>({
-    placa: "",
+    placa: initialData?.placa || "",
     renavam: "",
     chassi: "",
-    marca: "",
-    modelo: "",
+    marca: initialData?.marca || "",
+    modelo: initialData?.modelo || "",
     anoFabricacao: "",
     anoModelo: "",
     cor: "",
     combustivel: "",
-    proprietario: "",
+    proprietario: initialData?.nomeCompleto || "",
   })
   const [cnhDataTerceiros, setCnhDataTerceiros] = useState<CNHData>({
     nome: "",

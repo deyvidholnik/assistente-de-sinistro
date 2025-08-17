@@ -22,8 +22,10 @@ import {
   Wrench,
   Loader2,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Plus
 } from "lucide-react"
+import { BotaoCompartilharLink } from "./botao-compartilhar-link"
 
 interface Sinistro {
   id: string
@@ -43,6 +45,7 @@ interface Sinistro {
   total_arquivos: number
   outros_veiculos_envolvidos?: boolean
   documentos_furtados?: boolean
+  created_by_manager?: boolean
 }
 
 interface SinistroDetalhado {
@@ -76,6 +79,8 @@ interface GerenteListaSinistrosProps {
   totalItens: number
   onMudarPagina: (pagina: number) => void
   onMudarItensPorPagina: (quantidade: number) => void
+  // Nova Ocorrência
+  onNovaOcorrencia: () => void
 }
 
 export function GerenteListaSinistros({
@@ -104,10 +109,29 @@ export function GerenteListaSinistros({
   itensPorPagina,
   totalItens,
   onMudarPagina,
-  onMudarItensPorPagina
+  onMudarItensPorPagina,
+  // Nova Ocorrência
+  onNovaOcorrencia
 }: GerenteListaSinistrosProps) {
   return (
-    <div className="grid gap-4">
+    <div className="space-y-4">
+      {/* Barra de Ações */}
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-foreground">
+            Ocorrências ({totalItens})
+          </h2>
+        </div>
+        <Button 
+          onClick={onNovaOcorrencia}
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Nova Ocorrência
+        </Button>
+      </div>
+
+      <div className="grid gap-4">
       {sinistrosFiltrados.length === 0 ? (
         <Card className="border-dashed border-2 border-border">
           <CardContent className="p-8 text-center">
@@ -335,8 +359,8 @@ export function GerenteListaSinistros({
                   )}
                 </div>
 
-                {/* Linha 5: Botão de ação */}
-                <div className="flex justify-center pt-2">
+                {/* Linha 5: Botões de ação */}
+                <div className="flex gap-2 pt-2">
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button
@@ -348,7 +372,7 @@ export function GerenteListaSinistros({
                             await carregarAndamento(sinistro.id)
                           }
                         }}
-                        className="h-9 text-sm hover:bg-blue-50 hover:border-blue-300 w-full"
+                        className="h-9 text-sm hover:bg-blue-50 hover:border-blue-300 flex-1"
                       >
                         <Eye className="w-4 h-4 mr-2" />
                         Ver Detalhes
@@ -388,6 +412,13 @@ export function GerenteListaSinistros({
                       ) : null}
                     </DialogContent>
                   </Dialog>
+                  
+                  <BotaoCompartilharLink
+                    sinistroId={sinistro.id}
+                    numeroSinistro={sinistro.numero_sinistro}
+                    createdByManager={sinistro.created_by_manager}
+                    status={sinistro.status}
+                  />
                 </div>
               </div>
 
@@ -510,8 +541,16 @@ export function GerenteListaSinistros({
                       </Badge>
                     </div>
                     
-                    {/* Lado direito: Botão */}
-                    <Dialog>
+                    {/* Lado direito: Botões */}
+                    <div className="flex items-center gap-2">
+                      <BotaoCompartilharLink
+                        sinistroId={sinistro.id}
+                        numeroSinistro={sinistro.numero_sinistro}
+                        createdByManager={sinistro.created_by_manager}
+                        status={sinistro.status}
+                      />
+                      
+                      <Dialog>
                       <DialogTrigger asChild>
                         <Button
                           variant="outline"
@@ -562,6 +601,7 @@ export function GerenteListaSinistros({
                         ) : null}
                       </DialogContent>
                     </Dialog>
+                    </div>
                   </div>
 
                   {/* Linha 2: Grid de informações principais + metadados */}
@@ -754,6 +794,7 @@ export function GerenteListaSinistros({
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   )
 }

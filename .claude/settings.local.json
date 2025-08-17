@@ -6,7 +6,13 @@
       "Bash(mkdir:*)",
       "Bash(npm run dev:*)",
       "Bash(mv:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run build:*)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(git push:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": [],

@@ -43,7 +43,12 @@ const config: Config = {
   				DEFAULT: 'hsl(var(--destructive))',
   				foreground: 'hsl(var(--destructive-foreground))'
   			},
-  			border: 'hsl(var(--border))',
+  			border: {
+  				DEFAULT: 'hsl(var(--border))',
+  				light: 'hsl(var(--border-light))',
+  				medium: 'hsl(var(--border-medium))',
+  				accent: 'hsl(var(--border-accent))'
+  			},
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',
   			chart: {
@@ -81,12 +86,20 @@ const config: Config = {
   			status: {
   				success: 'hsl(var(--status-success))',
   				'success-foreground': 'hsl(var(--status-success-foreground))',
+  				'success-light': 'hsl(var(--status-success) / 0.1)',
+  				'success-medium': 'hsl(var(--status-success) / 0.2)',
   				warning: 'hsl(var(--status-warning))',
   				'warning-foreground': 'hsl(var(--status-warning-foreground))',
+  				'warning-light': 'hsl(var(--status-warning) / 0.1)',
+  				'warning-medium': 'hsl(var(--status-warning) / 0.2)',
   				error: 'hsl(var(--status-error))',
   				'error-foreground': 'hsl(var(--status-error-foreground))',
+  				'error-light': 'hsl(var(--status-error) / 0.1)',
+  				'error-medium': 'hsl(var(--status-error) / 0.2)',
   				info: 'hsl(var(--status-info))',
-  				'info-foreground': 'hsl(var(--status-info-foreground))'
+  				'info-foreground': 'hsl(var(--status-info-foreground))',
+  				'info-light': 'hsl(var(--status-info) / 0.1)',
+  				'info-medium': 'hsl(var(--status-info) / 0.2)'
   			},
   			surface: {
   				elevated: 'hsl(var(--surface-elevated))',
