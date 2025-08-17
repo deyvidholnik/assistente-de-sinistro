@@ -1,14 +1,26 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
-import { Car } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Car, Edit2, Trash2, Camera } from 'lucide-react'
 
 interface VeiculoCardProps {
   crlv: any
   index: number
+  onEditar?: (veiculo: any) => void
+  onRemover?: (veiculoId: string) => void
+  onAdicionarFotos?: (veiculoId: string) => void
+  showActions?: boolean
 }
 
-export default function VeiculoCard({ crlv, index }: VeiculoCardProps) {
+export default function VeiculoCard({ 
+  crlv, 
+  index, 
+  onEditar, 
+  onRemover, 
+  onAdicionarFotos,
+  showActions = false 
+}: VeiculoCardProps) {
   const isProprio = crlv.tipo_veiculo === 'proprio'
   
   return (
@@ -17,12 +29,49 @@ export default function VeiculoCard({ crlv, index }: VeiculoCardProps) {
       className={isProprio ? 'border-l-4 border-l-status-success' : 'border-l-4 border-l-brand-secondary'}
     >
       <CardHeader className='pb-2 lg:pb-3'>
-        <CardTitle className='text-base lg:text-lg flex items-center gap-2 text-foreground'>
-          <Car
-            className={`w-5 h-5 ${isProprio ? 'text-status-success' : 'text-brand-secondary'}`}
-          />
-          {isProprio ? 'Veículo Principal' : 'Veículo Terceiro'}
-        </CardTitle>
+        <div className='flex items-center justify-between'>
+          <CardTitle className='text-base lg:text-lg flex items-center gap-2 text-foreground'>
+            <Car
+              className={`w-5 h-5 ${isProprio ? 'text-status-success' : 'text-brand-secondary'}`}
+            />
+            {isProprio ? 'Veículo Principal' : 'Veículo Terceiro'}
+          </CardTitle>
+          
+          {showActions && (
+            <div className='flex items-center gap-2'>
+              {onAdicionarFotos && (
+                <Button
+                  size='sm'
+                  variant='outline'
+                  onClick={() => onAdicionarFotos(crlv.id)}
+                  className='h-8 px-2'
+                >
+                  <Camera className='w-4 h-4' />
+                </Button>
+              )}
+              {onEditar && (
+                <Button
+                  size='sm'
+                  variant='outline'
+                  onClick={() => onEditar(crlv)}
+                  className='h-8 px-2'
+                >
+                  <Edit2 className='w-4 h-4' />
+                </Button>
+              )}
+              {onRemover && (
+                <Button
+                  size='sm'
+                  variant='outline'
+                  onClick={() => onRemover(crlv.id)}
+                  className='h-8 px-2 text-red-600 hover:text-red-700 hover:bg-red-50'
+                >
+                  <Trash2 className='w-4 h-4' />
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         {/* Mobile: Layout compacto */}

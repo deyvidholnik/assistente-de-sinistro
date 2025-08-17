@@ -1,7 +1,21 @@
 'use client'
 
-import React from 'react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip, Legend } from 'recharts'
+import React, { useState, useEffect } from 'react'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  Tooltip,
+  Legend,
+} from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { ChartContainer as CustomChartContainer } from './shared/ChartContainer'
 import { EmptyState } from './shared/EmptyState'
@@ -43,17 +57,17 @@ const statusColors = {
 }
 
 const tipoColors = {
-  sinistro_colisao: 'hsl(var(--status-error))',
-  sinistro_furto: 'hsl(var(--chart-4))',
-  sinistro_roubo: 'hsl(var(--status-error))',
-  sinistro_pequenos_reparos: 'hsl(var(--status-success))',
-  assistencia_guincho: 'hsl(var(--brand-primary))',
-  assistencia_pane_seca: 'hsl(var(--chart-2))',
-  assistencia_pane_mecanica: 'hsl(var(--chart-3))',
-  assistencia_pane_eletrica: 'hsl(var(--chart-5))',
-  assistencia_trocar_pneu: 'hsl(var(--brand-secondary))',
-  assistencia_taxi: 'hsl(var(--chart-1))',
-  assistencia_hotel: 'hsl(var(--chart-4))',
+  sinistro_colisao: '#ef4444',        // vermelho
+  sinistro_furto: '#f97316',          // laranja
+  sinistro_roubo: '#dc2626',          // vermelho escuro
+  sinistro_pequenos_reparos: '#22c55e', // verde
+  assistencia_guincho: '#3b82f6',     // azul
+  assistencia_pane_seca: '#8b5cf6',   // roxo
+  assistencia_pane_mecanica: '#06b6d4', // ciano
+  assistencia_pane_eletrica: '#eab308', // amarelo
+  assistencia_trocar_pneu: '#ec4899',  // rosa
+  assistencia_taxi: '#84cc16',        // lime
+  assistencia_hotel: '#f59e0b',       // âmbar
 }
 
 function formatStatusLabel(status: string): string {
@@ -85,12 +99,26 @@ function formatTipoLabel(tipo: string): string {
 }
 
 export function SinistrosChart({ data, loading = false, className = '' }: SinistrosChartProps) {
+  // Hook para detectar tamanho da tela
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    function handleResize() {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    handleResize()
+    window.addEventListener('resize', handleResize)
+
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   // Verificar se há dados
   if (!data || (!data.total && Object.keys(data.porStatus || {}).length === 0)) {
     return (
-      <EmptyState 
-        title="Nenhum sinistro encontrado"
-        description="Não há dados de sinistros disponíveis para o período selecionado."
+      <EmptyState
+        title='Nenhum sinistro encontrado'
+        description='Não há dados de sinistros disponíveis para o período selecionado.'
         className={className}
       />
     )
@@ -113,9 +141,9 @@ export function SinistrosChart({ data, loading = false, className = '' }: Sinist
   const timelineData = (data.porDia || []).map((item) => {
     try {
       return {
-        date: new Date(item.date).toLocaleDateString('pt-BR', { 
-          day: '2-digit', 
-          month: '2-digit' 
+        date: new Date(item.date).toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
         }),
         count: Number(item.count) || 0,
       }
@@ -127,9 +155,12 @@ export function SinistrosChart({ data, loading = false, className = '' }: Sinist
     }
   })
 
-  const totalTrend = (data.porDia || []).length >= 2 
-    ? ((data.porDia[data.porDia.length - 1].count - data.porDia[data.porDia.length - 2].count) / (data.porDia[data.porDia.length - 2].count || 1)) * 100
-    : 0
+  const totalTrend =
+    (data.porDia || []).length >= 2
+      ? ((data.porDia[data.porDia.length - 1].count - data.porDia[data.porDia.length - 2].count) /
+          (data.porDia[data.porDia.length - 2].count || 1)) *
+        100
+      : 0
 
   return (
     <div className={`space-y-4 md:space-y-6 ${className}`}>
@@ -142,24 +173,42 @@ export function SinistrosChart({ data, loading = false, className = '' }: Sinist
           trend={{
             value: Math.round(totalTrend),
             period: 'vs. dia anterior',
-            direction: totalTrend > 0 ? 'up' : totalTrend < 0 ? 'down' : 'neutral'
+            direction: totalTrend > 0 ? 'up' : totalTrend < 0 ? 'down' : 'neutral',
           }}
         >
-          <ChartContainer config={chartConfig} className='h-[180px] sm:h-[250px] md:h-[350px] lg:h-[400px]'>
-            <ResponsiveContainer width='100%' height='100%'>
-              <BarChart data={statusData} margin={{ top: 10, right: 10, left: 10, bottom: 35 }}>
-                <CartesianGrid strokeDasharray='3 3' opacity={0.3} />
-                <XAxis 
-                  dataKey='name' 
+          <ChartContainer
+            config={chartConfig}
+            className='h-[180px] sm:h-[250px] md:h-[350px] lg:h-[400px]'
+          >
+            <ResponsiveContainer
+              width='100%'
+              height='100%'
+            >
+              <BarChart
+                data={statusData}
+                margin={{ top: 10, right: 10, left: 10, bottom: 35 }}
+              >
+                <CartesianGrid
+                  strokeDasharray='3 3'
+                  opacity={0.3}
+                />
+                <XAxis
+                  dataKey='name'
                   tick={{ fontSize: 8 }}
                   angle={-45}
                   textAnchor='end'
                   height={35}
                   interval={0}
                 />
-                <YAxis tick={{ fontSize: 8 }} width={28} />
+                <YAxis
+                  tick={{ fontSize: 8 }}
+                  width={28}
+                />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey='value' radius={[3, 3, 0, 0]} />
+                <Bar
+                  dataKey='value'
+                  radius={[3, 3, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </ChartContainer>
@@ -174,27 +223,50 @@ export function SinistrosChart({ data, loading = false, className = '' }: Sinist
             description='Distribuição por tipo de atendimento'
             loading={loading}
           >
-            <ChartContainer config={chartConfig} className='h-[200px] sm:h-[280px] md:h-[350px]'>
-              <ResponsiveContainer width='100%' height='100%'>
-                <PieChart margin={{ top: 10, right: 10, bottom: 50, left: 10 }}>
+            <ChartContainer
+              config={chartConfig}
+              className='h-[350px] sm:h-[350px] md:h-[350px]'
+            >
+              <ResponsiveContainer
+                width='100%'
+                height='100%'
+              >
+                <PieChart
+                  margin={
+                    isMobile
+                      ? { top: 20, right: 10, bottom: 90, left: 10 }
+                      : { top: 30, right: 15, bottom: 80, left: 15 }
+                  }
+                >
                   <Pie
                     data={tipoData}
-                    cx='50%'
-                    cy='35%'
+                    cx={isMobile ? '34%' : '50%'}
+                    cy={isMobile ? '55%' : '40%'}
                     labelLine={false}
-                    outerRadius={45}
+                    label={({ value }) => value}
+                    outerRadius={isMobile ? 70 : 70}
                     fill='#8884d8'
                     dataKey='value'
                   >
                     {tipoData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.fill}
+                      />
                     ))}
                   </Pie>
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Legend 
-                    verticalAlign='bottom' 
-                    height={45}
-                    wrapperStyle={{ fontSize: '8px', paddingTop: '5px', lineHeight: '1.1' }}
+                  <Legend
+                    verticalAlign='bottom'
+                    height={isMobile ? 40 : 30}
+                    align='center'
+                    wrapperStyle={{
+                      fontSize: isMobile ? '10px' : '12px',
+                      paddingTop: isMobile ? '25px' : '10px',
+                      paddingRight: isMobile ? '200px' : '0px',
+                      lineHeight: '1.2',
+                      textAlign: 'center',
+                    }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -209,23 +281,38 @@ export function SinistrosChart({ data, loading = false, className = '' }: Sinist
             description='Sinistros registrados no período'
             loading={loading}
           >
-            <ChartContainer config={chartConfig} className='h-[180px] sm:h-[250px] md:h-[320px]'>
-              <ResponsiveContainer width='100%' height='100%'>
-                <LineChart data={timelineData} margin={{ top: 10, right: 10, left: 10, bottom: 30 }}>
-                  <CartesianGrid strokeDasharray='3 3' opacity={0.3} />
-                  <XAxis 
-                    dataKey='date' 
+            <ChartContainer
+              config={chartConfig}
+              className='h-[180px] sm:h-[250px] md:h-[320px]'
+            >
+              <ResponsiveContainer
+                width='100%'
+                height='100%'
+              >
+                <LineChart
+                  data={timelineData}
+                  margin={{ top: 10, right: 10, left: 10, bottom: 30 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray='3 3'
+                    opacity={0.3}
+                  />
+                  <XAxis
+                    dataKey='date'
                     tick={{ fontSize: 8 }}
                     angle={-45}
                     textAnchor='end'
                     height={30}
                   />
-                  <YAxis tick={{ fontSize: 8 }} width={25} />
+                  <YAxis
+                    tick={{ fontSize: 8 }}
+                    width={25}
+                  />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line 
-                    type='monotone' 
-                    dataKey='count' 
-                    stroke='hsl(var(--brand-primary))' 
+                  <Line
+                    type='monotone'
+                    dataKey='count'
+                    stroke='hsl(var(--brand-primary))'
                     strokeWidth={2}
                     dot={{ fill: 'hsl(var(--brand-primary))', strokeWidth: 1, r: 3 }}
                     activeDot={{ r: 5, stroke: 'hsl(var(--brand-primary))', strokeWidth: 2 }}
