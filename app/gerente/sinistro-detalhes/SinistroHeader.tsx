@@ -7,6 +7,10 @@ import {
   Shield,
   AlertTriangle,
   Wrench,
+  User,
+  Phone,
+  Hash,
+  UserCheck,
 } from 'lucide-react'
 import { formatarData, formatarTodasAssistencias } from '../gerente-formatters'
 import { StatusBadge } from './cards'
@@ -16,6 +20,29 @@ interface SinistroHeaderProps {
 }
 
 export default function SinistroHeader({ sinistro }: SinistroHeaderProps) {
+  // Função para extrair telefone das observações
+  const extrairTelefone = (observacoes: string) => {
+    if (!observacoes) return null
+    const match = observacoes.match(/(?:TelefoneWhatsApp|Telefone):\s*(\([0-9]{2}\)\s*[0-9]{4,5}-?[0-9]{4})/i)
+    return match ? match[1] : null
+  }
+
+  // Função para limpar observações removendo o telefone
+  const limparObservacoes = (observacoes: string) => {
+    if (!observacoes) return null
+    return observacoes.replace(/(?:TelefoneWhatsApp|Telefone):\s*\([0-9]{2}\)\s*[0-9]{4,5}-?[0-9]{4}/gi, '').trim() || null
+  }
+
+  const telefone = sinistro.telefone_cliente || extrairTelefone(sinistro.observacoes_gerente)
+  const observacoesLimpas = limparObservacoes(sinistro.observacoes_gerente)
+  
+  console.log('🔍 DEBUG:', { 
+    telefone_cliente: sinistro.telefone_cliente,
+    observacoes_gerente: sinistro.observacoes_gerente,
+    telefone_extraido: extrairTelefone(sinistro.observacoes_gerente),
+    telefone_final: telefone,
+    observacoes_limpas: observacoesLimpas
+  })
   const renderTipoIcon = () => {
     if (sinistro.tipo_atendimento === 'assistencia') {
       return <Headphones className='w-4 h-4 inline mr-1 text-status-info' />
@@ -101,6 +128,62 @@ export default function SinistroHeader({ sinistro }: SinistroHeaderProps) {
               <span className='ml-2 text-sm text-muted-foreground'>- {formatarTodasAssistencias(sinistro)}</span>
             )}
           </div>
+          {/* Informações de criação pelo gestor */}
+          {sinistro.created_by_manager && (
+            <div className='mt-2 pt-2 border-t border-border-light'>
+              <div className='flex items-center gap-2 text-xs text-muted-foreground'>
+                <User className='w-3 h-3 text-brand-secondary' />
+                <span>Criado pelo Gestor</span>
+              </div>
+              {observacoesLimpas && (
+                <div className='mt-1 text-xs text-muted-foreground'>
+                  <span className='font-medium'>Observações:</span> {observacoesLimpas}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Informações adicionais do Cliente */}
+        <div className='space-y-2'>
+          {/* Nome do Cliente */}
+          {(sinistro.cnh_proprio_nome || sinistro.nome_completo_furto) && (
+            <div className='bg-surface-elevated rounded-lg p-2 border border-border-light'>
+              <div className='flex items-center gap-2 text-xs text-muted-foreground mb-1'>
+                <UserCheck className='w-3 h-3 text-brand-primary' />
+                <span>Cliente</span>
+              </div>
+              <div className='text-sm font-medium text-foreground'>
+                {sinistro.cnh_proprio_nome || sinistro.nome_completo_furto}
+              </div>
+            </div>
+          )}
+
+          {/* Placa do Veículo */}
+          {(sinistro.crlv_proprio_placa || sinistro.placa_veiculo_furto) && (
+            <div className='bg-surface-elevated rounded-lg p-2 border border-border-light'>
+              <div className='flex items-center gap-2 text-xs text-muted-foreground mb-1'>
+                <Hash className='w-3 h-3 text-brand-primary' />
+                <span>Placa</span>
+              </div>
+              <div className='text-sm font-medium text-foreground'>
+                {sinistro.crlv_proprio_placa || sinistro.placa_veiculo_furto}
+              </div>
+            </div>
+          )}
+
+          {/* Telefone do Cliente */}
+          {telefone && (
+            <div className='bg-surface-elevated rounded-lg p-2 border border-border-light'>
+              <div className='flex items-center gap-2 text-xs text-muted-foreground mb-1'>
+                <Phone className='w-3 h-3 text-brand-primary' />
+                <span>Telefone</span>
+              </div>
+              <div className='text-sm font-medium text-foreground'>
+                {telefone}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -117,6 +200,49 @@ export default function SinistroHeader({ sinistro }: SinistroHeaderProps) {
           <div className='flex items-center gap-2 text-muted-foreground'>
             <Calendar className='w-4 h-4 text-brand-primary' />
             <span>{formatarData(sinistro.data_criacao)}</span>
+          </div>
+          {/* Informações de criação pelo gestor */}
+          {sinistro.created_by_manager && (
+            <div className='mt-2 flex items-center gap-2 text-sm text-muted-foreground'>
+              <User className='w-4 h-4 text-brand-secondary' />
+              <span>Criado pelo Gestor</span>
+            </div>
+          )}
+          
+          {/* Informações adicionais */}
+          <div className='mt-3 space-y-2'>
+            {/* Nome do Cliente */}
+            {(sinistro.cnh_proprio_nome || sinistro.nome_completo_furto) && (
+              <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                <UserCheck className='w-4 h-4 text-brand-primary' />
+                <span>Cliente:</span>
+                <span className='font-medium text-foreground'>
+                  {sinistro.cnh_proprio_nome || sinistro.nome_completo_furto}
+                </span>
+              </div>
+            )}
+            
+            {/* Placa do Veículo */}
+            {(sinistro.crlv_proprio_placa || sinistro.placa_veiculo_furto) && (
+              <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                <Hash className='w-4 h-4 text-brand-primary' />
+                <span>Placa:</span>
+                <span className='font-medium text-foreground'>
+                  {sinistro.crlv_proprio_placa || sinistro.placa_veiculo_furto}
+                </span>
+              </div>
+            )}
+            
+            {/* Telefone do Cliente */}
+            {telefone && (
+              <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                <Phone className='w-4 h-4 text-brand-primary' />
+                <span>Telefone:</span>
+                <span className='font-medium text-foreground'>
+                  {telefone}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -143,6 +269,14 @@ export default function SinistroHeader({ sinistro }: SinistroHeaderProps) {
               )}
             </div>
           </div>
+          
+          {/* Observações do gerente na versão desktop */}
+          {sinistro.created_by_manager && observacoesLimpas && (
+            <div className='mt-3 p-3 bg-surface-elevated rounded-lg border border-border-light lg:max-w-md'>
+              <div className='text-sm text-muted-foreground mb-1'>Observações do Gestor:</div>
+              <div className='text-sm text-foreground'>{observacoesLimpas}</div>
+            </div>
+          )}
         </div>
       </div>
     </div>
