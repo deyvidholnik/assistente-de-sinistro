@@ -214,9 +214,14 @@ export default function GerentePage() {
         throw error
       }
 
-      setSinistros(data || [])
-      console.log('Sinistros carregados:', data?.length || 0)
-      console.log('Exemplo de sinistro:', data?.[0])
+      // Remover duplicados por ID antes de definir o estado
+      const sinistrosUnicos = data ? data.filter((sinistro, index, array) => 
+        array.findIndex(s => s.id === sinistro.id) === index
+      ) : []
+      
+      setSinistros(sinistrosUnicos)
+      console.log('Sinistros carregados:', sinistrosUnicos.length || 0)
+      console.log('Exemplo de sinistro:', sinistrosUnicos[0])
 
       // Debug específico para assistências adicionais
       const comAssistenciaAdicional = data?.filter((s) => s.assistencia_adicional === true) || []
@@ -646,7 +651,6 @@ export default function GerentePage() {
 
     // Auto-atualização a cada 10 segundos
     const interval = setInterval(() => {
-      console.log('Auto-refresh executando...')
       carregarSinistros(true)
     }, 10000)
 
@@ -678,6 +682,8 @@ export default function GerentePage() {
   const indiceInicio = (paginaAtual - 1) * itensPorPagina
   const indiceFim = indiceInicio + itensPorPagina
   const sinistrosPaginados = sinistrosFiltrados.slice(indiceInicio, indiceFim)
+    // Dupla verificação para garantir que não há duplicados por ID
+    .filter((sinistro, index, array) => array.findIndex(s => s.id === sinistro.id) === index)
 
   // Handlers de paginação
   const handleMudarPagina = (novaPagina: number) => {
