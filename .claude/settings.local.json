@@ -15,7 +15,8 @@
       "Bash(npm install:*)",
       "WebFetch(domain:localhost)",
       "Bash(npx kill-port:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": [],

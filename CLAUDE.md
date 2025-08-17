@@ -158,6 +158,46 @@ O formulário principal (`/registro_ocorrencia`) é um wizard de 12 etapas:
 
 **Motivo:** Modernizar a interface visual do componente de detalhes de sinistro com melhor suporte a temas e design mais polido
 
+### 17/08/2025 - Padronização de Números de Sinistro
+**Implementado:** Sistema centralizado de geração de números no formato `SIN-YYYY-NNNNNN`
+
+**Arquivos Criados:**
+- `lib/numero-sinistro.ts` - Função centralizada para gerar números padronizados
+- `sql/padronizar-numeros-sinistro.sql` - Script SQL para migração de números existentes
+- `scripts/padronizar-numeros.js` - Script Node.js para execução segura da migração
+
+**Arquivos Modificados:**
+- `app/gerente/modal-nova-ocorrencia.tsx` - Substituição da função local por função centralizada
+- `package.json` - Adição do comando `npm run padronizar-numeros`
+
+**Principais Mudanças:**
+1. **Sistema Unificado:** 
+   - Criação de função centralizada `gerarNumeroSinistroPadrao()` que consulta o banco
+   - Formato padrão: `SIN-YYYY-NNNNNN` (ex: `SIN-2025-000001`)
+   - Fallback automático em caso de erro na consulta
+2. **Migração Segura:**
+   - Script SQL com visualização prévia das alterações
+   - Script Node.js interativo com confirmação do usuário
+   - Atualização automática da sequência do banco após migração
+3. **Substituição no Gerente:**
+   - Remoção da função local `gerarNumeroSinistro()` que gerava formato `YYMMDDDDDDD`
+   - Implementação da função async centralizada
+4. **Compatibilidade:**
+   - Formulário normal continua usando o DEFAULT do banco (automático)
+   - Gerente agora usa a mesma função centralizada
+   - Sistema mantém compatibilidade com números existentes
+
+**Problema Resolvido:** 
+- **Antes:** Dois formatos diferentes (`SIN-2025-000001` vs `25081712345`)
+- **Depois:** Formato único `SIN-YYYY-NNNNNN` para todos os sinistros
+
+**Como Executar a Migração:**
+```bash
+npm run padronizar-numeros
+```
+
+**Motivo:** Garantir numeração sequencial consistente independente do método de criação (cliente via formulário ou gerente via modal)
+
 ## Processo de Documentação de Alterações Manuais
 
 **IMPORTANTE**: Sempre que o usuário informar que fez alterações manuais no código, seguir automaticamente este processo:

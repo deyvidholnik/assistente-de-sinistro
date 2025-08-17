@@ -332,37 +332,36 @@ export function GerenteListaSinistros({
                       </Badge>
                     )}
 
-                    {/* Tags de passos personalizados */}
-                    {passosPersonalizados[sinistro.id]?.slice(0, 2).map((passo, index) => (
-                      <Badge
-                        key={`mobile-${sinistro.id}-passo-${passo.id || index}`}
-                        variant='outline'
-                        className={`text-xs font-medium ${
-                          {
-                            concluido: 'bg-green-50 border-green-200 text-green-700',
-                            em_andamento: 'bg-blue-50 border-blue-200 text-blue-700',
-                          }[passo.status] || 'bg-gray-50 border-gray-200 text-gray-700'
-                        }`}
-                      >
-                        {passo.status === 'concluido' ? (
-                          <CheckCircle className='w-3 h-3 mr-1' />
-                        ) : passo.status === 'em_andamento' ? (
-                          <PlayCircle className='w-3 h-3 mr-1' />
-                        ) : (
-                          <Clock4 className='w-3 h-3 mr-1' />
-                        )}
-                        {passo.nome}
-                      </Badge>
-                    ))}
-
-                    {/* Indicador de mais passos */}
-                    {passosPersonalizados[sinistro.id] && passosPersonalizados[sinistro.id].length > 2 && (
-                      <Badge
-                        variant='outline'
-                        className='text-xs bg-gray-50 border-gray-200 text-gray-700'
-                      >
-                        +{passosPersonalizados[sinistro.id].length - 2} mais
-                      </Badge>
+                    {/* Tags de passos personalizados com rolagem horizontal */}
+                    {passosPersonalizados[sinistro.id] && passosPersonalizados[sinistro.id].length > 0 && (
+                      <div className='w-full'>
+                        <div className='text-xs text-muted-foreground mb-2 font-medium'>Andamento do Processo:</div>
+                        <div className='w-full andamento-scroll'>
+                          <div className='flex gap-2 pb-2 andamento-container'>
+                            {passosPersonalizados[sinistro.id].map((passo, index) => (
+                              <Badge
+                                key={`mobile-${sinistro.id}-passo-${passo.id || index}`}
+                                variant='outline'
+                                className={`text-xs font-medium whitespace-nowrap flex-shrink-0 ${
+                                  {
+                                    concluido: 'bg-green-50 border-green-200 text-green-700',
+                                    em_andamento: 'bg-blue-50 border-blue-200 text-blue-700',
+                                  }[passo.status] || 'bg-gray-50 border-gray-200 text-gray-700'
+                                }`}
+                              >
+                                {passo.status === 'concluido' ? (
+                                  <CheckCircle className='w-3 h-3 mr-1' />
+                                ) : passo.status === 'em_andamento' ? (
+                                  <PlayCircle className='w-3 h-3 mr-1' />
+                                ) : (
+                                  <Clock4 className='w-3 h-3 mr-1' />
+                                )}
+                                {passo.nome}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
                     )}
                   </div>
 
@@ -676,37 +675,36 @@ export function GerenteListaSinistros({
                           </Badge>
                         )}
 
-                        {/* Tags de passos personalizados */}
-                        {passosPersonalizados[sinistro.id]?.slice(0, 3).map((passo, index) => (
-                          <Badge
-                            key={`${sinistro.id}-desktop-passo-${passo.id || index}`}
-                            variant='outline'
-                            className={`text-xs font-medium ${
-                              {
-                                concluido: 'bg-green-50 border-green-200 text-green-700',
-                                em_andamento: 'bg-blue-50 border-blue-200 text-blue-700',
-                              }[passo.status] || 'bg-gray-50 border-gray-200 text-gray-700'
-                            }`}
-                          >
-                            {passo.status === 'concluido' ? (
-                              <CheckCircle className='w-3 h-3 mr-1' />
-                            ) : passo.status === 'em_andamento' ? (
-                              <PlayCircle className='w-3 h-3 mr-1' />
-                            ) : (
-                              <Clock4 className='w-3 h-3 mr-1' />
-                            )}
-                            {passo.nome}
-                          </Badge>
-                        ))}
-
-                        {/* Indicador de mais passos */}
-                        {passosPersonalizados[sinistro.id] && passosPersonalizados[sinistro.id].length > 3 && (
-                          <Badge
-                            variant='outline'
-                            className='text-xs bg-gray-50 border-gray-200 text-gray-700'
-                          >
-                            +{passosPersonalizados[sinistro.id].length - 3} mais
-                          </Badge>
+                        {/* Tags de passos personalizados com rolagem horizontal */}
+                        {passosPersonalizados[sinistro.id] && passosPersonalizados[sinistro.id].length > 0 && (
+                          <div className='col-span-full'>
+                            <div className='text-xs text-muted-foreground mb-2 font-medium'>Andamento do Processo:</div>
+                            <div className='w-full andamento-scroll'>
+                              <div className='flex gap-2 pb-2 andamento-container'>
+                                {passosPersonalizados[sinistro.id].map((passo, index) => (
+                                  <Badge
+                                    key={`${sinistro.id}-desktop-passo-${passo.id || index}`}
+                                    variant='outline'
+                                    className={`text-xs font-medium whitespace-nowrap flex-shrink-0 ${
+                                      {
+                                        concluido: 'bg-green-50 border-green-200 text-green-700',
+                                        em_andamento: 'bg-blue-50 border-blue-200 text-blue-700',
+                                      }[passo.status] || 'bg-gray-50 border-gray-200 text-gray-700'
+                                    }`}
+                                  >
+                                    {passo.status === 'concluido' ? (
+                                      <CheckCircle className='w-3 h-3 mr-1' />
+                                    ) : passo.status === 'em_andamento' ? (
+                                      <PlayCircle className='w-3 h-3 mr-1' />
+                                    ) : (
+                                      <Clock4 className='w-3 h-3 mr-1' />
+                                    )}
+                                    {passo.nome}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
                         )}
                       </div>
                     )}

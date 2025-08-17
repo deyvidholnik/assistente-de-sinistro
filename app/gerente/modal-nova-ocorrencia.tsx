@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { validarCPF, validarPlaca } from '@/lib/validations'
+import { gerarNumeroSinistroPadrao } from '@/lib/numero-sinistro'
 
 interface ModalNovaOcorrenciaProps {
   open: boolean
@@ -93,15 +94,6 @@ export function ModalNovaOcorrencia({ open, onOpenChange, onSuccess }: ModalNova
     return null
   }
 
-  const gerarNumeroSinistro = () => {
-    const now = new Date()
-    const year = now.getFullYear().toString().slice(-2)
-    const month = (now.getMonth() + 1).toString().padStart(2, '0')
-    const day = now.getDate().toString().padStart(2, '0')
-    const time = now.getTime().toString().slice(-6)
-    
-    return `${year}${month}${day}${time}`
-  }
 
   const gerarToken = () => {
     return crypto.randomUUID()
@@ -140,7 +132,7 @@ export function ModalNovaOcorrencia({ open, onOpenChange, onSuccess }: ModalNova
     setError(null)
 
     try {
-      const numeroSinistro = gerarNumeroSinistro()
+      const numeroSinistro = await gerarNumeroSinistroPadrao()
       const token = gerarToken()
       const dataAtual = obterDataAtualBrasilia()
       

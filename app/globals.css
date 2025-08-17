@@ -10,6 +10,57 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+  
+  /* Scrollbar personalizada para andamento de processos */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+  .scrollbar-thumb-gray-300::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 3px;
+  }
+  .scrollbar-thumb-gray-300::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af;
+  }
+  .scrollbar-track-gray-100::-webkit-scrollbar-track {
+    background-color: #f3f4f6;
+    border-radius: 3px;
+  }
+  
+  /* Força rolagem horizontal para andamento de processos */
+  .andamento-scroll {
+    overflow-x: scroll !important;
+    overflow-y: hidden !important;
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db #f3f4f6;
+  }
+  
+  .andamento-scroll::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  .andamento-scroll::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 4px;
+  }
+  
+  .andamento-scroll::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+  }
+  
+  .andamento-scroll::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+  }
+  
+  .andamento-container {
+    width: max-content;
+    min-width: 100%;
+  }
 }
 
 body {

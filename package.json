@@ -9,7 +9,8 @@
     "start": "next start",
     "build:prod": "npm install --legacy-peer-deps && next build",
     "clean": "rm -rf .next node_modules package-lock.json",
-    "reinstall": "npm run clean && npm install --legacy-peer-deps"
+    "reinstall": "npm run clean && npm install --legacy-peer-deps",
+    "padronizar-numeros": "node scripts/padronizar-numeros.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
