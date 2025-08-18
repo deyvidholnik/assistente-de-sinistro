@@ -24,7 +24,7 @@ export default function SinistroVeiculos({
 }: SinistroVeiculosProps) {
   return (
     <div className='space-y-3 md:space-y-6'>
-      <div className='rounded-lg bg-card/50 p-3 md:p-6 border border-border'>
+      <div className='rounded-lg bg-card/50 p-3 md:p-6'>
         <div className='flex items-center justify-between mb-3 md:mb-6'>
           <div className='flex items-center gap-2 md:gap-3'>
             <div className='w-8 h-8 md:w-10 md:h-10 bg-muted rounded-lg flex items-center justify-center'>

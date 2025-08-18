@@ -19,7 +19,7 @@ export default function SinistroMetricas({ sinistro }: SinistroMetricasProps) {
   return (
     <div className='grid grid-cols-2 gap-2 md:gap-4'>
       <div
-        className='rounded-lg bg-card/50 p-2 md:p-4 text-center cursor-pointer hover:shadow-md hover:border-brand-primary transition-all duration-200 border border-border-light'
+        className='rounded-lg bg-card/50 p-2 md:p-4 text-center cursor-pointer hover:shadow-md hover:bg-slate-700 transition-all duration-200 '
         onClick={scrollToArquivos}
       >
         <FolderOpen className='w-4 h-4 md:w-6 md:h-6 text-brand-primary mx-auto mb-1 md:mb-2' />
@@ -29,12 +29,10 @@ export default function SinistroMetricas({ sinistro }: SinistroMetricasProps) {
           Clique para ver arquivos
         </div>
       </div>
-      
-      <div className='rounded-lg bg-card/50 p-2 md:p-4 text-center border border-border-light'>
+
+      <div className='rounded-lg bg-card/50 p-2 md:p-4 text-center '>
         <Clock className='w-4 h-4 md:w-6 md:h-6 text-muted-foreground mx-auto mb-1 md:mb-2' />
-        <div className='text-lg md:text-2xl font-bold text-foreground'>
-          {calcularDias()}
-        </div>
+        <div className='text-lg md:text-2xl font-bold text-foreground'>{calcularDias()}</div>
         <div className='text-xs md:text-sm text-muted-foreground'>Dias</div>
       </div>
     </div>

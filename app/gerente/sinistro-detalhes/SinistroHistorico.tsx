@@ -18,7 +18,7 @@ export default function SinistroHistorico({ logs }: SinistroHistoricoProps) {
         open={historicoAberto}
         onOpenChange={setHistoricoAberto}
       >
-        <div className='rounded-lg bg-card/50 p-3 md:p-6 border border-border-light'>
+        <div className='rounded-lg bg-card/50 p-3 md:p-6'>
           <CollapsibleTrigger asChild>
             <div className='flex items-center justify-between cursor-pointer hover:bg-muted -m-1 md:-m-2 p-1 md:p-2 rounded-lg transition-colors'>
               <div className='flex items-center gap-2 md:gap-3'>

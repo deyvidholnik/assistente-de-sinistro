@@ -10,7 +10,7 @@ export default function SinistroTimelineProgresso({ sinistro }: SinistroTimeline
   }
 
   return (
-    <div className='rounded-lg bg-card/50 p-3 md:p-6 border border-border-light'>
+    <div className='rounded-lg bg-card/50 p-3 md:p-6'>
       <div className='flex items-center gap-2 md:gap-3 mb-3 md:mb-6'>
         <TrendingUp className='w-4 h-4 md:w-5 md:h-5 text-muted-foreground' />
         <div>

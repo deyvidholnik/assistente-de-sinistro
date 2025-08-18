@@ -12,7 +12,7 @@ import {
   SinistroCondutores,
   SinistroVeiculos,
   SinistroArquivos,
-  SinistroHistorico
+  SinistroHistorico,
 } from './sinistro-detalhes'
 import ModalCondutorTerceiro from './modais/ModalCondutorTerceiro'
 import ModalVeiculoTerceiro from './modais/ModalVeiculoTerceiro'
@@ -67,7 +67,7 @@ function DetalhesSinistro({
   // Hook para gerenciar terceiros
   const terceiros = useTerceiros({
     sinistroId: sinistro.id,
-    onRefresh: onRefreshDados
+    onRefresh: onRefreshDados,
   })
 
   // Handlers para condutores
@@ -117,8 +117,7 @@ function DetalhesSinistro({
   }
 
   return (
-    <div className='flex flex-col px-4 py-4 rounded-sm space-y-3 md:space-y-3 dark:bg-gradient-to-br dark:from-gray-900 dark:via-blue-900 dark:to-purple-900 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'>
-      
+    <div className='flex flex-col px-2 py-2 rounded-sm space-y-3 md:space-y-3 dark:bg-gradient-to-br dark:from-gray-900 dark:via-blue-900 dark:to-purple-900 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'>
       {/* Header Principal */}
       <SinistroHeader sinistro={sinistro} />
 
@@ -137,7 +136,10 @@ function DetalhesSinistro({
       {/* Seção Gestão */}
       <div className='space-y-3 md:space-y-6'>
         {/* Gestão de Status */}
-        <SinistroGestaoStatus sinistro={sinistro} onAtualizarStatus={onAtualizarStatus} />
+        <SinistroGestaoStatus
+          sinistro={sinistro}
+          onAtualizarStatus={onAtualizarStatus}
+        />
 
         {/* Andamento do Processo */}
         <SinistroAndamentoProcesso
@@ -155,8 +157,8 @@ function DetalhesSinistro({
       </div>
 
       {/* Seção Condutores */}
-      <SinistroCondutores 
-        dadosCnh={dadosCnh} 
+      <SinistroCondutores
+        dadosCnh={dadosCnh}
         sinistroId={sinistro.id}
         onAdicionarCondutor={handleAdicionarCondutor}
         onEditarCondutor={handleEditarCondutor}
@@ -165,8 +167,8 @@ function DetalhesSinistro({
       />
 
       {/* Seção Veículos */}
-      <SinistroVeiculos 
-        dadosCrlv={dadosCrlv} 
+      <SinistroVeiculos
+        dadosCrlv={dadosCrlv}
         sinistroId={sinistro.id}
         onAdicionarVeiculo={handleAdicionarVeiculo}
         onEditarVeiculo={handleEditarVeiculo}
@@ -175,8 +177,15 @@ function DetalhesSinistro({
       />
 
       {/* Seção Arquivos */}
-      <SinistroArquivos arquivos={arquivos} />
-
+      <SinistroArquivos
+        arquivos={arquivos}
+        sinistroId={sinistro.id}
+        onArquivosUpdate={(novosArquivos) => {
+          // Atualizar a lista de arquivos no estado do componente pai
+          // Isso poderia ser feito através de onRefreshDados se necessário
+          console.log('Arquivos atualizados:', novosArquivos)
+        }}
+      />
 
       {/* Seção Histórico */}
       <SinistroHistorico logs={logs} />

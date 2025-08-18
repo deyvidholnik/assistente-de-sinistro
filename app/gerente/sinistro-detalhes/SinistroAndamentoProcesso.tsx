@@ -3,18 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Activity,
-  CheckCircle,
-  XCircle,
-  Calendar,
-  Plus,
-  X,
-  Loader2,
-  Settings,
-  PlayCircle,
-  Clock4,
-} from 'lucide-react'
+import { Activity, CheckCircle, XCircle, Calendar, Plus, X, Loader2, Settings, PlayCircle, Clock4 } from 'lucide-react'
 import { formatarData } from '../gerente-formatters'
 import { StatusBadge } from './cards'
 
@@ -51,8 +40,8 @@ export default function SinistroAndamentoProcesso({
           <div className='text-muted-foreground'>
             <p className='font-medium text-foreground'>Andamento do Processo</p>
             <p className='text-sm mt-2'>
-              O acompanhamento detalhado dos passos estará disponível quando o sinistro estiver em análise, aprovado
-              ou rejeitado.
+              O acompanhamento detalhado dos passos estará disponível quando o sinistro estiver em análise, aprovado ou
+              rejeitado.
             </p>
           </div>
         </CardContent>
@@ -76,15 +65,15 @@ export default function SinistroAndamentoProcesso({
             <span className='ml-2 text-sm text-muted-foreground'>Carregando andamento...</span>
           </div>
         ) : (
-          <div className='space-y-3'>
+          <div className='space-y-2'>
             {/* Mostrar apenas passos personalizados do status atual */}
             {andamento
               .filter((item) => item.personalizado && item.status_sinistro === sinistro.status)
               .map((item, index) => (
                 <Card key={item.id}>
-                  <CardContent className='p-4'>
+                  <CardContent className='p-3'>
                     {/* Header do Passo - Mobile First */}
-                    <div className='space-y-3'>
+                    <div className='space-y-2'>
                       <div className='flex items-start justify-between gap-2'>
                         <div className='flex items-center gap-2 flex-1 min-w-0'>
                           <div
@@ -97,6 +86,10 @@ export default function SinistroAndamentoProcesso({
                             }`}
                           />
                           <h4 className='font-medium text-sm lg:text-base truncate text-foreground'>{item.nome}</h4>
+                          <StatusBadge
+                            status={item.status}
+                            size='sm'
+                          />
                           <Badge
                             variant='outline'
                             className='text-xs bg-muted border-border text-muted-foreground'
@@ -119,7 +112,6 @@ export default function SinistroAndamentoProcesso({
 
                       {/* Status Badge e Select */}
                       <div className='flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-4'>
-                        <StatusBadge status={item.status} size='sm' />
                         <select
                           value={item.status}
                           onChange={(e) => {
@@ -137,18 +129,19 @@ export default function SinistroAndamentoProcesso({
                     </div>
 
                     {/* Descrição */}
-                    <p className='text-sm text-muted-foreground mt-3 mb-2'>{item.descricao}</p>
+                    <p className='text-sm text-muted-foreground mt-2 mb-1'>{item.descricao}</p>
 
                     {/* Observações */}
                     {item.observacoes && (
-                      <div className='text-sm text-brand-primary bg-brand-primary/10 p-2 rounded mt-2'>
-                        <strong className='text-brand-primary'>Observações:</strong> <span className='text-foreground'>{item.observacoes}</span>
+                      <div className='text-sm text-brand-primary bg-brand-primary/10 p-2 rounded mt-1'>
+                        <strong className='text-brand-primary'>Observações:</strong>{' '}
+                        <span className='text-foreground'>{item.observacoes}</span>
                       </div>
                     )}
 
                     {/* Timestamps */}
                     {(item.data_inicio || item.data_conclusao) && (
-                      <div className='flex flex-col lg:flex-row lg:justify-between gap-1 text-xs text-muted-foreground mt-3 pt-2 border-t border-border-light'>
+                      <div className='flex flex-col lg:flex-row lg:justify-between gap-1 text-xs text-muted-foreground mt-2 pt-1 border-t border-muted'>
                         {item.data_inicio && (
                           <span className='flex items-center gap-1'>
                             <Calendar className='w-3 h-3' />
@@ -169,77 +162,77 @@ export default function SinistroAndamentoProcesso({
 
             {/* Formulário para adicionar novo passo - só nos status permitidos */}
             {['em_analise', 'aprovado', 'rejeitado'].includes(sinistro.status) && (
-            <Card className='border-dashed border-2 border-border'>
-              <CardContent className='p-4'>
-                {!showNovoPassoForm ? (
-                  <Button
-                    onClick={() => onToggleNovoPassoForm?.(true)}
-                    variant='outline'
-                    className='w-full border-dashed border-2 border-border hover:border-brand-primary hover:bg-brand-primary/5'
-                  >
-                    <Plus className='w-4 h-4 mr-2' />
-                    Adicionar Passo Personalizado
-                  </Button>
-                ) : (
-                  <div className='space-y-4'>
-                    <div className='flex items-center gap-2 mb-4'>
-                      <Settings className='w-5 h-5 text-muted-foreground' />
-                      <h4 className='font-medium text-lg text-foreground'>Novo Passo Personalizado</h4>
-                    </div>
-                    <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
-                      <div className='space-y-2'>
-                        <Label
-                          htmlFor='novo-passo-nome'
-                          className='text-sm font-medium text-foreground'
-                        >
-                          Nome do Passo *
-                        </Label>
-                        <Input
-                          id='novo-passo-nome'
-                          value={novoPassoData.nome}
-                          onChange={(e) => onNovoPassoChange?.({ ...novoPassoData, nome: e.target.value })}
-                          placeholder='Ex: Vistoria Adicional'
-                          className='focus:ring-2 focus:ring-brand-primary text-foreground'
-                        />
+              <Card className='border-dashed border-2 border-border'>
+                <CardContent className='p-4'>
+                  {!showNovoPassoForm ? (
+                    <Button
+                      onClick={() => onToggleNovoPassoForm?.(true)}
+                      variant='outline'
+                      className='w-full border-dashed border-2 border-border hover:border-brand-primary hover:bg-brand-primary/5'
+                    >
+                      <Plus className='w-4 h-4 mr-2' />
+                      Adicionar Passo Personalizado
+                    </Button>
+                  ) : (
+                    <div className='space-y-4'>
+                      <div className='flex items-center gap-2 mb-4'>
+                        <Settings className='w-5 h-5 text-muted-foreground' />
+                        <h4 className='font-medium text-lg text-foreground'>Novo Passo Personalizado</h4>
                       </div>
-                      <div className='space-y-2'>
-                        <Label
-                          htmlFor='novo-passo-descricao'
-                          className='text-sm font-medium text-foreground'
+                      <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
+                        <div className='space-y-2'>
+                          <Label
+                            htmlFor='novo-passo-nome'
+                            className='text-sm font-medium text-foreground'
+                          >
+                            Nome do Passo *
+                          </Label>
+                          <Input
+                            id='novo-passo-nome'
+                            value={novoPassoData.nome}
+                            onChange={(e) => onNovoPassoChange?.({ ...novoPassoData, nome: e.target.value })}
+                            placeholder='Ex: Vistoria Adicional'
+                            className='focus:ring-2 focus:ring-brand-primary text-foreground'
+                          />
+                        </div>
+                        <div className='space-y-2'>
+                          <Label
+                            htmlFor='novo-passo-descricao'
+                            className='text-sm font-medium text-foreground'
+                          >
+                            Descrição *
+                          </Label>
+                          <Input
+                            id='novo-passo-descricao'
+                            value={novoPassoData.descricao}
+                            onChange={(e) => onNovoPassoChange?.({ ...novoPassoData, descricao: e.target.value })}
+                            placeholder='Ex: Vistoria adicional solicitada pelo cliente'
+                            className='focus:ring-2 focus:ring-brand-primary text-foreground'
+                          />
+                        </div>
+                      </div>
+                      <div className='flex flex-col lg:flex-row gap-2'>
+                        <Button
+                          onClick={onAdicionarNovoPasso}
+                          disabled={!novoPassoData.nome.trim() || !novoPassoData.descricao.trim()}
+                          className='flex-1'
                         >
-                          Descrição *
-                        </Label>
-                        <Input
-                          id='novo-passo-descricao'
-                          value={novoPassoData.descricao}
-                          onChange={(e) => onNovoPassoChange?.({ ...novoPassoData, descricao: e.target.value })}
-                          placeholder='Ex: Vistoria adicional solicitada pelo cliente'
-                          className='focus:ring-2 focus:ring-brand-primary text-foreground'
-                        />
+                          <CheckCircle className='w-4 h-4 mr-2' />
+                          Adicionar Passo
+                        </Button>
+                        <Button
+                          onClick={() => onToggleNovoPassoForm?.(false)}
+                          variant='outline'
+                          className='flex-1'
+                        >
+                          <X className='w-4 h-4 mr-2' />
+                          Cancelar
+                        </Button>
                       </div>
                     </div>
-                    <div className='flex flex-col lg:flex-row gap-2'>
-                      <Button
-                        onClick={onAdicionarNovoPasso}
-                        disabled={!novoPassoData.nome.trim() || !novoPassoData.descricao.trim()}
-                        className='flex-1'
-                      >
-                        <CheckCircle className='w-4 h-4 mr-2' />
-                        Adicionar Passo
-                      </Button>
-                      <Button
-                        onClick={() => onToggleNovoPassoForm?.(false)}
-                        variant='outline'
-                        className='flex-1'
-                      >
-                        <X className='w-4 h-4 mr-2' />
-                        Cancelar
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  )}
+                </CardContent>
+              </Card>
             )}
           </div>
         )}

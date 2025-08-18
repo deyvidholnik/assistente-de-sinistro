@@ -101,7 +101,7 @@ export default function SinistroHeader({ sinistro }: SinistroHeaderProps) {
   }
 
   return (
-    <div className='rounded-lg bg-card/50 p-3 md:p-6 border border-border-light'>
+    <div className='rounded-lg bg-card/50 p-3 md:p-6 '>
       {/* Mobile Layout */}
       <div className='md:hidden space-y-3'>
         <div className='flex items-center justify-between'>
@@ -115,7 +115,7 @@ export default function SinistroHeader({ sinistro }: SinistroHeaderProps) {
           <StatusBadge status={sinistro.status} size='sm' />
         </div>
 
-        <div className='bg-surface-elevated rounded-lg p-2 border border-border-light'>
+        <div className='bg-surface-elevated rounded-lg p-2 '>
           <div className='flex items-center gap-2 text-xs text-muted-foreground mb-1'>
             <Calendar className='w-3 h-3 text-brand-primary' />
             <span>{formatarData(sinistro.data_criacao)}</span>
@@ -130,7 +130,7 @@ export default function SinistroHeader({ sinistro }: SinistroHeaderProps) {
           </div>
           {/* Informações de criação pelo gestor */}
           {sinistro.created_by_manager && (
-            <div className='mt-2 pt-2 border-t border-border-light'>
+            <div className='mt-2 pt-2 border-t border-muted'>
               <div className='flex items-center gap-2 text-xs text-muted-foreground'>
                 <User className='w-3 h-3 text-brand-secondary' />
                 <span>Criado pelo Gestor</span>
@@ -148,7 +148,7 @@ export default function SinistroHeader({ sinistro }: SinistroHeaderProps) {
         <div className='space-y-2'>
           {/* Nome do Cliente */}
           {(sinistro.cnh_proprio_nome || sinistro.nome_completo_furto) && (
-            <div className='bg-surface-elevated rounded-lg p-2 border border-border-light'>
+            <div className='bg-surface-elevated rounded-lg p-2 '>
               <div className='flex items-center gap-2 text-xs text-muted-foreground mb-1'>
                 <UserCheck className='w-3 h-3 text-brand-primary' />
                 <span>Cliente</span>
@@ -161,7 +161,7 @@ export default function SinistroHeader({ sinistro }: SinistroHeaderProps) {
 
           {/* Placa do Veículo */}
           {(sinistro.crlv_proprio_placa || sinistro.placa_veiculo_furto) && (
-            <div className='bg-surface-elevated rounded-lg p-2 border border-border-light'>
+            <div className='bg-surface-elevated rounded-lg p-2 '>
               <div className='flex items-center gap-2 text-xs text-muted-foreground mb-1'>
                 <Hash className='w-3 h-3 text-brand-primary' />
                 <span>Placa</span>
@@ -174,7 +174,7 @@ export default function SinistroHeader({ sinistro }: SinistroHeaderProps) {
 
           {/* Telefone do Cliente */}
           {telefone && (
-            <div className='bg-surface-elevated rounded-lg p-2 border border-border-light'>
+            <div className='bg-surface-elevated rounded-lg p-2 '>
               <div className='flex items-center gap-2 text-xs text-muted-foreground mb-1'>
                 <Phone className='w-3 h-3 text-brand-primary' />
                 <span>Telefone</span>
@@ -272,7 +272,7 @@ export default function SinistroHeader({ sinistro }: SinistroHeaderProps) {
           
           {/* Observações do gerente na versão desktop */}
           {sinistro.created_by_manager && observacoesLimpas && (
-            <div className='mt-3 p-3 bg-surface-elevated rounded-lg border border-border-light lg:max-w-md'>
+            <div className='mt-3 p-3 bg-surface-elevated rounded-lg  lg:max-w-md'>
               <div className='text-sm text-muted-foreground mb-1'>Observações do Gestor:</div>
               <div className='text-sm text-foreground'>{observacoesLimpas}</div>
             </div>
