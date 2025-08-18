@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
@@ -9,9 +9,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useTheme } from 'next-themes'
 import { supabase } from '@/lib/supabase'
-import { 
-  Shield, 
-  ArrowLeft, 
+import {
+  Shield,
+  ArrowLeft,
   Calendar,
   Car,
   FileText,
@@ -32,7 +32,7 @@ import {
   Camera,
   Upload,
   Info,
-  Wrench
+  Wrench,
 } from 'lucide-react'
 
 interface SinistroDetalhes {
@@ -80,7 +80,7 @@ export default function SinistroDetalhesPage() {
   const [loading, setLoading] = useState(true)
   const [sinistro, setSinistro] = useState<SinistroDetalhes | null>(null)
   const [error, setError] = useState('')
-  
+
   const { theme, setTheme } = useTheme()
   const router = useRouter()
   const params = useParams()
@@ -91,7 +91,7 @@ export default function SinistroDetalhesPage() {
   useEffect(() => {
     const dadosCliente = localStorage.getItem('clienteLogado')
     const dadosAdmin = localStorage.getItem('adminLogado')
-    
+
     // Se não há cliente nem admin logado, redirecionar para login
     if (!dadosCliente && !dadosAdmin) {
       router.push('/login_cliente')
@@ -114,7 +114,7 @@ export default function SinistroDetalhesPage() {
       loadSinistroDetails(id)
       return
     }
-    
+
     setLoading(false)
   }, [id, router])
 
@@ -138,37 +138,50 @@ export default function SinistroDetalhesPage() {
     switch (status) {
       case 'concluido':
       case 'aprovado':
-        return <CheckCircle className="w-4 h-4" />
+        return <CheckCircle className='w-4 h-4' />
       case 'em_analise':
-        return <Clock className="w-4 h-4" />
+        return <Clock className='w-4 h-4' />
       case 'pendente':
-        return <AlertCircle className="w-4 h-4" />
+        return <AlertCircle className='w-4 h-4' />
       case 'rejeitado':
-        return <XCircle className="w-4 h-4" />
+        return <XCircle className='w-4 h-4' />
       default:
-        return <Info className="w-4 h-4" />
+        return <Info className='w-4 h-4' />
     }
   }
 
   const getTipoTexto = (sinistro: SinistroDetalhes) => {
     if (sinistro.tipo_atendimento === 'assistencia') {
       switch (sinistro.tipo_assistencia) {
-        case 'hotel': return 'Hospedagem de Emergência'
-        case 'guincho': return 'Reboque do Veículo'
-        case 'taxi': return 'Transporte Alternativo'
-        case 'pane_seca': return 'Pane Seca (Combustível)'
-        case 'pane_mecanica': return 'Pane Mecânica'
-        case 'pane_eletrica': return 'Pane Elétrica'
-        case 'trocar_pneu': return 'Troca de Pneu'
-        default: return 'Assistência'
+        case 'hotel':
+          return 'Hospedagem de Emergência'
+        case 'guincho':
+          return 'Reboque do Veículo'
+        case 'taxi':
+          return 'Transporte Alternativo'
+        case 'pane_seca':
+          return 'Pane Seca (Combustível)'
+        case 'pane_mecanica':
+          return 'Pane Mecânica'
+        case 'pane_eletrica':
+          return 'Pane Elétrica'
+        case 'trocar_pneu':
+          return 'Troca de Pneu'
+        default:
+          return 'Assistência'
       }
     } else {
       switch (sinistro.tipo_sinistro) {
-        case 'colisao': return 'Colisão'
-        case 'furto': return 'Furto'
-        case 'roubo': return 'Roubo'
-        case 'pequenos_reparos': return 'Pequenos Reparos'
-        default: return 'Sinistro'
+        case 'colisao':
+          return 'Colisão'
+        case 'furto':
+          return 'Furto'
+        case 'roubo':
+          return 'Roubo'
+        case 'pequenos_reparos':
+          return 'Pequenos Reparos'
+        default:
+          return 'Sinistro'
       }
     }
   }
@@ -176,21 +189,34 @@ export default function SinistroDetalhesPage() {
   const getTipoIcon = (sinistro: SinistroDetalhes) => {
     if (sinistro.tipo_atendimento === 'assistencia') {
       switch (sinistro.tipo_assistencia) {
-        case 'hotel': return <MapPin className="w-4 h-4" />
-        case 'guincho': return <Car className="w-4 h-4" />
-        case 'taxi': return <Car className="w-4 h-4" />
-        case 'pane_seca': return <Wrench className="w-4 h-4" />
-        case 'pane_mecanica': return <Wrench className="w-4 h-4" />
-        case 'pane_eletrica': return <Wrench className="w-4 h-4" />
-        case 'trocar_pneu': return <Wrench className="w-4 h-4" />
-        default: return <Phone className="w-4 h-4" />
+        case 'hotel':
+          return <MapPin className='w-4 h-4' />
+        case 'guincho':
+          return <Car className='w-4 h-4' />
+        case 'taxi':
+          return <Car className='w-4 h-4' />
+        case 'pane_seca':
+          return <Wrench className='w-4 h-4' />
+        case 'pane_mecanica':
+          return <Wrench className='w-4 h-4' />
+        case 'pane_eletrica':
+          return <Wrench className='w-4 h-4' />
+        case 'trocar_pneu':
+          return <Wrench className='w-4 h-4' />
+        default:
+          return <Phone className='w-4 h-4' />
       }
     } else {
       switch (sinistro.tipo_sinistro) {
-        case 'colisao': return <Car className="w-4 h-4" />
-        case 'furto': case 'roubo': return <Shield className="w-4 h-4" />
-        case 'pequenos_reparos': return <Wrench className="w-4 h-4" />
-        default: return <FileText className="w-4 h-4" />
+        case 'colisao':
+          return <Car className='w-4 h-4' />
+        case 'furto':
+        case 'roubo':
+          return <Shield className='w-4 h-4' />
+        case 'pequenos_reparos':
+          return <Wrench className='w-4 h-4' />
+        default:
+          return <FileText className='w-4 h-4' />
       }
     }
   }
@@ -201,7 +227,7 @@ export default function SinistroDetalhesPage() {
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     })
   }
 
@@ -218,19 +244,25 @@ export default function SinistroDetalhesPage() {
 
   const formatarAssistenciasAdicionais = (sinistro: SinistroDetalhes) => {
     if (!sinistro.assistencias_tipos) return []
-    
-    const tipos = Array.isArray(sinistro.assistencias_tipos) 
-      ? sinistro.assistencias_tipos 
+
+    const tipos = Array.isArray(sinistro.assistencias_tipos)
+      ? sinistro.assistencias_tipos
       : sinistro.assistencias_tipos.split(',')
-    
-    return tipos.map(tipo => tipo.trim()).filter(Boolean)
+
+    return tipos.map((tipo) => tipo.trim()).filter(Boolean)
   }
 
   if (loading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center transition-all duration-300 ${isDark ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'}`}>
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mb-4"></div>
+      <div
+        className={`min-h-screen flex items-center justify-center transition-all duration-300 ${
+          isDark
+            ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900'
+            : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
+        }`}
+      >
+        <div className='text-center'>
+          <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mb-4'></div>
           <p className={`transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
             Carregando detalhes...
           </p>
@@ -241,18 +273,28 @@ export default function SinistroDetalhesPage() {
 
   if (!sinistro) {
     return (
-      <div className={`min-h-screen flex items-center justify-center transition-all duration-300 ${isDark ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'}`}>
-        <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className={`text-2xl font-bold mb-2 transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+      <div
+        className={`min-h-screen flex items-center justify-center transition-all duration-300 ${
+          isDark
+            ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900'
+            : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
+        }`}
+      >
+        <div className='text-center'>
+          <AlertCircle className='w-16 h-16 text-red-500 mx-auto mb-4' />
+          <h1
+            className={`text-2xl font-bold mb-2 transition-colors duration-300 ${
+              isDark ? 'text-gray-100' : 'text-gray-900'
+            }`}
+          >
             Registro não encontrado
           </h1>
           <p className={`mb-6 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
             O registro solicitado não foi encontrado.
           </p>
-          <Link href="/dashboard_cliente">
-            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-              <ArrowLeft className="w-4 h-4 mr-2" />
+          <Link href='/dashboard_cliente'>
+            <Button className='bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'>
+              <ArrowLeft className='w-4 h-4 mr-2' />
               Voltar ao Dashboard
             </Button>
           </Link>
@@ -264,43 +306,64 @@ export default function SinistroDetalhesPage() {
   const isAssistencia = sinistro.tipo_atendimento === 'assistencia'
 
   return (
-    <div className={`min-h-screen transition-all duration-300 ${isDark ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'}`}>
+    <div
+      className={`min-h-screen transition-all duration-300 ${
+        isDark
+          ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900'
+          : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
+      }`}
+    >
       {/* Header */}
-      <header className={`backdrop-blur-sm border-b sticky top-0 z-50 transition-all duration-300 ${isDark ? 'bg-gray-900/80 border-gray-700' : 'bg-white/80 border-blue-100'}`}>
-        <div className="container mx-auto px-4 py-3 md:py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 md:space-x-3">
-              <div className="relative w-12 h-12 md:w-14 md:h-14">
+      <header
+        className={`backdrop-blur-sm border-b sticky top-0 z-50 transition-all duration-300 ${
+          isDark ? 'bg-gray-900/80 ' : 'bg-white/80 '
+        }`}
+      >
+        <div className='container mx-auto px-4 py-3 md:py-4'>
+          <div className='flex items-center justify-between'>
+            <div className='flex items-center space-x-2 md:space-x-3'>
+              <div className='relative w-12 h-12 md:w-14 md:h-14'>
                 <Image
-                  src="/images/logo.png"
-                  alt="PV Auto Proteção"
+                  src='/images/logo.png'
+                  alt='PV Auto Proteção'
                   width={56}
                   height={56}
-                  className="object-contain rounded-full"
-                  style={{ width: "auto", height: "auto" }}
+                  className='object-contain rounded-full'
+                  style={{ width: 'auto', height: 'auto' }}
                 />
               </div>
               <div>
-                <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">
+                <h1 className='text-lg md:text-xl font-bold bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent'>
                   PV Auto Proteção
                 </h1>
-                <p className={`text-xs md:text-sm transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                <p
+                  className={`text-xs md:text-sm transition-colors duration-300 ${
+                    isDark ? 'text-gray-300' : 'text-gray-600'
+                  }`}
+                >
                   Detalhes do Atendimento
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-2 md:space-x-4">
+            <div className='flex items-center space-x-2 md:space-x-4'>
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className={`hover:bg-opacity-20 transition-all duration-300 ${isDark ? 'hover:bg-white text-gray-300' : 'hover:bg-blue-50 text-gray-700'}`}
+                className={`hover:bg-opacity-20 transition-all duration-300 ${
+                  isDark ? 'hover:bg-white text-gray-300' : 'hover:bg-blue-50 text-gray-700'
+                }`}
               >
-                {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                {isDark ? <Sun className='w-4 h-4' /> : <Moon className='w-4 h-4' />}
               </Button>
-              <Link href="/dashboard_cliente">
-                <Button variant="ghost" className={`hover:bg-opacity-20 transition-all duration-300 ${isDark ? 'hover:bg-white text-gray-300' : 'hover:bg-blue-50 text-gray-700'}`}>
-                  <ArrowLeft className="w-4 h-4 mr-2" />
+              <Link href='/dashboard_cliente'>
+                <Button
+                  variant='ghost'
+                  className={`hover:bg-opacity-20 transition-all duration-300 ${
+                    isDark ? 'hover:bg-white text-gray-300' : 'hover:bg-blue-50 text-gray-700'
+                  }`}
+                >
+                  <ArrowLeft className='w-4 h-4 mr-2' />
                   Voltar
                 </Button>
               </Link>
@@ -310,57 +373,94 @@ export default function SinistroDetalhesPage() {
       </header>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
+      <div className='container mx-auto px-4 py-8'>
         {/* Cabeçalho do Registro */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
-              <div className={`w-16 h-16 bg-gradient-to-r ${isAssistencia ? 'from-purple-500 to-pink-500' : 'from-blue-500 to-cyan-500'} rounded-full flex items-center justify-center`}>
+        <div className='mb-8'>
+          <div className='flex items-center justify-between mb-4'>
+            <div className='flex items-center gap-4'>
+              <div
+                className={`w-16 h-16 bg-gradient-to-r ${
+                  isAssistencia ? 'from-purple-500 to-pink-500' : 'from-blue-500 to-cyan-500'
+                } rounded-full flex items-center justify-center`}
+              >
                 {getTipoIcon(sinistro)}
               </div>
               <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className={`text-2xl md:text-3xl font-bold transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                <div className='flex items-center gap-3 mb-2'>
+                  <h1
+                    className={`text-2xl md:text-3xl font-bold transition-colors duration-300 ${
+                      isDark ? 'text-gray-100' : 'text-gray-900'
+                    }`}
+                  >
                     {getTipoTexto(sinistro)}
                   </h1>
-                  <Badge variant="outline" className={`${isAssistencia ? 'border-purple-300 text-purple-700' : 'border-blue-300 text-blue-700'}`}>
+                  <Badge
+                    variant='outline'
+                    className={`${
+                      isAssistencia ? 'border-purple-300 text-purple-700' : 'border-blue-300 text-blue-700'
+                    }`}
+                  >
                     {isAssistencia ? 'Assistência' : 'Sinistro'}
                   </Badge>
                 </div>
-                <p className={`text-sm md:text-base transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                <p
+                  className={`text-sm md:text-base transition-colors duration-300 ${
+                    isDark ? 'text-gray-300' : 'text-gray-600'
+                  }`}
+                >
                   {sinistro.numero_sinistro}
                 </p>
               </div>
             </div>
             <Badge className={`${getStatusColor(sinistro.status)} border px-3 py-1`}>
               {getStatusIcon(sinistro.status)}
-              <span className="ml-2 capitalize font-medium">{sinistro.status.replace('_', ' ')}</span>
+              <span className='ml-2 capitalize font-medium'>{sinistro.status.replace('_', ' ')}</span>
             </Badge>
           </div>
         </div>
 
         {/* Cards de Informações */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8'>
           {/* Informações Gerais */}
-          <Card className={`border-0 shadow-lg transition-all duration-300 ${isDark ? 'bg-gray-800/50 backdrop-blur-sm' : 'bg-white'}`}>
+          <Card
+            className={`border-0 shadow-lg transition-all duration-300 ${
+              isDark ? 'bg-gray-800/50 backdrop-blur-sm' : 'bg-white'
+            }`}
+          >
             <CardHeader>
-              <CardTitle className={`flex items-center gap-2 transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
-                <FileText className="w-5 h-5" />
+              <CardTitle
+                className={`flex items-center gap-2 transition-colors duration-300 ${
+                  isDark ? 'text-gray-100' : 'text-gray-900'
+                }`}
+              >
+                <FileText className='w-5 h-5' />
                 Informações Gerais
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className='space-y-4'>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <div>
-                  <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <p
+                    className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                      isDark ? 'text-gray-300' : 'text-gray-600'
+                    }`}
+                  >
                     Número do Registro
                   </p>
-                  <p className={`text-sm font-mono transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                  <p
+                    className={`text-sm font-mono transition-colors duration-300 ${
+                      isDark ? 'text-gray-100' : 'text-gray-900'
+                    }`}
+                  >
                     {sinistro.numero_sinistro}
                   </p>
                 </div>
                 <div>
-                  <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <p
+                    className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                      isDark ? 'text-gray-300' : 'text-gray-600'
+                    }`}
+                  >
                     Tipo de Atendimento
                   </p>
                   <p className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
@@ -368,7 +468,11 @@ export default function SinistroDetalhesPage() {
                   </p>
                 </div>
                 <div>
-                  <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <p
+                    className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                      isDark ? 'text-gray-300' : 'text-gray-600'
+                    }`}
+                  >
                     Data de Abertura
                   </p>
                   <p className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
@@ -376,7 +480,11 @@ export default function SinistroDetalhesPage() {
                   </p>
                 </div>
                 <div>
-                  <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <p
+                    className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                      isDark ? 'text-gray-300' : 'text-gray-600'
+                    }`}
+                  >
                     Última Atualização
                   </p>
                   <p className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
@@ -387,27 +495,39 @@ export default function SinistroDetalhesPage() {
 
               {/* Informações específicas para furto/roubo */}
               {(sinistro.tipo_sinistro === 'furto' || sinistro.tipo_sinistro === 'roubo') && (
-                <div className="border-t pt-4">
-                  <h4 className={`font-medium mb-3 transition-colors duration-300 ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
+                <div className='border-t pt-4'>
+                  <h4
+                    className={`font-medium mb-3 transition-colors duration-300 ${
+                      isDark ? 'text-gray-200' : 'text-gray-800'
+                    }`}
+                  >
                     Detalhes do {sinistro.tipo_sinistro === 'furto' ? 'Furto' : 'Roubo'}
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                     {sinistro.documentos_furtados !== undefined && (
                       <div>
-                        <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                        <p
+                          className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                            isDark ? 'text-gray-300' : 'text-gray-600'
+                          }`}
+                        >
                           Documentos Furtados
                         </p>
-                        <Badge variant={sinistro.documentos_furtados ? "destructive" : "secondary"}>
+                        <Badge variant={sinistro.documentos_furtados ? 'destructive' : 'secondary'}>
                           {sinistro.documentos_furtados ? 'Sim' : 'Não'}
                         </Badge>
                       </div>
                     )}
                     {sinistro.outros_veiculos_envolvidos !== undefined && (
                       <div>
-                        <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                        <p
+                          className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                            isDark ? 'text-gray-300' : 'text-gray-600'
+                          }`}
+                        >
                           Outros Veículos Envolvidos
                         </p>
-                        <Badge variant={sinistro.outros_veiculos_envolvidos ? "default" : "secondary"}>
+                        <Badge variant={sinistro.outros_veiculos_envolvidos ? 'default' : 'secondary'}>
                           {sinistro.outros_veiculos_envolvidos ? 'Sim' : 'Não'}
                         </Badge>
                       </div>
@@ -419,17 +539,29 @@ export default function SinistroDetalhesPage() {
           </Card>
 
           {/* Dados do Solicitante */}
-          <Card className={`border-0 shadow-lg transition-all duration-300 ${isDark ? 'bg-gray-800/50 backdrop-blur-sm' : 'bg-white'}`}>
+          <Card
+            className={`border-0 shadow-lg transition-all duration-300 ${
+              isDark ? 'bg-gray-800/50 backdrop-blur-sm' : 'bg-white'
+            }`}
+          >
             <CardHeader>
-              <CardTitle className={`flex items-center gap-2 transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
-                <User className="w-5 h-5" />
+              <CardTitle
+                className={`flex items-center gap-2 transition-colors duration-300 ${
+                  isDark ? 'text-gray-100' : 'text-gray-900'
+                }`}
+              >
+                <User className='w-5 h-5' />
                 Dados do Solicitante
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className='space-y-4'>
               {sinistro.cnh_proprio_nome && (
                 <div>
-                  <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <p
+                    className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                      isDark ? 'text-gray-300' : 'text-gray-600'
+                    }`}
+                  >
                     Nome Completo
                   </p>
                   <p className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
@@ -437,13 +569,21 @@ export default function SinistroDetalhesPage() {
                   </p>
                 </div>
               )}
-              
+
               {sinistro.cnh_proprio_cpf && (
                 <div>
-                  <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <p
+                    className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                      isDark ? 'text-gray-300' : 'text-gray-600'
+                    }`}
+                  >
                     CPF
                   </p>
-                  <p className={`text-sm font-mono transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                  <p
+                    className={`text-sm font-mono transition-colors duration-300 ${
+                      isDark ? 'text-gray-100' : 'text-gray-900'
+                    }`}
+                  >
                     {formatCPF(sinistro.cnh_proprio_cpf)}
                   </p>
                 </div>
@@ -451,7 +591,11 @@ export default function SinistroDetalhesPage() {
 
               {sinistro.cnh_proprio_rg && (
                 <div>
-                  <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <p
+                    className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                      isDark ? 'text-gray-300' : 'text-gray-600'
+                    }`}
+                  >
                     RG
                   </p>
                   <p className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
@@ -460,13 +604,19 @@ export default function SinistroDetalhesPage() {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 {sinistro.cnh_proprio_categoria && (
                   <div>
-                    <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                    <p
+                      className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                        isDark ? 'text-gray-300' : 'text-gray-600'
+                      }`}
+                    >
                       Categoria CNH
                     </p>
-                    <p className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                    <p
+                      className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}
+                    >
                       {sinistro.cnh_proprio_categoria}
                     </p>
                   </div>
@@ -474,10 +624,18 @@ export default function SinistroDetalhesPage() {
 
                 {sinistro.cnh_proprio_numero && (
                   <div>
-                    <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                    <p
+                      className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                        isDark ? 'text-gray-300' : 'text-gray-600'
+                      }`}
+                    >
                       Número CNH
                     </p>
-                    <p className={`text-sm font-mono transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                    <p
+                      className={`text-sm font-mono transition-colors duration-300 ${
+                        isDark ? 'text-gray-100' : 'text-gray-900'
+                      }`}
+                    >
                       {sinistro.cnh_proprio_numero}
                     </p>
                   </div>
@@ -486,7 +644,11 @@ export default function SinistroDetalhesPage() {
 
               {sinistro.cnh_proprio_vencimento && (
                 <div>
-                  <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <p
+                    className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                      isDark ? 'text-gray-300' : 'text-gray-600'
+                    }`}
+                  >
                     Vencimento CNH
                   </p>
                   <p className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
@@ -497,36 +659,64 @@ export default function SinistroDetalhesPage() {
 
               {/* Dados de furto sem documentos */}
               {(sinistro.nome_completo_furto || sinistro.cpf_furto || sinistro.placa_veiculo_furto) && (
-                <div className="border-t pt-4">
-                  <h4 className={`font-medium mb-3 transition-colors duration-300 ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
+                <div className='border-t pt-4'>
+                  <h4
+                    className={`font-medium mb-3 transition-colors duration-300 ${
+                      isDark ? 'text-gray-200' : 'text-gray-800'
+                    }`}
+                  >
                     Dados Informados (Furto sem Documentos)
                   </h4>
                   {sinistro.nome_completo_furto && (
-                    <div className="mb-2">
-                      <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                    <div className='mb-2'>
+                      <p
+                        className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                          isDark ? 'text-gray-300' : 'text-gray-600'
+                        }`}
+                      >
                         Nome Completo
                       </p>
-                      <p className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                      <p
+                        className={`text-sm transition-colors duration-300 ${
+                          isDark ? 'text-gray-100' : 'text-gray-900'
+                        }`}
+                      >
                         {sinistro.nome_completo_furto}
                       </p>
                     </div>
                   )}
                   {sinistro.cpf_furto && (
-                    <div className="mb-2">
-                      <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                    <div className='mb-2'>
+                      <p
+                        className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                          isDark ? 'text-gray-300' : 'text-gray-600'
+                        }`}
+                      >
                         CPF
                       </p>
-                      <p className={`text-sm font-mono transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                      <p
+                        className={`text-sm font-mono transition-colors duration-300 ${
+                          isDark ? 'text-gray-100' : 'text-gray-900'
+                        }`}
+                      >
                         {formatCPF(sinistro.cpf_furto)}
                       </p>
                     </div>
                   )}
                   {sinistro.placa_veiculo_furto && (
                     <div>
-                      <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                      <p
+                        className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                          isDark ? 'text-gray-300' : 'text-gray-600'
+                        }`}
+                      >
                         Placa do Veículo
                       </p>
-                      <p className={`text-sm font-mono transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                      <p
+                        className={`text-sm font-mono transition-colors duration-300 ${
+                          isDark ? 'text-gray-100' : 'text-gray-900'
+                        }`}
+                      >
                         {formatPlaca(sinistro.placa_veiculo_furto)}
                       </p>
                     </div>
@@ -538,149 +728,262 @@ export default function SinistroDetalhesPage() {
         </div>
 
         {/* Assistências Adicionais */}
-        {sinistro.assistencia_adicional && sinistro.assistencias_tipos && formatarAssistenciasAdicionais(sinistro).length > 0 && (
-          <Card className={`border-0 shadow-lg mb-8 transition-all duration-300 ${isDark ? 'bg-gray-800/50 backdrop-blur-sm' : 'bg-white'}`}>
-            <CardHeader>
-              <CardTitle className={`flex items-center gap-2 transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
-                <Phone className="w-5 h-5" />
-                Assistências Adicionais
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className={`text-sm mb-4 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                Serviços adicionais solicitados junto com esta ocorrência:
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {formatarAssistenciasAdicionais(sinistro).map((tipo, index) => {
-                  const tipoLimpo = tipo.trim()
-                  const assistenciaInfo: { [key: string]: { label: string; icon: string; color: string } } = {
-                    'guincho': { label: 'Guincho', icon: '🚛', color: 'bg-blue-100 text-blue-800 border-blue-200' },
-                    'taxi': { label: 'Táxi', icon: '🚕', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
-                    'hotel': { label: 'Hotel', icon: '🏨', color: 'bg-purple-100 text-purple-800 border-purple-200' },
-                    'mecanica': { label: 'Mecânica', icon: '🔧', color: 'bg-green-100 text-green-800 border-green-200' },
-                    'vidraceiro': { label: 'Vidraceiro', icon: '🪟', color: 'bg-indigo-100 text-indigo-800 border-indigo-200' },
-                    'borracheiro': { label: 'Borracheiro', icon: '🛞', color: 'bg-orange-100 text-orange-800 border-orange-200' },
-                    'eletricista': { label: 'Eletricista', icon: '⚡', color: 'bg-red-100 text-red-800 border-red-200' }
-                  }
-                  const info = assistenciaInfo[tipoLimpo] || { label: tipoLimpo, icon: '🛠️', color: 'bg-gray-100 text-gray-800 border-gray-200' }
+        {sinistro.assistencia_adicional &&
+          sinistro.assistencias_tipos &&
+          formatarAssistenciasAdicionais(sinistro).length > 0 && (
+            <Card
+              className={`border-0 shadow-lg mb-8 transition-all duration-300 ${
+                isDark ? 'bg-gray-800/50 backdrop-blur-sm' : 'bg-white'
+              }`}
+            >
+              <CardHeader>
+                <CardTitle
+                  className={`flex items-center gap-2 transition-colors duration-300 ${
+                    isDark ? 'text-gray-100' : 'text-gray-900'
+                  }`}
+                >
+                  <Phone className='w-5 h-5' />
+                  Assistências Adicionais
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p
+                  className={`text-sm mb-4 transition-colors duration-300 ${
+                    isDark ? 'text-gray-300' : 'text-gray-600'
+                  }`}
+                >
+                  Serviços adicionais solicitados junto com esta ocorrência:
+                </p>
+                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3'>
+                  {formatarAssistenciasAdicionais(sinistro).map((tipo, index) => {
+                    const tipoLimpo = tipo.trim()
+                    const assistenciaInfo: { [key: string]: { label: string; icon: string; color: string } } = {
+                      guincho: { label: 'Guincho', icon: '🚛', color: 'bg-blue-100 text-blue-800 border-blue-200' },
+                      taxi: { label: 'Táxi', icon: '🚕', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+                      hotel: { label: 'Hotel', icon: '🏨', color: 'bg-purple-100 text-purple-800 border-purple-200' },
+                      mecanica: {
+                        label: 'Mecânica',
+                        icon: '🔧',
+                        color: 'bg-green-100 text-green-800 border-green-200',
+                      },
+                      vidraceiro: {
+                        label: 'Vidraceiro',
+                        icon: '🪟',
+                        color: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+                      },
+                      borracheiro: {
+                        label: 'Borracheiro',
+                        icon: '🛞',
+                        color: 'bg-orange-100 text-orange-800 border-orange-200',
+                      },
+                      eletricista: {
+                        label: 'Eletricista',
+                        icon: '⚡',
+                        color: 'bg-red-100 text-red-800 border-red-200',
+                      },
+                    }
+                    const info = assistenciaInfo[tipoLimpo] || {
+                      label: tipoLimpo,
+                      icon: '🛠️',
+                      color: 'bg-gray-100 text-gray-800 border-gray-200',
+                    }
 
-                  return (
-                    <div key={index} className={`p-3 rounded-lg ${info.color} border shadow-sm`}>
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">{info.icon}</span>
-                        <span className="font-medium text-sm">{info.label}</span>
+                    return (
+                      <div
+                        key={index}
+                        className={`p-3 rounded-lg ${info.color} border shadow-sm`}
+                      >
+                        <div className='flex items-center gap-2'>
+                          <span className='text-lg'>{info.icon}</span>
+                          <span className='font-medium text-sm'>{info.label}</span>
+                        </div>
                       </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
         {/* Dados do Veículo (apenas para sinistros com CRLV) */}
         {!isAssistencia && sinistro.crlv_proprio_placa && (
-          <Card className={`border-0 shadow-lg mb-8 transition-all duration-300 ${isDark ? 'bg-gray-800/50 backdrop-blur-sm' : 'bg-white'}`}>
+          <Card
+            className={`border-0 shadow-lg mb-8 transition-all duration-300 ${
+              isDark ? 'bg-gray-800/50 backdrop-blur-sm' : 'bg-white'
+            }`}
+          >
             <CardHeader>
-              <CardTitle className={`flex items-center gap-2 transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
-                <Car className="w-5 h-5" />
+              <CardTitle
+                className={`flex items-center gap-2 transition-colors duration-300 ${
+                  isDark ? 'text-gray-100' : 'text-gray-900'
+                }`}
+              >
+                <Car className='w-5 h-5' />
                 Dados do Veículo
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                 <div>
-                  <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <p
+                    className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                      isDark ? 'text-gray-300' : 'text-gray-600'
+                    }`}
+                  >
                     Placa
                   </p>
-                  <p className={`text-sm font-mono transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                  <p
+                    className={`text-sm font-mono transition-colors duration-300 ${
+                      isDark ? 'text-gray-100' : 'text-gray-900'
+                    }`}
+                  >
                     {formatPlaca(sinistro.crlv_proprio_placa)}
                   </p>
                 </div>
                 {sinistro.crlv_proprio_marca && (
                   <div>
-                    <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                    <p
+                      className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                        isDark ? 'text-gray-300' : 'text-gray-600'
+                      }`}
+                    >
                       Marca
                     </p>
-                    <p className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                    <p
+                      className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}
+                    >
                       {sinistro.crlv_proprio_marca}
                     </p>
                   </div>
                 )}
                 {sinistro.crlv_proprio_modelo && (
                   <div>
-                    <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                    <p
+                      className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                        isDark ? 'text-gray-300' : 'text-gray-600'
+                      }`}
+                    >
                       Modelo
                     </p>
-                    <p className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                    <p
+                      className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}
+                    >
                       {sinistro.crlv_proprio_modelo}
                     </p>
                   </div>
                 )}
                 {sinistro.crlv_proprio_ano && (
                   <div>
-                    <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                    <p
+                      className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                        isDark ? 'text-gray-300' : 'text-gray-600'
+                      }`}
+                    >
                       Ano
                     </p>
-                    <p className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                    <p
+                      className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}
+                    >
                       {sinistro.crlv_proprio_ano}
                     </p>
                   </div>
                 )}
                 {sinistro.crlv_proprio_cor && (
                   <div>
-                    <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                    <p
+                      className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                        isDark ? 'text-gray-300' : 'text-gray-600'
+                      }`}
+                    >
                       Cor
                     </p>
-                    <p className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                    <p
+                      className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}
+                    >
                       {sinistro.crlv_proprio_cor}
                     </p>
                   </div>
                 )}
                 {sinistro.crlv_proprio_combustivel && (
                   <div>
-                    <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                    <p
+                      className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                        isDark ? 'text-gray-300' : 'text-gray-600'
+                      }`}
+                    >
                       Combustível
                     </p>
-                    <p className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                    <p
+                      className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}
+                    >
                       {sinistro.crlv_proprio_combustivel}
                     </p>
                   </div>
                 )}
               </div>
 
-              {(sinistro.crlv_proprio_renavam || sinistro.crlv_proprio_chassi || sinistro.crlv_proprio_proprietario) && (
-                <div className="border-t pt-4 mt-4">
-                  <h4 className={`font-medium mb-3 transition-colors duration-300 ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
+              {(sinistro.crlv_proprio_renavam ||
+                sinistro.crlv_proprio_chassi ||
+                sinistro.crlv_proprio_proprietario) && (
+                <div className='border-t pt-4 mt-4'>
+                  <h4
+                    className={`font-medium mb-3 transition-colors duration-300 ${
+                      isDark ? 'text-gray-200' : 'text-gray-800'
+                    }`}
+                  >
                     Informações Adicionais
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                     {sinistro.crlv_proprio_renavam && (
                       <div>
-                        <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                        <p
+                          className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                            isDark ? 'text-gray-300' : 'text-gray-600'
+                          }`}
+                        >
                           RENAVAM
                         </p>
-                        <p className={`text-sm font-mono transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                        <p
+                          className={`text-sm font-mono transition-colors duration-300 ${
+                            isDark ? 'text-gray-100' : 'text-gray-900'
+                          }`}
+                        >
                           {sinistro.crlv_proprio_renavam}
                         </p>
                       </div>
                     )}
                     {sinistro.crlv_proprio_chassi && (
                       <div>
-                        <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                        <p
+                          className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                            isDark ? 'text-gray-300' : 'text-gray-600'
+                          }`}
+                        >
                           Chassi
                         </p>
-                        <p className={`text-sm font-mono transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                        <p
+                          className={`text-sm font-mono transition-colors duration-300 ${
+                            isDark ? 'text-gray-100' : 'text-gray-900'
+                          }`}
+                        >
                           {sinistro.crlv_proprio_chassi}
                         </p>
                       </div>
                     )}
                     {sinistro.crlv_proprio_proprietario && (
-                      <div className="md:col-span-2">
-                        <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                      <div className='md:col-span-2'>
+                        <p
+                          className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                            isDark ? 'text-gray-300' : 'text-gray-600'
+                          }`}
+                        >
                           Proprietário
                         </p>
-                        <p className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                        <p
+                          className={`text-sm transition-colors duration-300 ${
+                            isDark ? 'text-gray-100' : 'text-gray-900'
+                          }`}
+                        >
                           {sinistro.crlv_proprio_proprietario}
                         </p>
                       </div>
@@ -693,37 +996,65 @@ export default function SinistroDetalhesPage() {
         )}
 
         {/* Dados de Terceiros */}
-                      {(sinistro.cnh_terceiros_nome || sinistro.crlv_terceiro_placa) && (
-          <Card className={`border-0 shadow-lg mb-8 transition-all duration-300 ${isDark ? 'bg-gray-800/50 backdrop-blur-sm' : 'bg-white'}`}>
+        {(sinistro.cnh_terceiros_nome || sinistro.crlv_terceiro_placa) && (
+          <Card
+            className={`border-0 shadow-lg mb-8 transition-all duration-300 ${
+              isDark ? 'bg-gray-800/50 backdrop-blur-sm' : 'bg-white'
+            }`}
+          >
             <CardHeader>
-              <CardTitle className={`flex items-center gap-2 transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
-                <Users className="w-5 h-5" />
+              <CardTitle
+                className={`flex items-center gap-2 transition-colors duration-300 ${
+                  isDark ? 'text-gray-100' : 'text-gray-900'
+                }`}
+              >
+                <Users className='w-5 h-5' />
                 Dados de Terceiros
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
                 {/* CNH Terceiro */}
-                                    {sinistro.cnh_terceiros_nome && (
+                {sinistro.cnh_terceiros_nome && (
                   <div>
-                    <h4 className={`font-medium mb-3 transition-colors duration-300 ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
+                    <h4
+                      className={`font-medium mb-3 transition-colors duration-300 ${
+                        isDark ? 'text-gray-200' : 'text-gray-800'
+                      }`}
+                    >
                       Condutor Terceiro
                     </h4>
-                    <div className="space-y-3">
+                    <div className='space-y-3'>
                       <div>
-                        <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                        <p
+                          className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                            isDark ? 'text-gray-300' : 'text-gray-600'
+                          }`}
+                        >
                           Nome Completo
                         </p>
-                        <p className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                        <p
+                          className={`text-sm transition-colors duration-300 ${
+                            isDark ? 'text-gray-100' : 'text-gray-900'
+                          }`}
+                        >
                           {sinistro.cnh_terceiros_nome}
                         </p>
                       </div>
                       {sinistro.cnh_terceiros_cpf && (
                         <div>
-                          <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                          <p
+                            className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                              isDark ? 'text-gray-300' : 'text-gray-600'
+                            }`}
+                          >
                             CPF
                           </p>
-                          <p className={`text-sm font-mono transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                          <p
+                            className={`text-sm font-mono transition-colors duration-300 ${
+                              isDark ? 'text-gray-100' : 'text-gray-900'
+                            }`}
+                          >
                             {formatCPF(sinistro.cnh_terceiros_cpf)}
                           </p>
                         </div>
@@ -735,35 +1066,63 @@ export default function SinistroDetalhesPage() {
                 {/* CRLV Terceiro */}
                 {sinistro.crlv_terceiro_placa && (
                   <div>
-                    <h4 className={`font-medium mb-3 transition-colors duration-300 ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
+                    <h4
+                      className={`font-medium mb-3 transition-colors duration-300 ${
+                        isDark ? 'text-gray-200' : 'text-gray-800'
+                      }`}
+                    >
                       Veículo Terceiro
                     </h4>
-                    <div className="space-y-3">
+                    <div className='space-y-3'>
                       <div>
-                        <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                        <p
+                          className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                            isDark ? 'text-gray-300' : 'text-gray-600'
+                          }`}
+                        >
                           Placa
                         </p>
-                        <p className={`text-sm font-mono transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                        <p
+                          className={`text-sm font-mono transition-colors duration-300 ${
+                            isDark ? 'text-gray-100' : 'text-gray-900'
+                          }`}
+                        >
                           {formatPlaca(sinistro.crlv_terceiro_placa)}
                         </p>
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className='grid grid-cols-2 gap-3'>
                         {sinistro.crlv_terceiro_marca && (
                           <div>
-                            <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                            <p
+                              className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                                isDark ? 'text-gray-300' : 'text-gray-600'
+                              }`}
+                            >
                               Marca
                             </p>
-                            <p className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                            <p
+                              className={`text-sm transition-colors duration-300 ${
+                                isDark ? 'text-gray-100' : 'text-gray-900'
+                              }`}
+                            >
                               {sinistro.crlv_terceiro_marca}
                             </p>
                           </div>
                         )}
                         {sinistro.crlv_terceiro_modelo && (
                           <div>
-                            <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                            <p
+                              className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                                isDark ? 'text-gray-300' : 'text-gray-600'
+                              }`}
+                            >
                               Modelo
                             </p>
-                            <p className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                            <p
+                              className={`text-sm transition-colors duration-300 ${
+                                isDark ? 'text-gray-100' : 'text-gray-900'
+                              }`}
+                            >
                               {sinistro.crlv_terceiro_modelo}
                             </p>
                           </div>
@@ -778,47 +1137,79 @@ export default function SinistroDetalhesPage() {
         )}
 
         {/* Arquivos e Fotos */}
-        <Card className={`border-0 shadow-lg transition-all duration-300 ${isDark ? 'bg-gray-800/50 backdrop-blur-sm' : 'bg-white'}`}>
+        <Card
+          className={`border-0 shadow-lg transition-all duration-300 ${
+            isDark ? 'bg-gray-800/50 backdrop-blur-sm' : 'bg-white'
+          }`}
+        >
           <CardHeader>
-            <CardTitle className={`flex items-center gap-2 transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
-              <Camera className="w-5 h-5" />
+            <CardTitle
+              className={`flex items-center gap-2 transition-colors duration-300 ${
+                isDark ? 'text-gray-100' : 'text-gray-900'
+              }`}
+            >
+              <Camera className='w-5 h-5' />
               Documentação
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Upload className="w-6 h-6 text-white" />
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+              <div className='text-center'>
+                <div className='w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-3'>
+                  <Upload className='w-6 h-6 text-white' />
                 </div>
-                <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                <p
+                  className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                    isDark ? 'text-gray-300' : 'text-gray-600'
+                  }`}
+                >
                   Total de Arquivos
                 </p>
-                <p className={`text-2xl font-bold transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                <p
+                  className={`text-2xl font-bold transition-colors duration-300 ${
+                    isDark ? 'text-gray-100' : 'text-gray-900'
+                  }`}
+                >
                   {sinistro.total_arquivos || 0}
                 </p>
               </div>
-              
-              <div className="text-center">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Camera className="w-6 h-6 text-white" />
+
+              <div className='text-center'>
+                <div className='w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-3'>
+                  <Camera className='w-6 h-6 text-white' />
                 </div>
-                <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                <p
+                  className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                    isDark ? 'text-gray-300' : 'text-gray-600'
+                  }`}
+                >
                   Fotos do Veículo
                 </p>
-                <p className={`text-2xl font-bold transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                <p
+                  className={`text-2xl font-bold transition-colors duration-300 ${
+                    isDark ? 'text-gray-100' : 'text-gray-900'
+                  }`}
+                >
                   {sinistro.total_fotos || 0}
                 </p>
               </div>
 
-              <div className="text-center">
-                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <CheckCircle className="w-6 h-6 text-white" />
+              <div className='text-center'>
+                <div className='w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-3'>
+                  <CheckCircle className='w-6 h-6 text-white' />
                 </div>
-                <p className={`text-sm font-medium mb-1 transition-colors duration-300 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                <p
+                  className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                    isDark ? 'text-gray-300' : 'text-gray-600'
+                  }`}
+                >
                   Status Atual
                 </p>
-                <p className={`text-lg font-bold capitalize transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                <p
+                  className={`text-lg font-bold capitalize transition-colors duration-300 ${
+                    isDark ? 'text-gray-100' : 'text-gray-900'
+                  }`}
+                >
                   {sinistro.status.replace('_', ' ')}
                 </p>
               </div>
@@ -828,4 +1219,4 @@ export default function SinistroDetalhesPage() {
       </div>
     </div>
   )
-} 
+}

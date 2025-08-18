@@ -49,7 +49,7 @@ export function GerenteFiltros({
                 placeholder='Número, nome, placa ou CPF...'
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className='pl-10 h-10 focus:ring-2 focus:ring-blue-500'
+                className='pl-10 h-10 focus:ring-2 text-foreground focus:ring-blue-500'
               />
             </div>
           </div>
