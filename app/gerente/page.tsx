@@ -182,6 +182,9 @@ export default function GerentePage() {
 
   // Estado do modal de nova ocorrência
   const [showModalNovaOcorrencia, setShowModalNovaOcorrencia] = useState(false)
+  
+  // Estado da conexão Realtime
+  const [realtimeStatus, setRealtimeStatus] = useState<'CONNECTING' | 'SUBSCRIBED' | 'ERROR'>('CONNECTING')
 
   const { signOut, user } = useAdminAuth()
   const router = useRouter()
@@ -653,12 +656,77 @@ export default function GerentePage() {
   useEffect(() => {
     carregarSinistros()
 
-    // Auto-atualização a cada 10 segundos
-    const interval = setInterval(() => {
-      carregarSinistros(true)
-    }, 10000)
+    // Configurar Supabase Realtime para atualizações automáticas
+    const channel = supabase
+      .channel('sinistros-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Escuta INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'sinistros'
+        },
+        (payload) => {
+          console.log('🔄 Realtime: Mudança detectada na tabela sinistros:', payload)
+          
+          // Recarregar dados quando houver mudanças
+          carregarSinistros(true)
+          
+          // Se estava visualizando detalhes do sinistro que mudou, recarregar
+          if (selectedSinistro && payload.new?.id === selectedSinistro.sinistro.id) {
+            carregarDetalhes(payload.new.id)
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'log_atividades'
+        },
+        (payload) => {
+          console.log('🔄 Realtime: Mudança detectada em log_atividades:', payload)
+          
+          // Se estava visualizando detalhes de um sinistro, recarregar apenas se for o mesmo
+          if (selectedSinistro && payload.new?.sinistro_id === selectedSinistro.sinistro.id) {
+            carregarDetalhes(selectedSinistro.sinistro.id)
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'arquivos_sinistro'
+        },
+        (payload) => {
+          console.log('🔄 Realtime: Mudança detectada em arquivos_sinistro:', payload)
+          
+          // Se estava visualizando detalhes de um sinistro, recarregar apenas se for o mesmo
+          if (selectedSinistro && payload.new?.sinistro_id === selectedSinistro.sinistro.id) {
+            carregarDetalhes(selectedSinistro.sinistro.id)
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('📡 Realtime connection status:', status)
+        
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Realtime conectado com sucesso!')
+          setRealtimeStatus('SUBSCRIBED')
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('❌ Erro na conexão Realtime')
+          setRealtimeStatus('ERROR')
+        }
+      })
 
-    return () => clearInterval(interval)
+    // Cleanup: unsubscribe quando componente desmonta
+    return () => {
+      console.log('🔌 Desconectando Realtime')
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   // Carregar passos personalizados inicialmente
@@ -725,7 +793,7 @@ export default function GerentePage() {
         className={`min-h-screen  dark:bg-gradient-to-br dark:from-gray-900 dark:via-blue-900 dark:to-purple-900 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50
         `}
       >
-        <GerenteHeader />
+        <GerenteHeader realtimeStatus={realtimeStatus} />
         <main className='container mx-auto px-3 py-4 sm:p-4 lg:p-6 space-y-3 sm:space-y-4 lg:space-y-6'>
           <GerenteEstatisticas sinistros={sinistros} />
 

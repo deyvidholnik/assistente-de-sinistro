@@ -3,12 +3,16 @@
 import React from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { Sun, Moon, LogOut } from 'lucide-react'
+import { Sun, Moon, LogOut, Wifi, WifiOff, Loader2 } from 'lucide-react'
 import { useAdminAuth } from '@/context/admin-auth-context'
 import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 
-export function GerenteHeader() {
+interface GerenteHeaderProps {
+  realtimeStatus?: 'CONNECTING' | 'SUBSCRIBED' | 'ERROR'
+}
+
+export function GerenteHeader({ realtimeStatus = 'CONNECTING' }: GerenteHeaderProps) {
   const { user, signOut } = useAdminAuth()
   const router = useRouter()
   const { theme, setTheme } = useTheme()
@@ -22,6 +26,31 @@ export function GerenteHeader() {
       // Fallback caso o signOut falhe
       localStorage.removeItem('adminLogado')
       router.push('/admin/login')
+    }
+  }
+
+  // Função para renderizar ícone de status realtime
+  const renderRealtimeIcon = () => {
+    switch (realtimeStatus) {
+      case 'SUBSCRIBED':
+        return <Wifi className='w-4 h-4 text-green-500' />
+      case 'ERROR':
+        return <WifiOff className='w-4 h-4 text-red-500' />
+      case 'CONNECTING':
+      default:
+        return <Loader2 className='w-4 h-4 text-yellow-500 animate-spin' />
+    }
+  }
+
+  const getRealtimeTitle = () => {
+    switch (realtimeStatus) {
+      case 'SUBSCRIBED':
+        return 'Atualizações em tempo real ativas'
+      case 'ERROR':
+        return 'Erro na conexão de tempo real'
+      case 'CONNECTING':
+      default:
+        return 'Conectando ao tempo real...'
     }
   }
 
@@ -59,6 +88,14 @@ export function GerenteHeader() {
           </div>
 
           <div className='flex items-center space-x-1 md:space-x-4 flex-shrink-0'>
+            {/* Status Realtime */}
+            <div 
+              className='p-2 rounded-lg transition-all duration-300 cursor-help'
+              title={getRealtimeTitle()}
+            >
+              {renderRealtimeIcon()}
+            </div>
+
             {/* Tema */}
             <Button
               variant='ghost'
