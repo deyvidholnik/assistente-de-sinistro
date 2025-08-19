@@ -4,17 +4,92 @@ import {
   Eye, 
   CheckCircle, 
   XCircle,
-  PlayCircle
+  PlayCircle,
+  Circle,
+  FileText,
+  CheckCircle2
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 interface StatusBadgeProps {
   status: string
   size?: 'sm' | 'md' | 'lg'
   showIcon?: boolean
+  customColor?: string
+  customIcon?: string
 }
 
-export default function StatusBadge({ status, size = 'md', showIcon = true }: StatusBadgeProps) {
+interface StatusPersonalizado {
+  id: string
+  nome: string
+  cor: string
+  icone: string
+  ordem: number
+  ativo: boolean
+}
+
+export default function StatusBadge({ status, size = 'md', showIcon = true, customColor, customIcon }: StatusBadgeProps) {
+  const [statusPersonalizados, setStatusPersonalizados] = useState<StatusPersonalizado[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const buscarStatusPersonalizados = async () => {
+      try {
+        const response = await fetch('/api/status-personalizados')
+        if (response.ok) {
+          const data = await response.json()
+          setStatusPersonalizados(data.status || [])
+        }
+      } catch (error) {
+        console.error('Erro ao buscar status personalizados:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    buscarStatusPersonalizados()
+  }, [])
+
+  const getIconComponent = (iconeName: string) => {
+    const iconMap: { [key: string]: JSX.Element } = {
+      'clock': <Clock4 className='w-3 h-3 mr-1' />,
+      'eye': <Eye className='w-3 h-3 mr-1' />,
+      'check-circle': <CheckCircle className='w-3 h-3 mr-1' />,
+      'x-circle': <XCircle className='w-3 h-3 mr-1' />,
+      'play-circle': <PlayCircle className='w-3 h-3 mr-1' />,
+      'circle': <Circle className='w-3 h-3 mr-1' />,
+      'file-text': <FileText className='w-3 h-3 mr-1' />,
+      'check-circle-2': <CheckCircle2 className='w-3 h-3 mr-1' />
+    }
+    return iconMap[iconeName] || <Circle className='w-3 h-3 mr-1' />
+  }
   const getStatusConfig = (status: string) => {
+    // Se temos cor/ícone customizados via props, usar eles
+    if (customColor || customIcon) {
+      return {
+        icon: customIcon ? getIconComponent(customIcon) : <Circle className='w-3 h-3 mr-1' />,
+        label: status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' '),
+        variant: 'secondary' as const,
+        className: customColor ? 
+          `bg-[${customColor}]/10 text-[${customColor}] border-[${customColor}]/20` :
+          'bg-muted text-muted-foreground border-border',
+        customColor
+      }
+    }
+
+    // Buscar nas configurações personalizadas
+    const statusPersonalizado = statusPersonalizados.find(s => s.nome === status)
+    if (statusPersonalizado) {
+      return {
+        icon: getIconComponent(statusPersonalizado.icone),
+        label: status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' '),
+        variant: 'secondary' as const,
+        className: `bg-[${statusPersonalizado.cor}]/10 text-[${statusPersonalizado.cor}] border-[${statusPersonalizado.cor}]/20`,
+        customColor: statusPersonalizado.cor
+      }
+    }
+
+    // Fallback para status padrão (compatibilidade)
     switch (status) {
       case 'pendente':
         return {
@@ -22,6 +97,13 @@ export default function StatusBadge({ status, size = 'md', showIcon = true }: St
           label: 'Pendente',
           variant: 'secondary' as const,
           className: 'bg-muted text-muted-foreground border-border'
+        }
+      case 'aguardando_documentos':
+        return {
+          icon: <FileText className='w-3 h-3 mr-1' />,
+          label: 'Aguardando Documentos',
+          variant: 'outline' as const,
+          className: 'bg-status-warning/10 text-status-warning border-status-warning/20'
         }
       case 'em_analise':
         return {
@@ -46,7 +128,7 @@ export default function StatusBadge({ status, size = 'md', showIcon = true }: St
         }
       case 'concluido':
         return {
-          icon: <CheckCircle className='w-3 h-3 mr-1' />,
+          icon: <CheckCircle2 className='w-3 h-3 mr-1' />,
           label: 'Concluído',
           variant: 'default' as const,
           className: 'bg-status-success/10 text-status-success border-status-success/20'
@@ -60,8 +142,8 @@ export default function StatusBadge({ status, size = 'md', showIcon = true }: St
         }
       default:
         return {
-          icon: <Clock4 className='w-3 h-3 mr-1' />,
-          label: status,
+          icon: <Circle className='w-3 h-3 mr-1' />,
+          label: status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' '),
           variant: 'secondary' as const,
           className: 'bg-muted text-muted-foreground border-border'
         }
@@ -74,10 +156,22 @@ export default function StatusBadge({ status, size = 'md', showIcon = true }: St
                    size === 'lg' ? 'text-base px-4 py-2' : 
                    'text-sm px-3 py-1'
 
+  if (loading && !customColor && !customIcon) {
+    // Mostrar skeleton enquanto carrega
+    return (
+      <div className={`${sizeClass} w-16 h-6 bg-muted animate-pulse rounded`} />
+    )
+  }
+
   return (
     <Badge
       variant={config.variant}
       className={`${config.className} ${sizeClass} w-fit`}
+      style={config.customColor ? {
+        backgroundColor: `${config.customColor}15`,
+        color: config.customColor,
+        borderColor: `${config.customColor}40`
+      } : undefined}
     >
       {showIcon && config.icon}
       {config.label}

@@ -31,9 +31,20 @@ export interface SinistroData {
   nome_completo_furto?: string
   cpf_furto?: string
   placa_veiculo_furto?: string
-  status?: 'pendente' | 'em_analise' | 'aprovado' | 'rejeitado' | 'concluido'
+  status?: string // Status dinâmico - validado via banco de dados
   data_criacao?: string
   data_atualizacao?: string
+}
+
+export interface StatusPersonalizado {
+  id: string
+  nome: string
+  cor: string
+  icone: string
+  ordem: number
+  ativo: boolean
+  created_at?: string
+  updated_at?: string
 }
 
 export interface DadosCNHDB {

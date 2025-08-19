@@ -44,7 +44,7 @@ export function StepCNH() {
           Carteira Nacional de Habilitação
         </h2>
         <p className="text-xs sm:text-sm text-gray-600 px-4">
-          Fotografe sua CNH - os dados serão extraídos automaticamente
+          Fotografe ou envie PDF da sua CNH - os dados serão extraídos automaticamente
         </p>
       </div>
 
@@ -89,8 +89,8 @@ export function StepCNH() {
           >
             <Upload className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
             <div className="text-center">
-              <div className="font-medium text-xs sm:text-sm">{hasFile ? "Arquivo Enviado" : "Enviar Foto da CNH"}</div>
-              <div className="text-xs opacity-90">{hasFile ? "Delete para trocar" : "Câmera"}</div>
+              <div className="font-medium text-xs sm:text-sm">{hasFile ? "Arquivo Enviado" : "Enviar CNH"}</div>
+              <div className="text-xs opacity-90">{hasFile ? "Delete para trocar" : "Câmera ou PDF"}</div>
             </div>
           </Button>
         </div>
@@ -98,7 +98,7 @@ export function StepCNH() {
         <input
           id="cnh-upload"
           type="file"
-          accept="image/*"
+          accept="image/*,application/pdf,.pdf"
           capture="environment"
           className="hidden"
           onChange={(e) => handleFileUpload("cnh", e.target.files)}

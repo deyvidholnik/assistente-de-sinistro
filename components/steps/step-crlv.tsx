@@ -44,7 +44,7 @@ export function StepCRLV() {
           Documento do Veículo (CRLV)
         </h2>
         <p className="text-sm sm:text-base text-gray-600 px-4">
-          Fotografe o CRLV - os dados serão extraídos automaticamente
+          Fotografe ou envie PDF do CRLV - os dados serão extraídos automaticamente
         </p>
       </div>
 
@@ -102,9 +102,9 @@ export function StepCRLV() {
             <Upload className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
             <div className="text-center">
               <div className="font-medium text-xs sm:text-sm">
-                {hasFile ? "Arquivo Enviado" : "Enviar Foto do CRLV"}
+                {hasFile ? "Arquivo Enviado" : "Enviar CRLV"}
               </div>
-              <div className="text-xs opacity-90">{hasFile ? "Delete para trocar" : "Câmera ou galeria"}</div>
+              <div className="text-xs opacity-90">{hasFile ? "Delete para trocar" : "Câmera ou PDF"}</div>
             </div>
           </Button>
         </div>
@@ -112,7 +112,7 @@ export function StepCRLV() {
         <input
           id="crlv-upload"
           type="file"
-          accept="image/*"
+          accept="image/*,application/pdf,.pdf"
           capture="environment"
           className="hidden"
           onChange={(e) => handleFileUpload("crlv", e.target.files)}

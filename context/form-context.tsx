@@ -4,6 +4,7 @@ import { createContext, useContext, useState, type ReactNode, type Dispatch, typ
 import type { CNHData, CRLVData, DocumentosData, TipoSinistro, DadosFurtoSemDocumentos, TipoAtendimento, TipoAssistencia } from "@/types"
 import { fotoVeiculoSteps } from "@/constants/steps" // Assuming fotoVeiculoSteps is declared in a constants file
 import { validarCPF, validarPlaca } from "@/lib/validations"
+import { convertPdfToImage, isPdfFile, preprocessImageForOCR } from "@/lib/pdf-utils"
 
 // Definindo a estrutura do nosso contexto
 interface FormContextType {
@@ -190,12 +191,24 @@ export function FormProvider({ children, initialData }: FormProviderProps) {
     setOcrError(null)
 
     try {
-      const base64Image = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve((reader.result as string).split(",")[1])
-        reader.onerror = (error) => reject(error)
-        reader.readAsDataURL(file)
-      })
+      let base64Image: string
+
+      // Verifica se é PDF ou imagem
+      if (isPdfFile(file)) {
+        // Converte PDF para imagem
+        base64Image = await convertPdfToImage(file)
+      } else {
+        // Processa imagem normalmente
+        base64Image = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve((reader.result as string).split(",")[1])
+          reader.onerror = (error) => reject(error)
+          reader.readAsDataURL(file)
+        })
+      }
+
+      // Aplica pré-processamento para melhorar OCR
+      base64Image = await preprocessImageForOCR(base64Image)
 
       const resp = await fetch("/api/ocr", {
         method: "POST",

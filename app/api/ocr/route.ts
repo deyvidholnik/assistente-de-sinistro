@@ -9,7 +9,7 @@ const OCR_MODEL = "gpt-4o-mini"
 function getPrompt(type: "cnh" | "crlv") {
   if (type === "cnh") {
     return `
-      Analise a imagem de uma CNH brasileira e devolva JSON no formato:
+      Extraia as seguintes informações da imagem e retorne em formato JSON:
       {
         "nome": "",
         "cpf": "",
@@ -19,11 +19,11 @@ function getPrompt(type: "cnh" | "crlv") {
         "numeroRegistro": "",
         "dataVencimento": "YYYY-MM-DD"
       }
-      Preencha com string vazia caso algum campo não exista.
+      Identifique textos que correspondam a estes campos. Use string vazia se não encontrar.
     `
   }
   return `
-    Analise a imagem de um CRLV brasileiro e devolva JSON no formato:
+    Extraia as seguintes informações da imagem e retorne em formato JSON:
     {
       "placa": "",
       "renavam": "",
@@ -36,7 +36,7 @@ function getPrompt(type: "cnh" | "crlv") {
       "combustivel": "",
       "proprietario": ""
     }
-    Preencha com string vazia caso algum campo não exista.
+    Identifique textos que correspondam a estes campos. Use string vazia se não encontrar.
   `
 }
 
