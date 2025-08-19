@@ -347,7 +347,7 @@ export default function AdminCallsPage() {
                   placeholder='Agente, números...'
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className='pl-10'
+                  className='pl-10 text-foreground'
                 />
               </div>
             </div>

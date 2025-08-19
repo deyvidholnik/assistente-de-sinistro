@@ -27,7 +27,7 @@ export function NavigationButtons() {
         </Button>
       </a>
 
-      <a href='/gerente'>
+      <a href='/gerente?from=admin'>
         <Button
           size='lg'
           className='bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-6 py-3'

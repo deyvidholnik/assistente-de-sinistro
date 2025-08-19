@@ -1,11 +1,11 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { Sun, Moon, LogOut, Wifi, WifiOff, Loader2 } from 'lucide-react'
+import { Sun, Moon, LogOut, Wifi, WifiOff, Loader2, ArrowLeft } from 'lucide-react'
 import { useAdminAuth } from '@/context/admin-auth-context'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useTheme } from 'next-themes'
 
 interface GerenteHeaderProps {
@@ -15,8 +15,18 @@ interface GerenteHeaderProps {
 export function GerenteHeader({ realtimeStatus = 'CONNECTING' }: GerenteHeaderProps) {
   const { user, signOut } = useAdminAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { theme, setTheme } = useTheme()
   const isDark = theme === 'dark'
+  
+  // Estado para controlar se deve mostrar o botão de voltar
+  const [showBackButton, setShowBackButton] = useState(false)
+  
+  // Verificar se veio do admin/dashboard
+  useEffect(() => {
+    const from = searchParams.get('from')
+    setShowBackButton(from === 'admin')
+  }, [searchParams])
 
   const handleLogout = async () => {
     try {
@@ -27,6 +37,11 @@ export function GerenteHeader({ realtimeStatus = 'CONNECTING' }: GerenteHeaderPr
       localStorage.removeItem('adminLogado')
       router.push('/admin/login')
     }
+  }
+
+  // Função para voltar ao admin/dashboard
+  const handleBackToAdmin = () => {
+    router.push('/admin/dashboard')
   }
 
   // Função para renderizar ícone de status realtime
@@ -63,6 +78,21 @@ export function GerenteHeader({ realtimeStatus = 'CONNECTING' }: GerenteHeaderPr
       <div className='container mx-auto px-4 py-3 md:py-4'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center space-x-2 md:space-x-3 min-w-0 flex-1'>
+            {/* Botão de voltar - só aparece se veio do admin */}
+            {showBackButton && (
+              <Button
+                onClick={handleBackToAdmin}
+                variant='ghost'
+                size='sm'
+                className={`hover:bg-opacity-20 transition-all duration-300 ${
+                  isDark ? 'hover:bg-white text-gray-300' : 'hover:bg-blue-50 text-gray-700'
+                } p-2 flex-shrink-0`}
+                title='Voltar ao Dashboard Admin'
+              >
+                <ArrowLeft className='w-4 h-4' />
+              </Button>
+            )}
+            
             <div className='relative w-10 h-10 md:w-14 md:h-14 flex-shrink-0'>
               <Image
                 src='/images/logo.png'

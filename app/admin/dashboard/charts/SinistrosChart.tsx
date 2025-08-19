@@ -57,17 +57,17 @@ const statusColors = {
 }
 
 const tipoColors = {
-  sinistro_colisao: '#ef4444',        // vermelho
-  sinistro_furto: '#f97316',          // laranja
-  sinistro_roubo: '#dc2626',          // vermelho escuro
+  sinistro_colisao: '#ef4444', // vermelho
+  sinistro_furto: '#f97316', // laranja
+  sinistro_roubo: '#dc2626', // vermelho escuro
   sinistro_pequenos_reparos: '#22c55e', // verde
-  assistencia_guincho: '#3b82f6',     // azul
-  assistencia_pane_seca: '#8b5cf6',   // roxo
+  assistencia_guincho: '#3b82f6', // azul
+  assistencia_pane_seca: '#8b5cf6', // roxo
   assistencia_pane_mecanica: '#06b6d4', // ciano
   assistencia_pane_eletrica: '#eab308', // amarelo
-  assistencia_trocar_pneu: '#ec4899',  // rosa
-  assistencia_taxi: '#84cc16',        // lime
-  assistencia_hotel: '#f59e0b',       // âmbar
+  assistencia_trocar_pneu: '#ec4899', // rosa
+  assistencia_taxi: '#84cc16', // lime
+  assistencia_hotel: '#f59e0b', // âmbar
 }
 
 function formatStatusLabel(status: string): string {
@@ -225,26 +225,20 @@ export function SinistrosChart({ data, loading = false, className = '' }: Sinist
           >
             <ChartContainer
               config={chartConfig}
-              className='h-[350px] sm:h-[350px] md:h-[350px]'
+              className='h-[320px] max-w-full  mx-auto'
             >
               <ResponsiveContainer
                 width='100%'
                 height='100%'
               >
-                <PieChart
-                  margin={
-                    isMobile
-                      ? { top: 20, right: 10, bottom: 90, left: 10 }
-                      : { top: 30, right: 15, bottom: 80, left: 15 }
-                  }
-                >
+                <PieChart>
                   <Pie
                     data={tipoData}
-                    cx={isMobile ? '34%' : '50%'}
-                    cy={isMobile ? '55%' : '40%'}
+                    cx={isMobile ? '50%' : '50%'}
+                    cy={isMobile ? '35%' : '40%'}
                     labelLine={false}
                     label={({ value }) => value}
-                    outerRadius={isMobile ? 70 : 70}
+                    outerRadius={isMobile ? 60 : 80}
                     fill='#8884d8'
                     dataKey='value'
                   >
@@ -257,15 +251,17 @@ export function SinistrosChart({ data, loading = false, className = '' }: Sinist
                   </Pie>
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Legend
-                    verticalAlign='bottom'
-                    height={isMobile ? 40 : 30}
+                    height={isMobile ? 70 : 30}
                     align='center'
                     wrapperStyle={{
-                      fontSize: isMobile ? '10px' : '12px',
-                      paddingTop: isMobile ? '25px' : '10px',
-                      paddingRight: isMobile ? '200px' : '0px',
-                      lineHeight: '1.2',
+                      fontSize: isMobile ? '8px' : '10px',
+                      paddingTop: isMobile ? '20px' : '0px',
+                      paddingRight: '0px',
+                      paddingLeft: '0px',
+                      lineHeight: isMobile ? '12px' : '4px',
                       textAlign: 'center',
+                      maxWidth: '100%',
+                      overflow: 'hidden',
                     }}
                   />
                 </PieChart>
