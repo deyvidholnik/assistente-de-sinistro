@@ -70,3 +70,71 @@ export function obterNomeDescritivoFoto(titulo: string): string {
 export function obterTiposFotoMapeados(): string[] {
   return Object.keys(mapeamentoFotos)
 }
+
+// Mapeamento inverso para converter nomes de arquivos em títulos amigáveis
+const mapeamentoNomesParaTitulos: { [key: string]: string } = {
+  // Fotos do próprio veículo
+  'traseira_placa': 'Traseira e Placa do Veículo',
+  'frente_veiculo': 'Frente do Veículo',
+  'lateral_direita': 'Lateral Direita do Veículo',
+  'lateral_esquerda': 'Lateral Esquerda do Veículo',
+  'chassi_veiculo': 'Número do Chassi',
+  
+  // Fotos de outros veículos
+  'outro_traseira_placa': 'Traseira e Placa do Outro Veículo',
+  'outro_frente': 'Frente do Outro Veículo',
+  'outro_lateral_direita': 'Lateral Direita do Outro Veículo',
+  'outro_lateral_esquerda': 'Lateral Esquerda do Outro Veículo',
+  'outro_danos': 'Danos do Outro Veículo',
+  
+  // Foto geral
+  'local_geral': 'Visão Geral do Local',
+  
+  // Pequenos reparos
+  'reparo_dano': 'Foto do Reparo',
+  'chassi_reparo': 'Número do Chassi',
+  
+  // Documentos
+  'cnh': 'CNH - Carteira Nacional de Habilitação',
+  'crlv': 'CRLV - Documento do Veículo',
+  'boletim': 'Boletim de Ocorrência',
+  
+  // Genéricos
+  'documento_adicional': 'Documento Adicional',
+}
+
+/**
+ * Converte nome de arquivo para título amigável para exibição
+ * Exemplo: "traseira_placa_1693247483647.jpg" -> "Traseira e Placa do Veículo"
+ */
+export function converterNomeArquivoParaTitulo(nomeArquivo: string): string {
+  // Remover caminho se existir (ex: "123456/traseira_placa_1693247483647.jpg")
+  const nomeBase = nomeArquivo.split('/').pop() || nomeArquivo
+  
+  // Remover extensão (ex: "traseira_placa_1693247483647.jpg" -> "traseira_placa_1693247483647")
+  const semExtensao = nomeBase.split('.')[0]
+  
+  // Remover timestamp (última parte numérica)
+  const partes = semExtensao.split('_')
+  
+  // Se a última parte é numérica (timestamp), remove
+  if (partes.length > 1 && /^\d+$/.test(partes[partes.length - 1])) {
+    partes.pop()
+  }
+  
+  // Reconstrói o identificador
+  const identificador = partes.join('_')
+  
+  // Busca título amigável
+  const tituloAmigavel = mapeamentoNomesParaTitulos[identificador]
+  
+  if (tituloAmigavel) {
+    return tituloAmigavel
+  }
+  
+  // Fallback: converte underscores em espaços e capitaliza
+  return identificador
+    .split('_')
+    .map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1))
+    .join(' ')
+}

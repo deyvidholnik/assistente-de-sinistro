@@ -30,6 +30,7 @@ import {
 } from 'lucide-react'
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { converterNomeArquivoParaTitulo } from "@/lib/nome-arquivo-utils"
 
 interface SinistroDetalhado {
   sinistro: any
@@ -371,7 +372,7 @@ export function OccurrenceDetails({ dados }: OccurrenceDetailsProps) {
                       </Badge>
                     </div>
                     <p className="text-sm font-medium truncate mb-2" title={arquivo.nome_original}>
-                      {arquivo.nome_original}
+                      {arquivo.nome_arquivo ? converterNomeArquivoParaTitulo(arquivo.nome_arquivo) : arquivo.nome_original}
                     </p>
                     <div className="flex justify-between items-center">
                       <span className="text-xs text-gray-500">

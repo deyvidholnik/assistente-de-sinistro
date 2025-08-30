@@ -2,6 +2,7 @@ import { Camera, FileText, Trash2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useState, useEffect } from 'react'
 import { convertPdfToImage, isPdfFile } from '@/lib/pdf-utils'
+import { converterNomeArquivoParaTitulo } from '@/lib/nome-arquivo-utils'
 
 interface ArquivoCardProps {
   arquivo: any
@@ -167,6 +168,13 @@ export default function ArquivoCard({ arquivo, index, onDelete }: ArquivoCardPro
           </div>
         )}
 
+      </div>
+
+      {/* Nome do arquivo */}
+      <div className='absolute bottom-0 left-0 right-0 bg-black/50 backdrop-blur-sm p-3 rounded-b-lg md:rounded-b-2xl'>
+        <p className='text-sm font-medium text-white truncate' title={nomeArquivo}>
+          {arquivo.nome_arquivo ? converterNomeArquivoParaTitulo(arquivo.nome_arquivo) : (arquivo.titulo_foto || tipoInfo.label)}
+        </p>
       </div>
 
     </div>
