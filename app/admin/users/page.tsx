@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { useTheme } from 'next-themes'
+import { useAdminAuth } from '@/context/admin-auth-context'
 import {
   Users,
   Plus,
@@ -65,6 +66,7 @@ export default function UsersManagementPage() {
   })
 
   const { theme, setTheme } = useTheme()
+  const { user: currentUser } = useAdminAuth()
   const router = useRouter()
   const isDark = theme === 'dark'
 
@@ -114,6 +116,7 @@ export default function UsersManagementPage() {
   }
 
   const resetForm = () => {
+    console.log('🧹 Executando resetForm - limpando todos os campos')
     setFormData({
       username: '',
       email: '',
@@ -122,6 +125,7 @@ export default function UsersManagementPage() {
       password: '',
     })
     setShowPassword(false)
+    console.log('✅ Formulário resetado - todos os campos devem estar vazios')
   }
 
   const handleCreateUser = async (e: React.FormEvent) => {
@@ -141,7 +145,10 @@ export default function UsersManagementPage() {
       const response = await fetch('/api/admin/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          current_user_level: currentUser?.user_level
+        }),
       })
 
       const data = await response.json()
@@ -185,7 +192,11 @@ export default function UsersManagementPage() {
       const response = await fetch(`/api/admin/users`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: editingUser.id, ...updateData }),
+        body: JSON.stringify({ 
+          id: editingUser.id, 
+          ...updateData,
+          current_user_level: currentUser?.user_level
+        }),
       })
 
       const data = await response.json()
@@ -205,7 +216,29 @@ export default function UsersManagementPage() {
     }
   }
 
+  // Verifica se o usuário atual pode editar o usuário selecionado
+  const canEditUser = (userToEdit: UserInfo): boolean => {
+    if (!currentUser) return false
+    
+    // Admin pode editar qualquer um
+    if (currentUser.user_level === 'admin') return true
+    
+    // Manager não pode editar admin
+    if (currentUser.user_level === 'manager' && userToEdit.user_level === 'admin') {
+      return false
+    }
+    
+    // Manager pode editar manager, funcionario
+    return true
+  }
+
   const handleEditUser = (user: UserInfo) => {
+    // Verificar se pode editar este usuário
+    if (!canEditUser(user)) {
+      setError('Você não tem permissão para editar usuários administradores')
+      return
+    }
+    
     setEditingUser(user)
     setIsCreating(false)
     setFormData({
@@ -218,6 +251,19 @@ export default function UsersManagementPage() {
   }
 
   const handleDeleteUser = async (userId: number) => {
+    // Encontrar o usuário que está sendo deletado
+    const userToDelete = users.find(u => u.id === userId)
+    if (!userToDelete) {
+      setError('Usuário não encontrado')
+      return
+    }
+    
+    // Verificar se pode deletar este usuário
+    if (!canEditUser(userToDelete)) {
+      setError('Você não tem permissão para excluir usuários administradores')
+      return
+    }
+    
     if (!confirm('Tem certeza que deseja excluir este usuário?')) return
 
     setLoading(true)
@@ -228,7 +274,10 @@ export default function UsersManagementPage() {
       const response = await fetch('/api/admin/users', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: userId }),
+        body: JSON.stringify({ 
+          id: userId,
+          current_user_level: currentUser?.user_level
+        }),
       })
 
       const data = await response.json()
@@ -252,8 +301,8 @@ export default function UsersManagementPage() {
         return <Badge className='bg-red-100 text-red-800 border-red-200'>Admin</Badge>
       case 'manager':
         return <Badge className='bg-blue-100 text-blue-800 border-blue-200'>Gerente</Badge>
-      case 'user':
-        return <Badge className='bg-green-100 text-green-800 border-green-200'>Usuário</Badge>
+      case 'funcionario':
+        return <Badge className='bg-green-100 text-green-800 border-green-200'>Funcionário</Badge>
       default:
         return <Badge variant='outline'>{level}</Badge>
     }
@@ -394,6 +443,7 @@ export default function UsersManagementPage() {
               </div>
               <Button
                 onClick={() => {
+                  console.log('🔄 Clicou em Novo Usuário - Resetando formulário')
                   setIsCreating(true)
                   setEditingUser(null)
                   resetForm()
@@ -437,6 +487,7 @@ export default function UsersManagementPage() {
               <form
                 onSubmit={editingUser ? handleUpdateUser : handleCreateUser}
                 className='grid grid-cols-1 md:grid-cols-2 gap-4'
+                autoComplete='off'
               >
                 <div>
                   <Label
@@ -450,6 +501,7 @@ export default function UsersManagementPage() {
                     value={formData.username}
                     onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                     required
+                    autoComplete='off'
                     className=' text-foreground'
                   />
                 </div>
@@ -475,7 +527,8 @@ export default function UsersManagementPage() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     disabled={!!editingUser}
-                    className={editingUser ? 'bg-muted/50 cursor-not-allowed text-muted-foreground' : ''}
+                    autoComplete='off'
+                    className={editingUser ? 'bg-muted/50 cursor-not-allowed text-foreground' : 'text-foreground'}
                     required
                   />
                 </div>
@@ -492,6 +545,7 @@ export default function UsersManagementPage() {
                     value={formData.full_name}
                     onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                     required
+                    autoComplete='off'
                     className=' text-foreground'
                   />
                 </div>
@@ -512,9 +566,12 @@ export default function UsersManagementPage() {
                       required
                     >
                       <option value=''>Selecione o nível</option>
-                      <option value='user'>Usuário</option>
+                      <option value='funcionario'>Funcionário</option>
                       <option value='manager'>Gerente</option>
-                      <option value='admin'>Admin</option>
+                      {/* Somente admin pode criar/editar outros admins */}
+                      {currentUser?.user_level === 'admin' && (
+                        <option value='admin'>Admin</option>
+                      )}
                     </select>
                   </div>
                 </div>
@@ -533,6 +590,7 @@ export default function UsersManagementPage() {
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       required={!editingUser}
+                      autoComplete='new-password'
                       className='text-foreground'
                     />
                     <Button
@@ -665,6 +723,9 @@ export default function UsersManagementPage() {
                               variant='ghost'
                               size='sm'
                               onClick={() => handleEditUser(user)}
+                              disabled={!canEditUser(user)}
+                              className={!canEditUser(user) ? 'opacity-50 cursor-not-allowed' : ''}
+                              title={!canEditUser(user) ? 'Você não pode editar usuários administradores' : 'Editar usuário'}
                             >
                               <Edit className='w-4 h-4 text-foreground' />
                             </Button>
@@ -672,6 +733,9 @@ export default function UsersManagementPage() {
                               variant='ghost'
                               size='sm'
                               onClick={() => handleDeleteUser(user.id)}
+                              disabled={!canEditUser(user)}
+                              className={!canEditUser(user) ? 'opacity-50 cursor-not-allowed' : ''}
+                              title={!canEditUser(user) ? 'Você não pode excluir usuários administradores' : 'Excluir usuário'}
                             >
                               <Trash2 className='w-4 h-4 text-foreground' />
                             </Button>

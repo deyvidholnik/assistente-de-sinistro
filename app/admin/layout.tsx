@@ -35,8 +35,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     const adminData = localStorage.getItem('adminLogado')
     if (adminData) {
       const parsed = JSON.parse(adminData)
-      // CRÍTICO: Apenas ADMIN pode acessar /admin/* 
-      hasLocalStorageAuth = parsed?.user?.user_level === 'admin'
+      // CRÍTICO: Apenas ADMIN e MANAGER podem acessar /admin/* (funcionario NÃO)
+      hasLocalStorageAuth = parsed?.user?.user_level === 'admin' || parsed?.user?.user_level === 'manager'
     }
   } catch (error) {
     console.error('❌ Erro ao parsear adminLogado do localStorage:', error)
@@ -44,9 +44,9 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('adminLogado')
   }
 
-  // ✅ CRÍTICO: Permitir acesso APENAS para ADMIN (não manager)
-  const isAdmin = user?.user_level === 'admin'
-  const shouldAllowAccess = (isAuthenticated && isAdmin) || hasLocalStorageAuth
+  // ✅ CRÍTICO: Permitir acesso apenas para ADMIN e MANAGER (funcionario NÃO)
+  const isAdminOrManager = user?.user_level === 'admin' || user?.user_level === 'manager'
+  const shouldAllowAccess = (isAuthenticated && isAdminOrManager) || hasLocalStorageAuth
 
   // Bloquear renderização se não autenticado em nenhum dos sistemas
   if (!shouldAllowAccess) {

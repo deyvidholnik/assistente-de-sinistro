@@ -36,7 +36,8 @@
       "Read(c:\\Users\\deyni\\OneDrive\\Imagens\\Capturas de tela/**)",
       "Read(c:\\Users\\deyni\\pvautoprotecao.com.br\\assistente-de-sinistro\\app\\gerente/**)",
       "Read(c:\\Users\\deyni\\pvautoprotecao.com.br\\assistente-de-sinistro\\app\\gerente\\sinistro-detalhes/**)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Read(c:\\Users\\deyni\\OneDrive\\Imagens\\Capturas de tela/**)"
     ],
     "deny": [],
     "ask": [],

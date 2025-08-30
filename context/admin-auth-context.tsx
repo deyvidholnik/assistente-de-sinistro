@@ -10,7 +10,7 @@ interface UserInfo {
   username: string
   email: string
   full_name: string
-  user_level: 'admin' | 'manager' | 'user'
+  user_level: 'admin' | 'manager' | 'funcionario'
   created_at: string
   updated_at: string
   last_login?: string
@@ -46,7 +46,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
 
   // ✅ CORRIGIDO: isAuthenticated considera localStorage + inicialização
-  const isAuthenticated = !initializing && !!user && (user.user_level === 'admin' || user.user_level === 'manager')
+  const isAuthenticated = !initializing && !!user && (user.user_level === 'admin' || user.user_level === 'manager' || user.user_level === 'funcionario')
 
   // Buscar informações do usuário
   const fetchUserInfo = async (uid: string): Promise<UserInfo | null> => {
@@ -67,8 +67,8 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         return null
       }
 
-      if (userInfo.user_level !== 'admin' && userInfo.user_level !== 'manager') {
-        console.log('⚠️ Usuário não tem permissão de admin/manager')
+      if (userInfo.user_level !== 'admin' && userInfo.user_level !== 'manager' && userInfo.user_level !== 'funcionario') {
+        console.log('⚠️ Usuário não tem permissão de admin/manager/funcionario')
         return null
       }
 
@@ -88,7 +88,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       if (!adminData) return null
 
       const parsed = JSON.parse(adminData)
-      if (parsed?.user && (parsed.user.user_level === 'admin' || parsed.user.user_level === 'manager')) {
+      if (parsed?.user && (parsed.user.user_level === 'admin' || parsed.user.user_level === 'manager' || parsed.user.user_level === 'funcionario')) {
         return parsed.user
       }
     } catch (error) {
@@ -205,7 +205,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       const userInfo = await fetchUserInfo(data.user.id)
       if (!userInfo) {
         await supabase.auth.signOut()
-        throw new Error('Usuário não tem permissões de administrador')
+        throw new Error('Usuário não tem permissões adequadas')
       }
 
       // Atualizar estados

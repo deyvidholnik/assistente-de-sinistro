@@ -56,8 +56,8 @@ function GerenteLayoutContent({ children }: { children: React.ReactNode }) {
       return
     }
 
-    // ✅ Verificar se é manager ou admin
-    if (user?.user_level !== 'manager' && user?.user_level !== 'admin') {
+    // ✅ Verificar se é manager, funcionario ou admin
+    if (user?.user_level !== 'manager' && user?.user_level !== 'funcionario' && user?.user_level !== 'admin') {
       // console.log('❌ GERENTE: Sem permissão (nível:', user?.user_level + '), redirecionando para login')
       redirectedRef.current = true
       router.replace('/admin/login')
@@ -83,7 +83,7 @@ function GerenteLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   // ✅ CORRIGIDO: Bloquear renderização se não autenticado (enquanto redireciona)
-  if (!isAuthenticated || (user?.user_level !== 'manager' && user?.user_level !== 'admin')) {
+  if (!isAuthenticated || (user?.user_level !== 'manager' && user?.user_level !== 'funcionario' && user?.user_level !== 'admin')) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background-gradient-light via-background-gradient-medium to-background">
         <div className="text-center">
@@ -97,8 +97,8 @@ function GerenteLayoutContent({ children }: { children: React.ReactNode }) {
     )
   }
 
-  // Verificar se é manager ou admin
-  if (user?.user_level !== 'manager' && user?.user_level !== 'admin') {
+  // Verificar se é manager, funcionario ou admin
+  if (user?.user_level !== 'manager' && user?.user_level !== 'funcionario' && user?.user_level !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background-gradient-light via-background-gradient-medium to-background">
         <div className="text-center">

@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { username, email, user_level, full_name, password } = await request.json()
+    const { username, email, user_level, full_name, password, current_user_level } = await request.json()
 
     if (!username || !email || !user_level || !full_name || !password) {
       return NextResponse.json({
@@ -70,11 +70,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Validar user_level
-    if (!['admin', 'manager', 'user'].includes(user_level)) {
+    if (!['admin', 'manager', 'funcionario'].includes(user_level)) {
       return NextResponse.json({
         success: false,
         error: 'Nível de usuário inválido'
       }, { status: 400 })
+    }
+
+    // Verificar se gerente está tentando criar admin
+    if (current_user_level === 'manager' && user_level === 'admin') {
+      return NextResponse.json({
+        success: false,
+        error: 'Você não tem permissão para criar usuários administradores'
+      }, { status: 403 })
     }
 
     // Criar usuário no auth do Supabase usando service role key
@@ -132,7 +140,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const { id, username, email, user_level, full_name, password } = await request.json()
+    const { id, username, email, user_level, full_name, password, current_user_level } = await request.json()
 
     if (!id) {
       return NextResponse.json({
@@ -142,7 +150,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Validar user_level se fornecido
-    if (user_level && !['admin', 'manager', 'user'].includes(user_level)) {
+    if (user_level && !['admin', 'manager', 'funcionario'].includes(user_level)) {
       return NextResponse.json({
         success: false,
         error: 'Nível de usuário inválido'
@@ -152,7 +160,7 @@ export async function PUT(request: NextRequest) {
     // Buscar dados atuais do usuário para comparar o email
     const { data: currentUser, error: currentUserError } = await supabase
       .from('user_info')
-      .select('email, uid_auth')
+      .select('email, uid_auth, user_level')
       .eq('id', id)
       .single()
 
@@ -161,6 +169,22 @@ export async function PUT(request: NextRequest) {
         success: false,
         error: 'Usuário não encontrado'
       }, { status: 404 })
+    }
+
+    // Verificar se gerente está tentando editar admin
+    if (current_user_level === 'manager' && currentUser.user_level === 'admin') {
+      return NextResponse.json({
+        success: false,
+        error: 'Você não tem permissão para editar usuários administradores'
+      }, { status: 403 })
+    }
+
+    // Verificar se gerente está tentando promover alguém para admin
+    if (current_user_level === 'manager' && user_level === 'admin') {
+      return NextResponse.json({
+        success: false,
+        error: 'Você não tem permissão para promover usuários para administrador'
+      }, { status: 403 })
     }
 
     // Preparar dados para atualização (não incluir email se não mudou)
@@ -246,7 +270,7 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const { id } = await request.json()
+    const { id, current_user_level } = await request.json()
 
     if (!id) {
       return NextResponse.json({
@@ -255,10 +279,10 @@ export async function DELETE(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Buscar usuário para pegar o uid_auth
+    // Buscar usuário para pegar o uid_auth e user_level
     const { data: userInfo, error: fetchError } = await supabase
       .from('user_info')
-      .select('uid_auth')
+      .select('uid_auth, user_level')
       .eq('id', id)
       .single()
 
@@ -267,6 +291,14 @@ export async function DELETE(request: NextRequest) {
         success: false,
         error: 'Usuário não encontrado'
       }, { status: 404 })
+    }
+
+    // Verificar se gerente está tentando deletar admin
+    if (current_user_level === 'manager' && userInfo.user_level === 'admin') {
+      return NextResponse.json({
+        success: false,
+        error: 'Você não tem permissão para excluir usuários administradores'
+      }, { status: 403 })
     }
 
     // Deletar usuário da tabela user_info

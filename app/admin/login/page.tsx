@@ -56,8 +56,8 @@ export default function AdminLoginPage() {
           const parsed = JSON.parse(adminData)
           const userLevel = parsed?.user?.user_level
 
-          if (userLevel === 'admin' || userLevel === 'manager') {
-            const targetPath = userLevel === 'admin' ? '/admin/dashboard' : '/gerente'
+          if (userLevel === 'admin' || userLevel === 'manager' || userLevel === 'funcionario') {
+            const targetPath = userLevel === 'funcionario' ? '/gerente' : '/admin/dashboard'
             console.log('🚀 Usuário já logado detectado via localStorage, redirecionando para:', targetPath)
             window.location.href = targetPath
             return true
@@ -79,7 +79,7 @@ export default function AdminLoginPage() {
 
     // ✅ CORRIGIDO: Aguardar inicialização antes de verificar autenticação
     if (!wasRedirected && !initializing && !loading && isAuthenticated && user && currentPath === '/admin/login') {
-      const targetPath = user.user_level === 'admin' ? '/admin/dashboard' : '/gerente'
+      const targetPath = user.user_level === 'funcionario' ? '/gerente' : '/admin/dashboard'
       console.log('🚀 Usuário logado detectado via contexto, redirecionando para:', targetPath)
 
       // Usar router.replace para não ficar no histórico
@@ -122,7 +122,7 @@ export default function AdminLoginPage() {
             const userLevel = parsed?.user?.user_level
 
             if (userLevel) {
-              const targetPath = userLevel === 'admin' ? '/admin/dashboard' : '/gerente'
+              const targetPath = userLevel === 'funcionario' ? '/gerente' : '/admin/dashboard'
               console.log('🚀 Redirecionando para:', targetPath)
               window.location.href = targetPath
             } else {
@@ -156,7 +156,7 @@ export default function AdminLoginPage() {
       const adminData = localStorage.getItem('adminLogado')
       if (adminData) {
         const parsed = JSON.parse(adminData)
-        return parsed?.user?.user_level === 'admin' || parsed?.user?.user_level === 'manager'
+        return parsed?.user?.user_level === 'admin' || parsed?.user?.user_level === 'manager' || parsed?.user?.user_level === 'funcionario'
       }
     } catch {
       return false
