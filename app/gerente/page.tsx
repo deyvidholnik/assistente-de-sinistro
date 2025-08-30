@@ -60,6 +60,7 @@ import { GerenteFiltros } from './gerente-filtros'
 import { GerenteListaSinistros } from './gerente-lista-sinistros'
 import { DetalhesSinistro } from './gerente-detalhes-sinistro'
 import { ModalNovaOcorrencia } from './modal-nova-ocorrencia'
+import { NavigationButtons } from './NavigationButtons'
 import Link from 'next/link'
 
 // Função simples para formatar datas
@@ -798,6 +799,8 @@ export default function GerentePage() {
         <GerenteHeader realtimeStatus={realtimeStatus} />
         <main className='container mx-auto px-3 py-4 sm:p-4 lg:p-6 space-y-3 sm:space-y-4 lg:space-y-6'>
           <GerenteEstatisticas sinistros={sinistros} />
+          
+          <NavigationButtons />
 
           <GerenteFiltros
             searchTerm={searchTerm}

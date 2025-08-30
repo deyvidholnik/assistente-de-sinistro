@@ -198,7 +198,7 @@ export default function LoginClientePage() {
                     <User className='absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground' />
                     <Input
                       id='cpf'
-                      type='text'
+                      type='tel'
                       placeholder='000.000.000-00'
                       value={cpf}
                       onChange={handleCPFChange}

@@ -37,7 +37,7 @@ export function NavigationButtons() {
         </Button>
       </a>
 
-      <a href='https://chat.msgsolucoes.com'>
+      <a href='https://chat.msgsolucoes.com' target='_blank' rel='noopener noreferrer'>
         <Button
           size='lg'
           className='bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-3'
