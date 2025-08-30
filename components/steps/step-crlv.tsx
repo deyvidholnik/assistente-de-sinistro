@@ -89,33 +89,60 @@ export function StepCRLV() {
       </div>
 
       <div className="space-y-4 px-2 sm:px-0">
-        {/* Botão de upload único */}
-        <div className="flex justify-center">
-          <Button
-            type="button"
-            onClick={() => !isUploadDisabled && document.getElementById("crlv-upload")?.click()}
-            className={`w-full max-w-sm h-12 sm:h-14 ${
-              isUploadDisabled ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
-            }`}
-            disabled={isUploadDisabled}
-          >
-            <Upload className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
-            <div className="text-center">
-              <div className="font-medium text-xs sm:text-sm">
-                {hasFile && !ocrError ? "Arquivo Enviado" : hasFile && ocrError ? "Enviar Novo Arquivo" : "Enviar CRLV"}
+        {/* Opções de upload */}
+        <div className="space-y-2 sm:space-y-3">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <Button
+              type="button"
+              onClick={() => !isUploadDisabled && document.getElementById("crlv-camera")?.click()}
+              className={`flex-1 h-12 sm:h-14 ${
+                isUploadDisabled ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
+              }`}
+              disabled={isUploadDisabled}
+            >
+              <Camera className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+              <div className="text-center">
+                <div className="font-medium text-xs sm:text-sm">Tirar Foto</div>
+                <div className="text-xs opacity-90">Usar câmera</div>
               </div>
-              <div className="text-xs opacity-90">
-                {hasFile && !ocrError ? "Delete para trocar" : "Câmera ou PDF"}
+            </Button>
+
+            <Button
+              type="button"
+              onClick={() => !isUploadDisabled && document.getElementById("crlv-file")?.click()}
+              variant="outline"
+              className={`flex-1 h-12 sm:h-14 border-green-600 text-green-600 hover:bg-green-50 ${
+                isUploadDisabled ? "border-gray-400 text-gray-400 cursor-not-allowed" : ""
+              }`}
+              disabled={isUploadDisabled}
+            >
+              <Upload className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+              <div className="text-center">
+                <div className="font-medium text-xs sm:text-sm">
+                  {hasFile && !ocrError ? "Arquivo Enviado" : hasFile && ocrError ? "Novo Arquivo" : "Enviar Arquivo"}
+                </div>
+                <div className="text-xs opacity-90">PDF ou galeria</div>
               </div>
-            </div>
-          </Button>
+            </Button>
+          </div>
         </div>
 
+        {/* Input para câmera */}
         <input
-          id="crlv-upload"
+          id="crlv-camera"
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={(e) => handleFileUpload("crlv", e.target.files)}
+          disabled={isUploadDisabled}
+        />
+
+        {/* Input para arquivo/galeria */}
+        <input
+          id="crlv-file"
           type="file"
           accept="image/*,application/pdf,.pdf"
-          capture="environment"
           className="hidden"
           onChange={(e) => handleFileUpload("crlv", e.target.files)}
           disabled={isUploadDisabled}
