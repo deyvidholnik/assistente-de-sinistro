@@ -185,9 +185,101 @@ export function FormProvider({ children, initialData }: FormProviderProps) {
   // Função auxiliar para validar campos obrigatórios
   const validarCamposObrigatorios = (data: any, documentType: "cnh" | "crlv"): boolean => {
     if (documentType === "cnh") {
-      return !!(data.nome && data.nome.trim() && data.cpf && data.cpf.trim())
+      // TODOS os campos da CNH são obrigatórios
+      const isValidNome = data.nome && 
+        data.nome.trim().length > 0 &&
+        !data.nome.includes("*") &&
+        !/^[*\-_\s.]+$/.test(data.nome)
+      const isValidCPF = data.cpf && 
+        data.cpf.trim().length > 0 && 
+        !data.cpf.includes("*") &&
+        !/^[*\-_\s.]+$/.test(data.cpf) &&
+        validarCPF(data.cpf.replace(/\D/g, ''))
+      const isValidRG = data.rg && 
+        data.rg.trim().length > 0 &&
+        !data.rg.includes("*") &&
+        !/^[*\-_\s.]+$/.test(data.rg)
+      const isValidDataNascimento = data.dataNascimento && 
+        data.dataNascimento !== "" && 
+        data.dataNascimento !== "dd/mm/aaaa" &&
+        !data.dataNascimento.includes("aaaa") &&
+        !data.dataNascimento.includes("dd") &&
+        !data.dataNascimento.includes("mm") &&
+        !data.dataNascimento.includes("*") &&
+        !/^[*\-_\s.]+$/.test(data.dataNascimento) &&
+        data.dataNascimento.length >= 8
+      const isValidCategoria = data.categoria && 
+        data.categoria.trim().length > 0 &&
+        !data.categoria.includes("*") &&
+        !/^[*\-_\s.]+$/.test(data.categoria)
+      const isValidNumeroRegistro = data.numeroRegistro && 
+        data.numeroRegistro.trim().length > 0 &&
+        !data.numeroRegistro.includes("*") &&
+        !/^[*\-_\s.]+$/.test(data.numeroRegistro)
+      const isValidDataVencimento = data.dataVencimento && 
+        data.dataVencimento !== "" && 
+        data.dataVencimento !== "dd/mm/aaaa" &&
+        !data.dataVencimento.includes("aaaa") &&
+        !data.dataVencimento.includes("dd") &&
+        !data.dataVencimento.includes("mm") &&
+        !data.dataVencimento.includes("*") &&
+        !/^[*\-_\s.]+$/.test(data.dataVencimento) &&
+        data.dataVencimento.length >= 8
+      
+      return isValidNome && isValidCPF && isValidRG && isValidDataNascimento && 
+             isValidCategoria && isValidNumeroRegistro && isValidDataVencimento
     } else if (documentType === "crlv") {
-      return !!(data.placa && data.placa.trim() && data.renavam && data.renavam.trim())
+      // TODOS os campos do CRLV são obrigatórios
+      const isValidPlaca = data.placa && 
+        data.placa.trim().length >= 7 &&
+        !data.placa.includes("*") &&
+        !data.placa.includes("x") &&
+        !data.placa.includes("X") &&
+        !/^[*\-_\s.]+$/.test(data.placa) &&
+        validarPlaca(data.placa)
+      const isValidRenavam = data.renavam && 
+        data.renavam.trim().length >= 9 &&
+        !data.renavam.includes("*") &&
+        !/^[*\-_\s.]+$/.test(data.renavam) &&
+        /^\d+$/.test(data.renavam.replace(/\D/g, ''))
+      const isValidChassi = data.chassi && 
+        data.chassi.trim().length > 0 &&
+        !data.chassi.includes("*") &&
+        !/^[*\-_\s.]+$/.test(data.chassi)
+      const isValidMarca = data.marca && 
+        data.marca.trim().length > 0 &&
+        !data.marca.includes("*") &&
+        !/^[*\-_\s.]+$/.test(data.marca)
+      const isValidModelo = data.modelo && 
+        data.modelo.trim().length > 0 &&
+        !data.modelo.includes("*") &&
+        !/^[*\-_\s.]+$/.test(data.modelo)
+      const isValidAnoFabricacao = data.anoFabricacao && 
+        data.anoFabricacao.trim().length > 0 &&
+        !data.anoFabricacao.includes("*") &&
+        !/^[*\-_\s.]+$/.test(data.anoFabricacao) &&
+        /^\d{4}$/.test(data.anoFabricacao.replace(/\D/g, ''))
+      const isValidAnoModelo = data.anoModelo && 
+        data.anoModelo.trim().length > 0 &&
+        !data.anoModelo.includes("*") &&
+        !/^[*\-_\s.]+$/.test(data.anoModelo) &&
+        /^\d{4}$/.test(data.anoModelo.replace(/\D/g, ''))
+      const isValidCor = data.cor && 
+        data.cor.trim().length > 0 &&
+        !data.cor.includes("*") &&
+        !/^[*\-_\s.]+$/.test(data.cor)
+      const isValidCombustivel = data.combustivel && 
+        data.combustivel.trim().length > 0 &&
+        !data.combustivel.includes("*") &&
+        !/^[*\-_\s.]+$/.test(data.combustivel)
+      const isValidProprietario = data.proprietario && 
+        data.proprietario.trim().length > 0 &&
+        !data.proprietario.includes("*") &&
+        !/^[*\-_\s.]+$/.test(data.proprietario)
+      
+      return isValidPlaca && isValidRenavam && isValidChassi && isValidMarca && 
+             isValidModelo && isValidAnoFabricacao && isValidAnoModelo && 
+             isValidCor && isValidCombustivel && isValidProprietario
     }
     return false
   }
@@ -402,14 +494,12 @@ export function FormProvider({ children, initialData }: FormProviderProps) {
       setCurrentStep(documentosFurtados ? 12 : 6)
     } else if (currentStep === 6) {
       // Step 6 - CNH
-      if (tipoAtendimento === "assistencia") {
-        setCurrentStep(11) // Assistência vai para assistência adicional após CNH
-      } else {
-        setCurrentStep(7)
-      }
+      setCurrentStep(7) // Todos vão para CRLV após CNH
     } else if (currentStep === 7) {
       // Step 7 - CRLV
-      if (tipoSinistro === "pequenos_reparos") {
+      if (tipoAtendimento === "assistencia") {
+        setCurrentStep(11) // Assistência vai para assistência adicional após CRLV
+      } else if (tipoSinistro === "pequenos_reparos") {
         setCurrentStep(9) // Pequenos reparos vai direto para fotos
         setCurrentFotoStep(0)
       } else {
@@ -479,9 +569,10 @@ export function FormProvider({ children, initialData }: FormProviderProps) {
       case 5:
         return documentosFurtados !== null
       case 6:
-        return currentDocs.cnh.length > 0 && (currentHasProcessedCNH || !!ocrError) && currentCNH.nome !== ""
+        return currentDocs.cnh.length > 0 && currentHasProcessedCNH && currentCNH.nome !== ""
       case 7:
-        return currentDocs.crlv.length > 0 || Object.values(currentCRLV).some((v) => v !== "")
+        const currentHasProcessedCRLV = isDocumentingThirdParty ? hasProcessedCRLVTerceiros : hasProcessedCRLV
+        return currentDocs.crlv.length > 0 && currentHasProcessedCRLV && currentCRLV.placa !== ""
       case 8:
         return currentDocs.boletimOcorrencia.length > 0
       case 9:

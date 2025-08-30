@@ -207,19 +207,21 @@ export default function PlanosPage() {
       </section>
 
       {/* Planos Section */}
-      <section className="py-12 md:py-20 px-4">
-        <div className="container mx-auto">
-          <div className="grid md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8 px-4">
+      <section className="py-12 md:py-20 px-4 overflow-visible">
+        <div className="container mx-auto overflow-visible">
+          <div className="grid md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8 px-4 pt-6">
             {planos.map((plano, index) => (
               <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-card/50 backdrop-blur-sm border border-border relative">
-                {plano.popular && (
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
-                    <Badge className="bg-gradient-to-r from-status-warning to-status-warning text-status-warning-foreground px-3 py-1 text-xs font-semibold">
+                {plano.popular ? (
+                  <div className="flex justify-center pt-3 pb-1">
+                    <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 text-xs font-semibold shadow-lg">
                       MAIS POPULAR
                     </Badge>
                   </div>
+                ) : (
+                  <div className="h-8"></div>
                 )}
-                <CardHeader className="text-center pb-4">
+                <CardHeader className="text-center pb-4 pt-2">
                   <div className={`w-16 h-16 md:w-20 md:h-20 bg-gradient-to-r from-brand-primary to-brand-secondary rounded-2xl flex items-center justify-center mx-auto mb-4`}>
                     <Shield className="w-8 h-8 md:w-10 md:h-10 text-white" />
                   </div>

@@ -90,10 +90,12 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center px-4">
             
-              <Button onClick={() => handleWhatsAppClick("Abrir uma Ocorrência")} size="lg" className="bg-gradient-to-r from-brand-primary to-brand-secondary hover:from-brand-primary/90 hover:to-brand-secondary/90 text-brand-primary-foreground px-6 md:px-8 py-4 md:py-6 text-base md:text-lg w-full sm:w-auto">
-                Abrir uma Ocorrência
-                <ArrowRight className="w-4 h-4 md:w-5 md:h-5 ml-2" />
-              </Button>
+              <Link href="/registro_ocorrencia">
+                <Button size="lg" className="bg-gradient-to-r from-brand-primary to-brand-secondary hover:from-brand-primary/90 hover:to-brand-secondary/90 text-brand-primary-foreground px-6 md:px-8 py-4 md:py-6 text-base md:text-lg w-full sm:w-auto">
+                  Abrir uma Ocorrência
+                  <ArrowRight className="w-4 h-4 md:w-5 md:h-5 ml-2" />
+                </Button>
+              </Link>
            
             <Link href="/planos">
               <Button size="lg" variant="outline" className={`px-6 md:px-8 py-4 md:py-6 text-base md:text-lg w-full sm:w-auto transition-all duration-300 ${isDark ? 'border-blue-400 text-blue-300 hover:bg-blue-800/20 hover:border-blue-300' : 'border-blue-200 text-blue-700 hover:bg-blue-50'}`}>

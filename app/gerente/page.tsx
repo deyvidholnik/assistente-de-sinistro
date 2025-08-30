@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAdminAuth } from '@/context/admin-auth-context'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -175,6 +175,11 @@ export default function GerentePage() {
   const [passosPersonalizados, setPassosPersonalizados] = useState<Record<string, any[]>>({})
   const [showNovoPassoForm, setShowNovoPassoForm] = useState(false)
   const [novoPassoData, setNovoPassoData] = useState({ nome: '', descricao: '' })
+  
+  // Callback otimizado para mudanças no novo passo
+  const handleNovoPassoChange = useCallback((data: { nome: string; descricao: string }) => {
+    setNovoPassoData(data)
+  }, [])
   
   // Estados de paginação
   const [paginaAtual, setPaginaAtual] = useState(1)
@@ -820,7 +825,7 @@ export default function GerentePage() {
             removerPassoPersonalizado={removerPassoPersonalizado}
             showNovoPassoForm={showNovoPassoForm}
             novoPassoData={novoPassoData}
-            setNovoPassoData={setNovoPassoData}
+            setNovoPassoData={handleNovoPassoChange}
             setShowNovoPassoForm={setShowNovoPassoForm}
             DetalhesSinistro={DetalhesSinistro}
             // Props de paginação

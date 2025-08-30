@@ -114,12 +114,13 @@ export default function DocumentosForm() {
     const completedSteps = normalizedStep - 1
     
     if (tipoAtendimento === "assistencia") {
-      // Para assistência, o fluxo é: steps 1, 2, 4, 6, 11, 12
+      // Para assistência, o fluxo é: steps 1, 2, 4, 6, 7, 11, 12
       if (currentStep === 1) return 0
-      if (currentStep === 2) return 16.7
-      if (currentStep === 4) return 33.3
-      if (currentStep === 6) return 50
-      if (currentStep === 11) return 83.3
+      if (currentStep === 2) return 14.3
+      if (currentStep === 4) return 28.6
+      if (currentStep === 6) return 42.9
+      if (currentStep === 7) return 57.1
+      if (currentStep === 11) return 85.7
       if (currentStep === 12) return 100
     }
     
@@ -279,7 +280,7 @@ export default function DocumentosForm() {
             {/* Versão mobile - mostra apenas step atual e total */}
             <div className="flex sm:hidden justify-between w-full">
               <span className="text-xs text-gray-600">
-                Passo {currentStep === 13 ? 12 : currentStep} de {tipoAtendimento === "assistencia" ? "6" : "12"}
+                Passo {currentStep === 13 ? 12 : currentStep} de {tipoAtendimento === "assistencia" ? "7" : "12"}
               </span>
               <span className="text-xs text-blue-600 font-medium">
                 {getStepTitle()}

@@ -31,7 +31,7 @@ export function StepCRLV() {
   const hasProcessedOCR = isDocumentingThirdParty ? hasProcessedCRLVTerceiros : hasProcessedCRLV
 
   const hasFile = currentDocumentos.crlv.length > 0
-  const isUploadDisabled = hasFile || isProcessingOCR
+  const isUploadDisabled = (hasFile && !ocrError) || isProcessingOCR
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -102,9 +102,11 @@ export function StepCRLV() {
             <Upload className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
             <div className="text-center">
               <div className="font-medium text-xs sm:text-sm">
-                {hasFile ? "Arquivo Enviado" : "Enviar CRLV"}
+                {hasFile && !ocrError ? "Arquivo Enviado" : hasFile && ocrError ? "Enviar Novo Arquivo" : "Enviar CRLV"}
               </div>
-              <div className="text-xs opacity-90">{hasFile ? "Delete para trocar" : "Câmera ou PDF"}</div>
+              <div className="text-xs opacity-90">
+                {hasFile && !ocrError ? "Delete para trocar" : "Câmera ou PDF"}
+              </div>
             </div>
           </Button>
         </div>
@@ -141,7 +143,7 @@ export function StepCRLV() {
           </Alert>
         )}
 
-        {/* Preview de arquivos */}
+        {/* Preview de arquivos - apenas quando não há erro */}
         {currentDocumentos.crlv.length > 0 && !ocrError && (
           <div>
             <h3 className="font-medium text-gray-900 mb-3 flex items-center text-sm sm:text-base">

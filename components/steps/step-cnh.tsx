@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { CreditCard, Upload, AlertCircle, CheckCircle, Eye, Loader2, AlertTriangle, Camera } from "lucide-react"
 import { useForm } from "@/context/form-context"
 import { FilePreview } from "@/components/file-preview"
+import { validarCPF } from "@/lib/validations"
 
 export function StepCNH() {
   const {
@@ -31,7 +32,7 @@ export function StepCNH() {
   const hasProcessedOCR = isDocumentingThirdParty ? hasProcessedCNHTerceiros : hasProcessedCNH
 
   const hasFile = currentDocumentos.cnh.length > 0
-  const isUploadDisabled = hasFile || isProcessingOCR
+  const isUploadDisabled = (hasFile && !ocrError) || isProcessingOCR
 
   return (
     <div className="space-y-3 sm:space-y-4">
@@ -89,8 +90,12 @@ export function StepCNH() {
           >
             <Upload className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
             <div className="text-center">
-              <div className="font-medium text-xs sm:text-sm">{hasFile ? "Arquivo Enviado" : "Enviar CNH"}</div>
-              <div className="text-xs opacity-90">{hasFile ? "Delete para trocar" : "Câmera ou PDF"}</div>
+              <div className="font-medium text-xs sm:text-sm">
+                {hasFile && !ocrError ? "Arquivo Enviado" : hasFile && ocrError ? "Enviar Novo Arquivo" : "Enviar CNH"}
+              </div>
+              <div className="text-xs opacity-90">
+                {hasFile && !ocrError ? "Delete para trocar" : "Câmera ou PDF"}
+              </div>
             </div>
           </Button>
         </div>
@@ -126,7 +131,7 @@ export function StepCNH() {
           </Alert>
         )}
 
-        {/* Preview de arquivos */}
+        {/* Preview de arquivos - apenas quando não há erro */}
         {currentDocumentos.cnh.length > 0 && !ocrError && (
           <div>
             <h3 className="font-medium text-gray-900 mb-2 flex items-center text-xs sm:text-sm">

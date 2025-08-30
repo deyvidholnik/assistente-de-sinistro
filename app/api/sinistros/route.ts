@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase, type SinistroData, type DadosCNHDB, type DadosCRLVDB, type ArquivoSinistro } from '@/lib/supabase'
+import { gerarNomeArquivoPorTipo } from '@/lib/nome-arquivo-utils'
 
 // Função para obter a data atual no fuso de Brasília
 function obterDataAtualBrasilia(): string {
@@ -37,10 +38,6 @@ export async function POST(req: NextRequest) {
     // Extrair dados do form
     const dadosFormulario = JSON.parse(formData.get('dados') as string)
     
-    // Debug de dados recebidos removido
-      cnhData: dadosFormulario.cnhData ? 'Presente' : 'Ausente'
-    })
-
     // 1. Criar o sinistro principal
     const dataAtualBrasilia = obterDataAtualBrasilia()
     // Debug de data removido
@@ -155,7 +152,7 @@ export async function POST(req: NextRequest) {
     // 2. Salvar assistências adicionais se existirem (e se tabela existir)
     if (dadosFormulario.assistenciasAdicionais && dadosFormulario.assistenciasAdicionais.length > 0) {
       try {
-        const assistenciasParaSalvar = dadosFormulario.assistenciasAdicionais.map((tipo, index) => ({
+        const assistenciasParaSalvar = dadosFormulario.assistenciasAdicionais.map((tipo: string, index: number) => ({
           sinistro_id: sinistroId,
           tipo_assistencia: tipo,
           ordem_assistencia: index + 1,
@@ -312,9 +309,21 @@ export async function POST(req: NextRequest) {
           continue
         }
         
-        // Upload do arquivo para o storage do Supabase
-        const nomeArquivo = `${sinistroId}/${tipoArquivo}_${identificador}_${Date.now()}_${arquivo.name}`
-        console.log(`📤 Fazendo upload: ${nomeArquivo}`)
+        // Obter dados específicos para geração do nome do arquivo
+        let tituloFoto: string | undefined
+        if (tipoArquivo === 'foto_veiculo') {
+          const fotoStepId = parseInt(identificador)
+          const fotoStep = dadosFormulario.fotoSteps?.find((step: any) => step.id === fotoStepId)
+          tituloFoto = fotoStep?.titulo
+        }
+        
+        // Gerar nome padronizado do arquivo usando nossa função
+        const timestamp = Date.now()
+        const extension = arquivo.name.split('.').pop() || 'jpg'
+        const nomeArquivoPadrao = gerarNomeArquivoPorTipo(tipoArquivo, tituloFoto, timestamp, extension)
+        const nomeArquivo = `${sinistroId}/${nomeArquivoPadrao}`
+        
+        console.log(`📤 Fazendo upload: ${nomeArquivo} (título: ${tituloFoto || 'N/A'})`)
         
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('sinistros')

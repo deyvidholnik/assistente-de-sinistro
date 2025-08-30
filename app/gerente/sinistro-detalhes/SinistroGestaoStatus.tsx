@@ -2,7 +2,7 @@ import { Label } from '@/components/ui/label'
 import { Settings } from 'lucide-react'
 import { StatusBadge } from './cards'
 import StatusManager from '@/components/status/StatusManager'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 interface StatusPersonalizado {
   id: string
@@ -44,6 +44,41 @@ export default function SinistroGestaoStatus({ sinistro, onAtualizarStatus }: Si
   const handleStatusChange = () => {
     buscarStatus()
   }
+
+  // Criar uma lista de status que sempre inclui o status atual do sinistro
+  const statusOptions = useMemo(() => {
+    const currentStatus = sinistro.status
+    
+    // Se ainda está carregando, criar uma opção temporária com o status atual
+    if (loading) {
+      return [{
+        id: 'current',
+        nome: currentStatus,
+        cor: '#6b7280',
+        icone: 'circle',
+        ordem: 0,
+        ativo: true
+      }]
+    }
+    
+    // Verificar se o status atual existe na lista
+    const statusExisteNaLista = statusList.some(status => status.nome === currentStatus)
+    
+    if (!statusExisteNaLista && currentStatus) {
+      // Adicionar o status atual no início da lista se não existir
+      return [{
+        id: 'current-' + currentStatus,
+        nome: currentStatus,
+        cor: '#6b7280',
+        icone: 'circle',
+        ordem: -1,
+        ativo: true
+      }, ...statusList]
+    }
+    
+    return statusList
+  }, [statusList, loading, sinistro.status])
+
   return (
     <div className='rounded-lg bg-card/50 p-3 md:p-6'>
       <div className='flex items-center justify-between mb-3 md:mb-6'>
@@ -81,29 +116,26 @@ export default function SinistroGestaoStatus({ sinistro, onAtualizarStatus }: Si
               Alterar Status do Sinistro
             </Label>
 
-            {loading ? (
-              <div className='w-full h-10 bg-muted animate-pulse rounded-lg' />
-            ) : (
-              <select
-                id='status-select'
-                value={sinistro.status}
-                onChange={(e) => {
-                  if (onAtualizarStatus) {
-                    onAtualizarStatus(sinistro.id, e.target.value)
-                  }
-                }}
-                className='w-full px-3 py-2 border border-border rounded-lg bg-card/50 text-foreground focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition-all duration-200'
-              >
-                {statusList.map((status) => (
-                  <option
-                    key={status.id}
-                    value={status.nome}
-                  >
-                    {status.nome.charAt(0).toUpperCase() + status.nome.slice(1).replace(/_/g, ' ')}
-                  </option>
-                ))}
-              </select>
-            )}
+            <select
+              id='status-select'
+              value={sinistro.status}
+              onChange={(e) => {
+                if (onAtualizarStatus) {
+                  onAtualizarStatus(sinistro.id, e.target.value)
+                }
+              }}
+              className='w-full px-3 py-2 border border-border rounded-lg bg-card/50 text-foreground focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition-all duration-200'
+              disabled={loading}
+            >
+              {statusOptions.map((status) => (
+                <option
+                  key={status.id}
+                  value={status.nome}
+                >
+                  {loading ? `${status.nome.charAt(0).toUpperCase() + status.nome.slice(1).replace(/_/g, ' ')} (carregando...)` : status.nome.charAt(0).toUpperCase() + status.nome.slice(1).replace(/_/g, ' ')}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className='space-y-2'>

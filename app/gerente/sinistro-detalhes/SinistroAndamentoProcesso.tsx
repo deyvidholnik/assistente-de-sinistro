@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Activity, CheckCircle, XCircle, Calendar, Plus, X, Loader2, Settings, PlayCircle, Clock4 } from 'lucide-react'
 import { formatarData } from '../gerente-formatters'
 import { StatusBadge } from './cards'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 
 interface SinistroAndamentoProcessoProps {
   sinistro: any
@@ -35,6 +35,27 @@ export default function SinistroAndamentoProcesso({
 }: SinistroAndamentoProcessoProps) {
   const [statusAtivos, setStatusAtivos] = useState<string[]>([])
   const [loadingStatus, setLoadingStatus] = useState(true)
+  
+  // Estados locais para inputs com melhor performance
+  const [localNome, setLocalNome] = useState(novoPassoData.nome)
+  const [localDescricao, setLocalDescricao] = useState(novoPassoData.descricao)
+
+  // Sincronizar estado local quando props mudam
+  useEffect(() => {
+    setLocalNome(novoPassoData.nome)
+    setLocalDescricao(novoPassoData.descricao)
+  }, [novoPassoData.nome, novoPassoData.descricao])
+
+  // Debounce para atualizar o estado pai
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localNome !== novoPassoData.nome || localDescricao !== novoPassoData.descricao) {
+        onNovoPassoChange?.({ nome: localNome, descricao: localDescricao })
+      }
+    }, 150) // 150ms de debounce
+    
+    return () => clearTimeout(timer)
+  }, [localNome, localDescricao, novoPassoData.nome, novoPassoData.descricao, onNovoPassoChange])
 
   useEffect(() => {
     const buscarStatusAtivos = async () => {
@@ -239,8 +260,8 @@ export default function SinistroAndamentoProcesso({
                           </Label>
                           <Input
                             id='novo-passo-nome'
-                            value={novoPassoData.nome}
-                            onChange={(e) => onNovoPassoChange?.({ ...novoPassoData, nome: e.target.value })}
+                            value={localNome}
+                            onChange={(e) => setLocalNome(e.target.value)}
                             placeholder='Ex: Vistoria Adicional'
                             className='focus:ring-2 focus:ring-brand-primary text-foreground'
                           />
@@ -254,8 +275,8 @@ export default function SinistroAndamentoProcesso({
                           </Label>
                           <Input
                             id='novo-passo-descricao'
-                            value={novoPassoData.descricao}
-                            onChange={(e) => onNovoPassoChange?.({ ...novoPassoData, descricao: e.target.value })}
+                            value={localDescricao}
+                            onChange={(e) => setLocalDescricao(e.target.value)}
                             placeholder='Ex: Vistoria adicional solicitada pelo cliente'
                             className='focus:ring-2 focus:ring-brand-primary text-foreground'
                           />
@@ -264,7 +285,7 @@ export default function SinistroAndamentoProcesso({
                       <div className='flex flex-col lg:flex-row gap-2'>
                         <Button
                           onClick={onAdicionarNovoPasso}
-                          disabled={!novoPassoData.nome.trim() || !novoPassoData.descricao.trim()}
+                          disabled={!localNome.trim() || !localDescricao.trim()}
                           className='flex-1'
                         >
                           <CheckCircle className='w-4 h-4 mr-2' />

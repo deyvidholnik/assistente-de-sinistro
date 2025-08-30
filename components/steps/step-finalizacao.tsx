@@ -1,11 +1,11 @@
-"use client"
+'use client'
 
-import { useState, useEffect, useRef } from "react"
-import { CheckCircle, Loader2, AlertCircle } from "lucide-react"
-import { useForm } from "@/context/form-context"
-import { fotoVeiculoSteps } from "@/constants/steps"
-import { Button } from "@/components/ui/button"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useState, useEffect, useRef } from 'react'
+import { CheckCircle, Loader2, AlertCircle } from 'lucide-react'
+import { useForm } from '@/context/form-context'
+import { fotoVeiculoSteps } from '@/constants/steps'
+import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export function StepFinalizacao() {
   const [isProcessing, setIsProcessing] = useState(false)
@@ -29,7 +29,7 @@ export function StepFinalizacao() {
     documentosTerceiros,
     fotoStepFiles,
     assistenciaAdicional,
-    assistenciasAdicionais
+    assistenciasAdicionais,
   } = useForm()
 
   const handleEnvioSinistro = async () => {
@@ -51,7 +51,7 @@ export function StepFinalizacao() {
         dadosFurtoSemDocumentos,
         fotoSteps: fotoVeiculoSteps,
         assistenciaAdicional,
-        assistenciasAdicionais
+        assistenciasAdicionais,
       }
 
       // Criar FormData para envio
@@ -95,7 +95,7 @@ export function StepFinalizacao() {
 
       // Adicionar fotos dos steps
       console.log('FotoStepFiles disponíveis:', fotoStepFiles)
-      Object.keys(fotoStepFiles).forEach(stepId => {
+      Object.keys(fotoStepFiles).forEach((stepId) => {
         const files = fotoStepFiles[parseInt(stepId)]
         console.log(`Step ${stepId}:`, files)
         if (files && files.length > 0) {
@@ -118,7 +118,7 @@ export function StepFinalizacao() {
       // Enviar para API
       const response = await fetch('/api/sinistros', {
         method: 'POST',
-        body: formData
+        body: formData,
       })
 
       const result = await response.json()
@@ -131,7 +131,6 @@ export function StepFinalizacao() {
         const errorMessage = result.details || result.message || result.error || 'Erro ao enviar dados'
         setError(errorMessage)
       }
-
     } catch (err) {
       console.error('❌ Erro ao enviar:', err)
       setError('Erro de conexão. Tente novamente.')
@@ -150,15 +149,13 @@ export function StepFinalizacao() {
 
   if (isProcessing) {
     return (
-      <div className="text-center space-y-6 sm:space-y-8 px-2">
-        <div className="w-20 h-20 sm:w-24 sm:h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto">
-          <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 text-blue-600 animate-spin" />
+      <div className='text-center space-y-6 sm:space-y-8 px-2'>
+        <div className='w-20 h-20 sm:w-24 sm:h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto'>
+          <Loader2 className='w-10 h-10 sm:w-12 sm:h-12 text-blue-600 animate-spin' />
         </div>
-        <div className="space-y-3 sm:space-y-4">
-          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight">
-            Processando Sinistro...
-          </h2>
-          <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed px-4">
+        <div className='space-y-3 sm:space-y-4'>
+          <h2 className='text-xl sm:text-2xl font-semibold text-gray-900 leading-tight'>Processando Sinistro...</h2>
+          <p className='text-sm sm:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed px-4'>
             Estamos salvando todas as informações e documentos enviados. Isso pode levar alguns segundos.
           </p>
         </div>
@@ -168,28 +165,28 @@ export function StepFinalizacao() {
 
   if (error) {
     return (
-      <div className="text-center space-y-6 sm:space-y-8 px-2">
-        <div className="w-20 h-20 sm:w-24 sm:h-24 bg-red-50 rounded-full flex items-center justify-center mx-auto">
-          <AlertCircle className="w-10 h-10 sm:w-12 sm:h-12 text-red-600" />
+      <div className='text-center space-y-6 sm:space-y-8 px-2'>
+        <div className='w-20 h-20 sm:w-24 sm:h-24 bg-red-50 rounded-full flex items-center justify-center mx-auto'>
+          <AlertCircle className='w-10 h-10 sm:w-12 sm:h-12 text-red-600' />
         </div>
-        <div className="space-y-3 sm:space-y-4">
-          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight">
-            Erro no Envio
-          </h2>
-          <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed px-4">
+        <div className='space-y-3 sm:space-y-4'>
+          <h2 className='text-xl sm:text-2xl font-semibold text-gray-900 leading-tight'>Erro no Envio</h2>
+          <p className='text-sm sm:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed px-4'>
             Ocorreu um erro ao enviar o sinistro. Tente novamente.
           </p>
         </div>
-        <Alert className="border-red-200 bg-red-50 mx-2 sm:mx-0">
-          <AlertCircle className="h-4 w-4 text-red-600" />
-          <AlertDescription className="text-red-700">
-            {error}
-          </AlertDescription>
+        <Alert className='border-red-200 bg-red-50 mx-2 sm:mx-0'>
+          <AlertCircle className='h-4 w-4 text-red-600' />
+          <AlertDescription className='text-red-700'>{error}</AlertDescription>
         </Alert>
-        <Button onClick={handleEnvioSinistro} disabled={isProcessing} className="mx-auto">
+        <Button
+          onClick={handleEnvioSinistro}
+          disabled={isProcessing}
+          className='mx-auto'
+        >
           {isProcessing ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className='w-4 h-4 mr-2 animate-spin' />
               Tentando novamente...
             </>
           ) : (
@@ -201,46 +198,51 @@ export function StepFinalizacao() {
   }
 
   return (
-    <div className="text-center space-y-6 sm:space-y-8 px-2">
+    <div className='text-center space-y-6 sm:space-y-8 px-2'>
       {/* Ícone de sucesso */}
-      <div className="w-20 h-20 sm:w-24 sm:h-24 bg-green-50 rounded-full flex items-center justify-center mx-auto">
-        <CheckCircle className="w-10 h-10 sm:w-12 sm:h-12 text-green-600" />
+      <div className='w-20 h-20 sm:w-24 sm:h-24 bg-green-50 rounded-full flex items-center justify-center mx-auto'>
+        <CheckCircle className='w-10 h-10 sm:w-12 sm:h-12 text-green-600' />
       </div>
 
       {/* Título e descrição */}
-      <div className="space-y-3 sm:space-y-4">
-        <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight">Envio Concluído</h2>
-        <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed px-4">
+      <div className='space-y-3 sm:space-y-4'>
+        <h2 className='text-xl sm:text-2xl font-semibold text-gray-900 leading-tight'>Envio Concluído</h2>
+        <p className='text-sm sm:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed px-4'>
           Obrigado por enviar os documentos necessários. Nossa equipe irá analisar as informações e entrar em contato em
           breve.
         </p>
         {numeroSinistro && (
-          <div className="bg-blue-50 rounded-lg p-4 mx-2 sm:mx-0">
-            <p className="text-sm font-semibold text-blue-800">
-              Número do Sinistro: <span className="font-mono text-lg">{numeroSinistro}</span>
-            </p>
-            <p className="text-xs text-blue-600 mt-1">
-              Guarde este número para acompanhar seu processo
+          <div className='bg-blue-50 rounded-lg p-4 mx-2 sm:mx-0'>
+            <p className='text-sm font-semibold text-blue-800'>
+              Número do Sinistro: <span className='font-mono text-lg'>{numeroSinistro}</span>
             </p>
           </div>
         )}
       </div>
 
       {/* Informações adicionais */}
-      <div className="bg-green-50 rounded-lg p-4 sm:p-6 border border-green-200 mx-2 sm:mx-0">
-        <h3 className="font-semibold text-green-800 mb-3 text-sm sm:text-base">Próximos Passos:</h3>
-        <ul className="text-xs sm:text-sm text-green-700 space-y-2 text-left">
-          <li className="flex items-start">
-            <span className="text-green-600 mr-2 flex-shrink-0 mt-0.5">✓</span>
+      <div className='bg-green-50 rounded-lg p-4 sm:p-6 border border-green-200 mx-2 sm:mx-0'>
+        <h3 className='font-semibold text-green-800 mb-3 text-sm sm:text-base'>Próximos Passos:</h3>
+        <ul className='text-xs sm:text-sm text-green-700 space-y-2 text-left'>
+          <li className='flex items-start'>
+            <span className='text-green-600 mr-2 flex-shrink-0 mt-0.5'>✓</span>
             <span>Análise dos documentos enviados</span>
           </li>
-          <li className="flex items-start">
-            <span className="text-green-600 mr-2 flex-shrink-0 mt-0.5">✓</span>
-            <span>Contato da nossa equipe em até 24 horas</span>
+          <li className='flex items-start'>
+            <span className='text-green-600 mr-2 flex-shrink-0 mt-0.5'>✓</span>
+            <span>Contato da nossa equipe em seguida</span>
           </li>
-          <li className="flex items-start">
-            <span className="text-green-600 mr-2 flex-shrink-0 mt-0.5">✓</span>
-            <span>Acompanhamento do processo via WhatsApp</span>
+          <li className='flex items-start'>
+            <span className='text-green-600 mr-2 flex-shrink-0 mt-0.5'>✓</span>
+            <span>
+              Acompanhamento do processo via{' '}
+              <a
+                href='/login_cliente'
+                className='text-blue-600 hover:underline'
+              >
+                Acompanhar Ocorrência
+              </a>
+            </span>
           </li>
         </ul>
       </div>

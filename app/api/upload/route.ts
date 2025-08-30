@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { gerarNomeArquivoPorTipo } from '@/lib/nome-arquivo-utils'
 
 export async function POST(request: NextRequest) {
   
@@ -47,10 +48,11 @@ export async function POST(request: NextRequest) {
         }, { status: 404 })
       }
 
-      // Gerar nome único para o arquivo
+      // Gerar nome padronizado para o arquivo
       const timestamp = Date.now()
-      const extension = arquivo.name.split('.').pop()
-      const nomeArquivo = `${sinistroId}/${tipo}_${timestamp}.${extension}`
+      const extension = arquivo.name.split('.').pop() || 'jpg'
+      const nomeArquivoPadrao = gerarNomeArquivoPorTipo(tipo, undefined, timestamp, extension)
+      const nomeArquivo = `${sinistroId}/${nomeArquivoPadrao}`
 
       // Upload para o Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -179,7 +181,7 @@ export async function GET(request: NextRequest) {
       }, { status: 500 })
     }
 
-    const arquivosFormatados = arquivos.map(arquivo => ({
+    const arquivosFormatados = arquivos.map((arquivo: any) => ({
       id: arquivo.id,
       nome: arquivo.nome_original,
       url: arquivo.url_arquivo,
