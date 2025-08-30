@@ -328,7 +328,7 @@ export function OccurrenceDetails({ dados }: OccurrenceDetailsProps) {
                           src={arquivo.url_arquivo}
                           alt={arquivo.nome_original || 'Arquivo'}
                           fill
-                          className="object-cover transition-transform group-hover:scale-105"
+                          className="object-cover transition-transform"
                           sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement

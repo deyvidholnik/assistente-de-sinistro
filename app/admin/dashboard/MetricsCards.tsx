@@ -129,7 +129,7 @@ export function MetricsCards({ metrics, isDark }: MetricsCardsProps) {
         return (
           <Card
             key={index}
-            className='border-0 shadow-lg bg-card/50 backdrop-blur-sm hover:shadow-xl hover:scale-105 transition-all duration-300 w-full max-w-full overflow-hidden'
+            className='border-0 shadow-lg bg-card/50 backdrop-blur-sm hover:shadow-xl transition-all duration-300 w-full max-w-full overflow-hidden'
           >
             <CardContent className='p-2 sm:p-3 md:p-4 text-center min-w-0'>
               <div

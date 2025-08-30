@@ -141,10 +141,10 @@ function DetalhesSinistro({
           onAtualizarStatus={onAtualizarStatus}
         />
 
-        {/* Andamento do Processo */}
+        {/* Andamento do Processo - apenas passos personalizados */}
         <SinistroAndamentoProcesso
           sinistro={sinistro}
-          andamento={andamento}
+          andamento={andamento.filter((passo: any) => passo.personalizado)}
           loadingAndamento={loadingAndamento}
           onAtualizarAndamento={onAtualizarAndamento}
           onAdicionarNovoPasso={onAdicionarNovoPasso}
@@ -183,7 +183,6 @@ function DetalhesSinistro({
         onArquivosUpdate={(novosArquivos) => {
           // Atualizar a lista de arquivos no estado do componente pai
           // Isso poderia ser feito através de onRefreshDados se necessário
-          console.log('Arquivos atualizados:', novosArquivos)
         }}
       />
 

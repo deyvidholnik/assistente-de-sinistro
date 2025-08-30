@@ -1,5 +1,7 @@
-import { Camera, FileText, Trash2 } from 'lucide-react'
+import { Camera, FileText, Trash2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useState, useEffect } from 'react'
+import { convertPdfToImage, isPdfFile } from '@/lib/pdf-utils'
 
 interface ArquivoCardProps {
   arquivo: any
@@ -8,6 +10,10 @@ interface ArquivoCardProps {
 }
 
 export default function ArquivoCard({ arquivo, index, onDelete }: ArquivoCardProps) {
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
+  const [isLoadingPdf, setIsLoadingPdf] = useState(false)
+  const [pdfError, setPdfError] = useState<string | null>(null)
+
   const getTipoLabel = (tipo: string) => {
     switch (tipo) {
       case 'cnh_proprio':
@@ -42,20 +48,71 @@ export default function ArquivoCard({ arquivo, index, onDelete }: ArquivoCardPro
     nomeArquivo.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|bmp)$/)
   )
 
+  const isPdf = urlArquivo && (
+    arquivo.tipo_mime === 'application/pdf' ||
+    nomeArquivo.toLowerCase().endsWith('.pdf')
+  )
+
+  // Efeito para converter PDF em imagem quando necessário
+  useEffect(() => {
+    if (!isPdf || !urlArquivo) return
+
+    const convertPdfForPreview = async () => {
+      setIsLoadingPdf(true)
+      setPdfError(null)
+      
+      try {
+        // Buscar o arquivo PDF
+        const response = await fetch(urlArquivo)
+        if (!response.ok) {
+          throw new Error('Não foi possível baixar o arquivo PDF')
+        }
+        
+        const blob = await response.blob()
+        const file = new File([blob], nomeArquivo, { type: 'application/pdf' })
+        
+        // Converter para imagem
+        const base64Image = await convertPdfToImage(file)
+        setPdfPreviewUrl(`data:image/png;base64,${base64Image}`)
+      } catch (error) {
+        console.error('Erro ao converter PDF:', error)
+        setPdfError('Erro ao processar PDF')
+      } finally {
+        setIsLoadingPdf(false)
+      }
+    }
+
+    convertPdfForPreview()
+  }, [isPdf, urlArquivo, nomeArquivo])
+
+  // URL da preview final (imagem original ou PDF convertido)
+  const finalPreviewUrl = isPdf ? pdfPreviewUrl : urlArquivo
+  const canShowPreview = isImage || (isPdf && pdfPreviewUrl)
+
 
 
   return (
     <div
       key={index}
-      className='group relative overflow-hidden rounded-lg md:rounded-2xl bg-card/50 hover:border-brand-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-brand-primary/10'
+      className='group relative overflow-hidden rounded-lg md:rounded-2xl bg-card/50 hover:border-brand-primary/50 transition-all duration-300 hover:shadow-lg'
     >
       {/* Preview da imagem ou ícone */}
       <div className='relative h-40 md:h-56 bg-gradient-to-br from-muted to-muted/70'>
-        {isImage && urlArquivo ? (
+        {/* Loading state para PDF */}
+        {isPdf && isLoadingPdf ? (
+          <div className='w-full h-40 md:h-56 flex items-center justify-center'>
+            <div className='text-center'>
+              <Loader2 className='w-8 h-8 text-muted-foreground animate-spin mx-auto mb-3' />
+              <p className='text-sm text-muted-foreground font-medium'>
+                Processando PDF...
+              </p>
+            </div>
+          </div>
+        ) : canShowPreview && finalPreviewUrl ? (
           <img
-            src={urlArquivo}
+            src={finalPreviewUrl}
             alt={nomeArquivo}
-            className='w-full h-40 md:h-56 object-cover cursor-pointer group-hover:scale-105 transition-transform duration-300'
+            className='w-full h-40 md:h-56 object-cover cursor-pointer transition-transform duration-300'
             onClick={() => window.open(urlArquivo, '_blank')}
             onError={(e) => {
               const target = e.target as HTMLImageElement
@@ -68,8 +125,15 @@ export default function ArquivoCard({ arquivo, index, onDelete }: ArquivoCardPro
           />
         ) : null}
         
+        {/* Badge PDF */}
+        {isPdf && finalPreviewUrl && (
+          <div className='absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded'>
+            PDF
+          </div>
+        )}
+        
         {/* Fallback sempre presente mas inicialmente oculto */}
-        <div className={`fallback-icon ${isImage && urlArquivo ? 'hidden' : ''} w-full h-40 md:h-56 flex items-center justify-center`}>
+        <div className={`fallback-icon ${canShowPreview && finalPreviewUrl ? 'hidden' : ''} w-full h-40 md:h-56 flex items-center justify-center`}>
           <div className='text-center'>
             <div className='w-16 h-16 bg-muted rounded-lg flex items-center justify-center mx-auto mb-3'>
               {arquivo.tipo_arquivo === 'foto_veiculo' || isImage ? (
@@ -79,7 +143,7 @@ export default function ArquivoCard({ arquivo, index, onDelete }: ArquivoCardPro
               )}
             </div>
             <p className='text-sm text-muted-foreground font-medium'>
-              {isImage ? 'Erro ao carregar imagem' : tipoInfo.label}
+              {pdfError || (canShowPreview ? 'Erro ao carregar' : tipoInfo.label)}
             </p>
           </div>
         </div>

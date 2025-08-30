@@ -59,7 +59,7 @@ export function KPIWidget({
   }
 
   return (
-    <Card className={`border-0 shadow-lg bg-card/50 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:scale-105 ${className}`}>
+    <Card className={`border-0 shadow-lg bg-card/50 backdrop-blur-sm transition-all duration-300 hover:shadow-xl ${className}`}>
       <CardContent className='p-4'>
         {loading ? (
           <div className='animate-pulse'>

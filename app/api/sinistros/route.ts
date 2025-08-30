@@ -25,12 +25,7 @@ function obterDataAtualBrasilia(): string {
   // Criar data no formato ISO
   const dataFormatada = `${ano}-${mes}-${dia}T${hora}:${min}:${seg}.000-03:00`
   
-  console.log('🕐 Conversão de fuso CORRIGIDA:', {
-    original_UTC: agora.toISOString(),
-    brasilia_locale: brasiliaString,
-    resultado_final: dataFormatada,
-    timezone: 'America/Sao_Paulo'
-  })
+  // Debug de timezone removido
   
   return dataFormatada
 }
@@ -42,18 +37,13 @@ export async function POST(req: NextRequest) {
     // Extrair dados do form
     const dadosFormulario = JSON.parse(formData.get('dados') as string)
     
-    console.log('🔵 Dados recebidos:', {
-      tipoAtendimento: dadosFormulario.tipoAtendimento,
-      tipoSinistro: dadosFormulario.tipoSinistro,
-      tipoAssistencia: dadosFormulario.tipoAssistencia,
-      assistenciaAdicional: dadosFormulario.assistenciaAdicional,
-      assistenciasAdicionais: dadosFormulario.assistenciasAdicionais,
+    // Debug de dados recebidos removido
       cnhData: dadosFormulario.cnhData ? 'Presente' : 'Ausente'
     })
 
     // 1. Criar o sinistro principal
     const dataAtualBrasilia = obterDataAtualBrasilia()
-    console.log('🕐 Data atual Brasília:', dataAtualBrasilia)
+    // Debug de data removido
     
     // Para assistências, não precisamos de tipo_sinistro
     const sinistroData: any = {
@@ -97,7 +87,7 @@ export async function POST(req: NextRequest) {
       sinistroData.assistencias_tipos = dadosFormulario.assistenciasAdicionais
     }
 
-    console.log('📝 Dados do sinistro a serem inseridos:', sinistroData)
+    // Debug de dados inseridos removido
 
     let sinistro
     let sinistroError
@@ -118,7 +108,7 @@ export async function POST(req: NextRequest) {
         sinistroError.message?.includes('total_assistencias') ||
         sinistroError.message?.includes('assistencias_tipos')
       )) {
-        console.log('⚠️ Tentando inserir sem campos de assistência adicional...')
+        // Debug de inserção removido
         
         // Remover campos que podem não existir
         const sinistroDataSemAssistencia = { ...sinistroData }

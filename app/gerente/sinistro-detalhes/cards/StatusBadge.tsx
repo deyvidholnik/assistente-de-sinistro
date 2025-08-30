@@ -50,6 +50,33 @@ export default function StatusBadge({ status, size = 'md', showIcon = true, cust
     buscarStatusPersonalizados()
   }, [])
 
+  // Evitar renderização de status padrão quando o componente está carregando
+  // mas já tem um status específico definido
+  if (loading && status && status !== 'pendente') {
+    // Durante o loading, mostrar o status recebido sem buscar nas configurações
+    // Isso evita que status customizados voltem para "pendente" temporariamente
+    const config = {
+      icon: <Circle className='w-3 h-3 mr-1' />,
+      label: status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' '),
+      variant: 'secondary' as const,
+      className: 'bg-muted text-muted-foreground border-border'
+    }
+
+    const sizeClass = size === 'sm' ? 'text-xs px-2 py-1' : 
+                     size === 'lg' ? 'text-base px-4 py-2' : 
+                     'text-sm px-3 py-1'
+
+    return (
+      <Badge
+        variant={config.variant}
+        className={`${config.className} ${sizeClass} w-fit`}
+      >
+        {showIcon && config.icon}
+        {config.label}
+      </Badge>
+    )
+  }
+
   const getIconComponent = (iconeName: string) => {
     const iconMap: { [key: string]: JSX.Element } = {
       'clock': <Clock4 className='w-3 h-3 mr-1' />,
@@ -79,6 +106,9 @@ export default function StatusBadge({ status, size = 'md', showIcon = true, cust
 
     // Buscar nas configurações personalizadas
     const statusPersonalizado = statusPersonalizados.find(s => s.nome === status)
+    
+    // Debug removido - status funciona corretamente
+    
     if (statusPersonalizado) {
       return {
         icon: getIconComponent(statusPersonalizado.icone),
@@ -156,12 +186,8 @@ export default function StatusBadge({ status, size = 'md', showIcon = true, cust
                    size === 'lg' ? 'text-base px-4 py-2' : 
                    'text-sm px-3 py-1'
 
-  if (loading && !customColor && !customIcon) {
-    // Mostrar skeleton enquanto carrega
-    return (
-      <div className={`${sizeClass} w-16 h-6 bg-muted animate-pulse rounded`} />
-    )
-  }
+  // Não mostrar skeleton - sempre mostrar o status mesmo durante o loading
+  // O fallback default no switch abaixo é suficiente
 
   return (
     <Badge

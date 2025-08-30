@@ -148,7 +148,11 @@ export function StepCRLV() {
               <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mr-2 flex-shrink-0" />
               Foto do CRLV Enviada
             </h3>
-            <FilePreview files={currentDocumentos.crlv} onRemove={(index) => removeFile("crlv", index)} />
+            <FilePreview 
+              files={currentDocumentos.crlv} 
+              onRemove={(index) => removeFile("crlv", index)}
+              documentType="crlv"
+            />
           </div>
         )}
 

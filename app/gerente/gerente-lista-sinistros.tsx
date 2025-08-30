@@ -26,6 +26,7 @@ import {
   Plus,
 } from 'lucide-react'
 import { BotaoCompartilharLink } from './botao-compartilhar-link'
+import { StatusBadge } from './sinistro-detalhes/cards'
 
 interface Sinistro {
   id: string
@@ -35,6 +36,7 @@ interface Sinistro {
   tipo_sinistro?: string
   tipo_assistencia?: string
   assistencias_tipos?: string[]
+  assistencia_adicional?: boolean
   cnh_proprio_nome?: string
   nome_completo_furto?: string
   crlv_proprio_placa?: string
@@ -159,51 +161,7 @@ export function GerenteListaSinistros({
                     >
                       #{sinistro.numero_sinistro}
                     </Badge>
-                    <Badge
-                      variant={
-                        sinistro.status === 'concluido'
-                          ? 'default'
-                          : sinistro.status === 'aprovado'
-                          ? 'secondary'
-                          : sinistro.status === 'em_analise'
-                          ? 'outline'
-                          : sinistro.status === 'rejeitado'
-                          ? 'destructive'
-                          : 'secondary'
-                      }
-                      className={`text-xs px-2 py-1 ${
-                        {
-                          concluido: 'bg-green-100 text-green-800 border-green-200',
-                          aprovado: 'bg-blue-100 text-blue-800 border-blue-200',
-                          em_analise: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-                          rejeitado: 'bg-red-100 text-red-800 border-red-200',
-                        }[sinistro.status] || 'bg-gray-100 text-gray-800 border-gray-200'
-                      }`}
-                    >
-                      <div className='flex items-center gap-1'>
-                        {sinistro.status === 'concluido' ? (
-                          <>
-                            <CheckCircle className='w-3 h-3' /> Concluído
-                          </>
-                        ) : sinistro.status === 'aprovado' ? (
-                          <>
-                            <CheckCircle className='w-3 h-3' /> Aprovado
-                          </>
-                        ) : sinistro.status === 'em_analise' ? (
-                          <>
-                            <Eye className='w-3 h-3' /> Em Análise
-                          </>
-                        ) : sinistro.status === 'rejeitado' ? (
-                          <>
-                            <XCircle className='w-3 h-3' /> Rejeitado
-                          </>
-                        ) : (
-                          <>
-                            <Clock4 className='w-3 h-3' /> Pendente
-                          </>
-                        )}
-                      </div>
-                    </Badge>
+                    <StatusBadge status={sinistro.status} size="sm" />
                   </div>
 
                   {/* Linha 2: Tipo de atendimento */}
@@ -241,34 +199,37 @@ export function GerenteListaSinistros({
                             )
                           }
 
-                          switch (sinistro.tipo_sinistro) {
-                            case 'colisao':
-                              return (
-                                <>
-                                  <Car className='w-3 h-3' /> Colisão
-                                </>
-                              )
-                            case 'furto':
-                              return (
-                                <>
-                                  <Shield className='w-3 h-3' /> Furto
-                                </>
-                              )
-                            case 'roubo':
-                              return (
-                                <>
-                                  <AlertTriangle className='w-3 h-3' /> Roubo
-                                </>
-                              )
-                            case 'pequenos_reparos':
-                              return (
-                                <>
-                                  <Wrench className='w-3 h-3' /> Pequenos Reparos
-                                </>
-                              )
-                            default:
-                              return <>Tipo não identificado</>
-                          }
+                          // Para sinistros, mostrar tipo + assistências adicionais se houver
+                          const tipoTexto = (() => {
+                            switch (sinistro.tipo_sinistro) {
+                              case 'colisao': return 'Colisão'
+                              case 'furto': return 'Furto'
+                              case 'roubo': return 'Roubo'
+                              case 'pequenos_reparos': return 'Pequenos Reparos'
+                              default: return 'Tipo não identificado'
+                            }
+                          })()
+
+                          const icone = (() => {
+                            switch (sinistro.tipo_sinistro) {
+                              case 'colisao': return <Car className='w-3 h-3' />
+                              case 'furto': return <Shield className='w-3 h-3' />
+                              case 'roubo': return <AlertTriangle className='w-3 h-3' />
+                              case 'pequenos_reparos': return <Wrench className='w-3 h-3' />
+                              default: return null
+                            }
+                          })()
+
+                          // Adicionar assistências adicionais se houver
+                          const assistenciasAdicionais = sinistro.assistencia_adicional && sinistro.assistencias_tipos && sinistro.assistencias_tipos.length > 0 
+                            ? ` + ${formatarTodasAssistencias(sinistro)}` 
+                            : ''
+
+                          return (
+                            <>
+                              {icone} {tipoTexto}{assistenciasAdicionais}
+                            </>
+                          )
                         })()}
                       </div>
                     </Badge>
@@ -333,14 +294,20 @@ export function GerenteListaSinistros({
                     )}
 
                     {/* Tags de passos personalizados com rolagem horizontal */}
-                    {passosPersonalizados[sinistro.id] && passosPersonalizados[sinistro.id].length > 0 && (
-                      <div className='w-full'>
-                        <div className='text-xs text-muted-foreground mb-2 font-medium'>Andamento do Processo:</div>
-                        <div className='w-full overflow-x-auto scrollbar-hide'>
-                          <div className='flex gap-2 pb-2 andamento-container'>
-                            {passosPersonalizados[sinistro.id].map((passo, index) => (
+                    {(() => {
+                      const passosFiltrados = passosPersonalizados[sinistro.id]?.filter((passo) => {
+                        // Mostrar apenas passos personalizados criados no status atual
+                        return passo.personalizado && passo.status_sinistro === sinistro.status
+                      }) || []
+                      
+                      return passosFiltrados.length > 0 && (
+                        <div className='w-full'>
+                          <div className='text-xs text-muted-foreground mb-2 font-medium'>Andamento do Processo:</div>
+                          <div className='w-full overflow-x-auto scrollbar-hide'>
+                            <div className='flex gap-2 pb-2 andamento-container'>
+                              {passosFiltrados.map((passo, index) => (
                               <Badge
-                                key={`mobile-${sinistro.id}-passo-${passo.id || index}`}
+                                key={`mobile-${sinistro.id}-passo-${passo.id || index}-${passo.personalizado ? 'custom' : 'default'}`}
                                 variant='outline'
                                 className={`text-xs font-medium whitespace-nowrap flex-shrink-0 ${
                                   {
@@ -358,11 +325,12 @@ export function GerenteListaSinistros({
                                 )}
                                 {passo.nome}
                               </Badge>
-                            ))}
+                              ))}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )}
+                      )
+                    })()}
                   </div>
 
                   {/* Linha 5: Botões de ação */}
@@ -374,9 +342,7 @@ export function GerenteListaSinistros({
                           size='sm'
                           onClick={async () => {
                             await carregarDetalhes(sinistro.id)
-                            if (['em_analise', 'aprovado', 'rejeitado'].includes(sinistro.status)) {
-                              await carregarAndamento(sinistro.id)
-                            }
+                            await carregarAndamento(sinistro.id)
                           }}
                           className='h-9 text-sm  flex-1'
                         >
@@ -438,51 +404,7 @@ export function GerenteListaSinistros({
                         >
                           #{sinistro.numero_sinistro}
                         </Badge>
-                        <Badge
-                          variant={
-                            sinistro.status === 'concluido'
-                              ? 'default'
-                              : sinistro.status === 'aprovado'
-                              ? 'secondary'
-                              : sinistro.status === 'em_analise'
-                              ? 'outline'
-                              : sinistro.status === 'rejeitado'
-                              ? 'destructive'
-                              : 'secondary'
-                          }
-                          className={`text-xs px-2 py-1 ${
-                            {
-                              concluido: 'bg-green-100 text-green-800 border-green-200',
-                              aprovado: 'bg-blue-100 text-blue-800 border-blue-200',
-                              em_analise: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-                              rejeitado: 'bg-red-100 text-red-800 border-red-200',
-                            }[sinistro.status] || 'bg-gray-100 text-gray-800 border-gray-200'
-                          }`}
-                        >
-                          <div className='flex items-center gap-1'>
-                            {sinistro.status === 'concluido' ? (
-                              <>
-                                <CheckCircle className='w-3 h-3' /> Concluído
-                              </>
-                            ) : sinistro.status === 'aprovado' ? (
-                              <>
-                                <CheckCircle className='w-3 h-3' /> Aprovado
-                              </>
-                            ) : sinistro.status === 'em_analise' ? (
-                              <>
-                                <Eye className='w-3 h-3' /> Em Análise
-                              </>
-                            ) : sinistro.status === 'rejeitado' ? (
-                              <>
-                                <XCircle className='w-3 h-3' /> Rejeitado
-                              </>
-                            ) : (
-                              <>
-                                <Clock4 className='w-3 h-3' /> Pendente
-                              </>
-                            )}
-                          </div>
-                        </Badge>
+                        <StatusBadge status={sinistro.status} size="sm" />
                         <Badge
                           variant={
                             sinistro.tipo_atendimento === 'assistencia'
@@ -517,34 +439,37 @@ export function GerenteListaSinistros({
                                 )
                               }
 
-                              switch (sinistro.tipo_sinistro) {
-                                case 'colisao':
-                                  return (
-                                    <>
-                                      <Car className='w-3 h-3' /> Colisão
-                                    </>
-                                  )
-                                case 'furto':
-                                  return (
-                                    <>
-                                      <Shield className='w-3 h-3' /> Furto
-                                    </>
-                                  )
-                                case 'roubo':
-                                  return (
-                                    <>
-                                      <AlertTriangle className='w-3 h-3' /> Roubo
-                                    </>
-                                  )
-                                case 'pequenos_reparos':
-                                  return (
-                                    <>
-                                      <Wrench className='w-3 h-3' /> Pequenos Reparos
-                                    </>
-                                  )
-                                default:
-                                  return <>Tipo não identificado</>
-                              }
+                              // Para sinistros, mostrar tipo + assistências adicionais se houver
+                              const tipoTexto = (() => {
+                                switch (sinistro.tipo_sinistro) {
+                                  case 'colisao': return 'Colisão'
+                                  case 'furto': return 'Furto'
+                                  case 'roubo': return 'Roubo'
+                                  case 'pequenos_reparos': return 'Pequenos Reparos'
+                                  default: return 'Tipo não identificado'
+                                }
+                              })()
+
+                              const icone = (() => {
+                                switch (sinistro.tipo_sinistro) {
+                                  case 'colisao': return <Car className='w-3 h-3' />
+                                  case 'furto': return <Shield className='w-3 h-3' />
+                                  case 'roubo': return <AlertTriangle className='w-3 h-3' />
+                                  case 'pequenos_reparos': return <Wrench className='w-3 h-3' />
+                                  default: return null
+                                }
+                              })()
+
+                              // Adicionar assistências adicionais se houver
+                              const assistenciasAdicionais = sinistro.assistencia_adicional && sinistro.assistencias_tipos && sinistro.assistencias_tipos.length > 0 
+                                ? ` + ${formatarTodasAssistencias(sinistro)}` 
+                                : ''
+
+                              return (
+                                <>
+                                  {icone} {tipoTexto}{assistenciasAdicionais}
+                                </>
+                              )
                             })()}
                           </div>
                         </Badge>
@@ -566,9 +491,7 @@ export function GerenteListaSinistros({
                               size='sm'
                               onClick={async () => {
                                 await carregarDetalhes(sinistro.id)
-                                if (['em_analise', 'aprovado', 'rejeitado'].includes(sinistro.status)) {
-                                  await carregarAndamento(sinistro.id)
-                                }
+                                await carregarAndamento(sinistro.id)
                               }}
                               className=' flex-shrink-0'
                             >
@@ -676,14 +599,20 @@ export function GerenteListaSinistros({
                         )}
 
                         {/* Tags de passos personalizados com rolagem horizontal */}
-                        {passosPersonalizados[sinistro.id] && passosPersonalizados[sinistro.id].length > 0 && (
-                          <div className='col-span-full'>
-                            <div className='text-xs text-muted-foreground mb-2 font-medium'>Andamento do Processo:</div>
-                            <div className='w-full overflow-x-auto scrollbar-hide'>
-                              <div className='flex gap-2 pb-2 andamento-container'>
-                                {passosPersonalizados[sinistro.id].map((passo, index) => (
+                        {(() => {
+                          const passosFiltrados = passosPersonalizados[sinistro.id]?.filter((passo) => {
+                            // Mostrar apenas passos personalizados criados no status atual
+                            return passo.personalizado && passo.status_sinistro === sinistro.status
+                          }) || []
+                          
+                          return passosFiltrados.length > 0 && (
+                            <div className='col-span-full'>
+                              <div className='text-xs text-muted-foreground mb-2 font-medium'>Andamento do Processo:</div>
+                              <div className='w-full overflow-x-auto scrollbar-hide'>
+                                <div className='flex gap-2 pb-2 andamento-container'>
+                                  {passosFiltrados.map((passo, index) => (
                                   <Badge
-                                    key={`${sinistro.id}-desktop-passo-${passo.id || index}`}
+                                    key={`${sinistro.id}-desktop-passo-${passo.id || index}-${passo.personalizado ? 'custom' : 'default'}`}
                                     variant='outline'
                                     className={`text-xs font-medium whitespace-nowrap flex-shrink-0 ${
                                       {
@@ -701,11 +630,12 @@ export function GerenteListaSinistros({
                                     )}
                                     {passo.nome}
                                   </Badge>
-                                ))}
+                                  ))}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        )}
+                          )
+                        })()}
                       </div>
                     )}
                   </div>

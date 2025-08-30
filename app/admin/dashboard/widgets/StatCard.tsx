@@ -44,7 +44,7 @@ export function StatCard({
   return (
     <Card
       className={` shadow-lg bg-card/50 backdrop-blur-sm transition-all duration-300 hover:shadow-xl ${
-        onClick ? 'cursor-pointer hover:scale-105' : ''
+        onClick ? 'cursor-pointer' : ''
       } ${className}`}
     >
       <CardContent className='p-4'>

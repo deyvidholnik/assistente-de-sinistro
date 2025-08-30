@@ -100,13 +100,13 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
 
   // ✅ NOVO: Verificação inicial sem race conditions
   const initializeAuth = async () => {
-    console.log('🚀 Inicializando autenticação admin...')
+    // console.log('🚀 Inicializando autenticação admin...')
     
     try {
       // 1. Verificar localStorage primeiro (rápido)
       const localUser = getLocalStorageUser()
       if (localUser) {
-        console.log('⚡ Usuário detectado via localStorage')
+        // console.log('⚡ Usuário detectado via localStorage')
         setUser(localUser)
         // ✅ IMPORTANTE: Marcar como não inicializando para permitir acesso
         setInitializing(false)
@@ -116,7 +116,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
           try {
             const { data: { session } } = await supabase.auth.getSession()
             if (session?.user) {
-              console.log('🔄 Sincronizando com sessão Supabase')
+              // console.log('🔄 Sincronizando com sessão Supabase')
               setAuthUser(session.user)
               setSession(session)
               
@@ -142,7 +142,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       const { data: { session } } = await supabase.auth.getSession()
       
       if (session?.user) {
-        console.log('🔐 Sessão Supabase detectada')
+        // console.log('🔐 Sessão Supabase detectada')
         setAuthUser(session.user)
         setSession(session)
 
@@ -219,7 +219,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         timestamp: Date.now() 
       }))
 
-      console.log('✅ Login admin realizado com sucesso')
+      // console.log('✅ Login admin realizado com sucesso')
       return userInfo
 
     } catch (error: any) {
@@ -246,7 +246,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       // Fazer logout no Supabase
       await supabase.auth.signOut()
       
-      console.log('✅ Logout realizado com sucesso')
+      // console.log('✅ Logout realizado com sucesso')
       
       // Redirecionar
       router.replace('/admin/login')
@@ -291,7 +291,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔄 Auth state change:', event)
+      // console.log('🔄 Auth state change:', event)
       
       if (!mounted.current) return
 

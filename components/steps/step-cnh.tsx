@@ -133,7 +133,11 @@ export function StepCNH() {
               <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 mr-1 sm:mr-2 flex-shrink-0" />
               Foto da CNH Enviada
             </h3>
-            <FilePreview files={currentDocumentos.cnh} onRemove={(index) => removeFile("cnh", index)} />
+            <FilePreview 
+              files={currentDocumentos.cnh} 
+              onRemove={(index) => removeFile("cnh", index)}
+              documentType="cnh"
+            />
           </div>
         )}
 

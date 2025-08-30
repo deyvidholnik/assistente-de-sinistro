@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { FileText, Trash2, Eye, Loader2 } from "lucide-react"
 import { useState, useEffect } from "react"
-import { convertPdfToImage, isPdfFile } from "@/lib/pdf-utils"
+import { convertPdfToImage, isPdfFile, getCNHCropRegion, getCRLVCropRegion } from "@/lib/pdf-utils"
 import type { DocumentosData } from "@/types"
 
 interface FilePreviewProps {
@@ -12,6 +12,7 @@ interface FilePreviewProps {
   field?: keyof DocumentosData
   stepId?: number
   onRemove: (index: number) => void
+  documentType?: "cnh" | "crlv" // Adicionado para identificar tipo
 }
 
 interface PreviewData {
@@ -22,7 +23,7 @@ interface PreviewData {
   error?: string
 }
 
-export function FilePreview({ files, onRemove }: FilePreviewProps) {
+export function FilePreview({ files, onRemove, documentType }: FilePreviewProps) {
   const [previews, setPreviews] = useState<PreviewData[]>([])
   const [selectedPreview, setSelectedPreview] = useState<PreviewData | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
@@ -42,7 +43,21 @@ export function FilePreview({ files, onRemove }: FilePreviewProps) {
 
         if (isPdfFile(file)) {
           try {
-            const base64Image = await convertPdfToImage(file)
+            let base64Image: string
+            
+            if (documentType === 'cnh') {
+              // Para CNH PDF, mostra região cropada (tentativa 1)
+              const cropRegion = getCNHCropRegion(1)
+              base64Image = await convertPdfToImage(file, cropRegion)
+            } else if (documentType === 'crlv') {
+              // Para CRLV PDF, mostra região cropada (tentativa 1)
+              const cropRegion = getCRLVCropRegion(1)
+              base64Image = await convertPdfToImage(file, cropRegion)
+            } else {
+              // Para outros PDFs, mostra imagem completa
+              base64Image = await convertPdfToImage(file)
+            }
+            
             previewData.previewUrl = `data:image/png;base64,${base64Image}`
             previewData.isLoading = false
           } catch (error) {
@@ -176,8 +191,16 @@ export function FilePreview({ files, onRemove }: FilePreviewProps) {
           {selectedPreview?.isPdf && (
             <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
               <p className="text-sm text-blue-800">
-                <strong>Esta é a imagem que será enviada para o OCR.</strong> Se os dados extraídos estiverem incorretos, 
+                <strong>
+                  {(documentType === 'cnh' || documentType === 'crlv')
+                    ? 'Esta é a região cropada que será enviada para o OCR (canto superior esquerdo).' 
+                    : 'Esta é a imagem que será enviada para o OCR.'
+                  }
+                </strong> Se os dados extraídos estiverem incorretos, 
                 verifique se o PDF original tem boa qualidade e texto legível.
+                {(documentType === 'cnh' || documentType === 'crlv') && (
+                  <span> O sistema tentará automaticamente regiões maiores se necessário.</span>
+                )}
               </p>
             </div>
           )}

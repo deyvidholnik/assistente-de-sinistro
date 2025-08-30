@@ -4,7 +4,7 @@ import { createContext, useContext, useState, type ReactNode, type Dispatch, typ
 import type { CNHData, CRLVData, DocumentosData, TipoSinistro, DadosFurtoSemDocumentos, TipoAtendimento, TipoAssistencia } from "@/types"
 import { fotoVeiculoSteps } from "@/constants/steps" // Assuming fotoVeiculoSteps is declared in a constants file
 import { validarCPF, validarPlaca } from "@/lib/validations"
-import { convertPdfToImage, isPdfFile, preprocessImageForOCR } from "@/lib/pdf-utils"
+import { convertPdfToImage, isPdfFile, preprocessImageForOCR, convertPdfToImageForCNH, convertPdfToImageForCRLV, preprocessImageForCNHOCR } from "@/lib/pdf-utils"
 
 // Definindo a estrutura do nosso contexto
 interface FormContextType {
@@ -182,6 +182,32 @@ export function FormProvider({ children, initialData }: FormProviderProps) {
     setter((prev) => ({ ...prev, [field]: files }))
   }
 
+  // Função auxiliar para validar campos obrigatórios
+  const validarCamposObrigatorios = (data: any, documentType: "cnh" | "crlv"): boolean => {
+    if (documentType === "cnh") {
+      return !!(data.nome && data.nome.trim() && data.cpf && data.cpf.trim())
+    } else if (documentType === "crlv") {
+      return !!(data.placa && data.placa.trim() && data.renavam && data.renavam.trim())
+    }
+    return false
+  }
+
+  // Função auxiliar para tentar OCR com uma tentativa específica
+  const tentarOCR = async (base64Image: string, documentType: "cnh" | "crlv") => {
+    const resp = await fetch("/api/ocr", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ base64Image, type: documentType }),
+    })
+    const result = await resp.json()
+    
+    if (!result.success) {
+      throw new Error(result.message || "Falha no OCR")
+    }
+    
+    return result.extractedData
+  }
+
   const processarOCR = async (file: File, documentType: "cnh" | "crlv") => {
     const fileId = `${file.name}-${file.size}-${file.lastModified}`
     if (processingFiles.has(fileId)) return
@@ -191,51 +217,74 @@ export function FormProvider({ children, initialData }: FormProviderProps) {
     setOcrError(null)
 
     try {
-      let base64Image: string
+      let extractedData: any = null
+      const isPdf = isPdfFile(file)
 
-      // Verifica se é PDF ou imagem
-      if (isPdfFile(file)) {
-        // Converte PDF para imagem
-        base64Image = await convertPdfToImage(file)
+      if (isPdf && (documentType === "cnh" || documentType === "crlv")) {
+        // Para PDFs de CNH/CRLV: tenta 3 vezes com crop inteligente
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          try {
+            let base64Image: string
+
+            if (attempt <= 2) {
+              // Tentativas 1 e 2: usar crop específico
+              if (documentType === "cnh") {
+                base64Image = await convertPdfToImageForCNH(file, attempt)
+              } else {
+                base64Image = await convertPdfToImageForCRLV(file, attempt)
+              }
+            } else {
+              // Tentativa 3: imagem completa
+              base64Image = await convertPdfToImage(file)
+            }
+
+            // Sem pré-processamento - apenas crop
+
+            // Tenta OCR
+            extractedData = await tentarOCR(base64Image, documentType)
+
+            // Valida campos obrigatórios
+            if (validarCamposObrigatorios(extractedData, documentType)) {
+              break // Sucesso! Sai do loop
+            } else if (attempt === 3) {
+              throw new Error("Não foi possível extrair os dados obrigatórios. Envie um documento válido.")
+            }
+            // Se chegou aqui, campos inválidos mas ainda há tentativas
+          } catch (error) {
+            if (attempt === 3) {
+              throw error // Re-throw na última tentativa
+            }
+            // Continue para próxima tentativa
+          }
+        }
       } else {
-        // Processa imagem normalmente
-        base64Image = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onload = () => resolve((reader.result as string).split(",")[1])
-          reader.onerror = (error) => reject(error)
-          reader.readAsDataURL(file)
-        })
+        // Para imagens ou PDFs não-CNH: processo normal
+        let base64Image: string
+
+        if (isPdf) {
+          base64Image = await convertPdfToImage(file)
+        } else {
+          base64Image = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve((reader.result as string).split(",")[1])
+            reader.onerror = (error) => reject(error)
+            reader.readAsDataURL(file)
+          })
+        }
+
+        // Sem pré-processamento - apenas imagem original
+
+        // Tenta OCR
+        extractedData = await tentarOCR(base64Image, documentType)
+
+        // Valida campos obrigatórios
+        if (!validarCamposObrigatorios(extractedData, documentType)) {
+          throw new Error("Não foi possível extrair os dados obrigatórios. Envie um documento válido.")
+        }
       }
 
-      // Aplica pré-processamento para melhorar OCR
-      base64Image = await preprocessImageForOCR(base64Image)
-
-      const resp = await fetch("/api/ocr", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ base64Image, type: documentType }),
-      })
-      const result = await resp.json()
-
-      if (!result.success) {
-        removeFile(documentType, 0) // Remove o arquivo se a API falhar
-        throw new Error(result.message || "A API retornou uma falha. Tente novamente.")
-      }
-
-      const { extractedData } = result
-
-      // Validação de campos essenciais
-      if (documentType === "cnh" && (!extractedData || !extractedData.cpf)) {
-        removeFile("cnh", 0) // Remove arquivo inválido
-        throw new Error("Por favor, envie uma foto mais nítida e sem reflexos.")
-      }
-
-      if (documentType === "crlv" && (!extractedData || !extractedData.placa)) {
-        removeFile("crlv", 0) // Remove arquivo inválido
-        throw new Error("Por favor, envie uma foto mais nítida e sem reflexos.")
-      }
-
-      // Se a validação passar, define os dados
+      // Se chegou até aqui, OCR foi bem-sucedido com campos válidos
+      // Define os dados extraídos
       if (documentType === "cnh") {
         if (isDocumentingThirdParty) {
           setCnhDataTerceiros(extractedData)
@@ -244,8 +293,7 @@ export function FormProvider({ children, initialData }: FormProviderProps) {
           setCnhData(extractedData)
           setHasProcessedCNH(true)
         }
-      } else {
-        // crlv
+      } else if (documentType === "crlv") {
         if (isDocumentingThirdParty) {
           setCrlvDataTerceiros(extractedData)
           setHasProcessedCRLVTerceiros(true)

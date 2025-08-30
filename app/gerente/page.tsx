@@ -223,30 +223,15 @@ export default function GerentePage() {
       ) : []
       
       setSinistros(sinistrosUnicos)
-      console.log('Sinistros carregados:', sinistrosUnicos.length || 0)
-      console.log('Exemplo de sinistro:', sinistrosUnicos[0])
 
       // Debug específico para assistências adicionais
       const comAssistenciaAdicional = data?.filter((s) => s.assistencia_adicional === true) || []
       const comTiposAssistencia = data?.filter((s) => s.assistencias_tipos) || []
 
-      console.log('🎯 DEBUG ASSISTÊNCIAS ADICIONAIS:', {
-        totalSinistros: data?.length || 0,
-        comAssistenciaAdicional: comAssistenciaAdicional.length,
-        comTiposAssistencia: comTiposAssistencia.length,
-        exemploComAssistencia: comAssistenciaAdicional[0],
-        exemploComTipos: comTiposAssistencia[0],
-      })
+      // Debug de assistências removido
 
-      // Debug para assistências normais
-      const assistencias = data?.filter((s) => s.tipo_atendimento === 'assistencia')
-      if (assistencias?.length > 0) {
-        console.log('Assistências encontradas:', assistencias)
-        console.log('Primeira assistência com formatação:', {
-          original: assistencias[0],
-          formatado: formatarTodasAssistencias(assistencias[0]),
-        })
-      }
+
+      // Debug para assistências normais removido
     } catch (err: any) {
       console.error('Erro ao carregar sinistros:', err)
       setError(err.message || 'Erro ao carregar sinistros')
@@ -297,8 +282,7 @@ export default function GerentePage() {
 
       if (arquivosError) throw arquivosError
 
-      console.log(`Arquivos encontrados para sinistro ${sinistroId}:`, arquivosData?.length || 0)
-      console.log('Detalhes dos arquivos:', arquivosData)
+      // Debug de arquivos removido
 
       // Buscar logs
       const { data: logsData, error: logsError } = await supabase
@@ -335,13 +319,11 @@ export default function GerentePage() {
       if (response.ok) {
         setAndamentoSinistro(result.andamento || [])
 
-        // Atualizar passos personalizados para este sinistro (filtrar por status se fornecido)
-        const passosPersonalizadosDoSinistro = (result.andamento || []).filter((passo: any) => 
-          passo.personalizado && (statusSinistro ? passo.status_sinistro === statusSinistro : true)
-        )
+        // Atualizar andamento completo para este sinistro
+        const todosOsPassosDoSinistro = result.andamento || []
         setPassosPersonalizados((prev) => ({
           ...prev,
-          [sinistroId]: passosPersonalizadosDoSinistro,
+          [sinistroId]: todosOsPassosDoSinistro,
         }))
       } else {
         console.error('Erro ao carregar andamento:', result.error)
@@ -359,7 +341,7 @@ export default function GerentePage() {
       const passosMap: Record<string, any[]> = {}
 
       // Carregar passos personalizados apenas para sinistros que precisam
-      const sinistrosComAndamento = sinistros.filter((s) => ['em_analise', 'aprovado', 'rejeitado'].includes(s.status))
+      const sinistrosComAndamento = sinistros
 
       if (sinistrosComAndamento.length === 0) {
         setPassosPersonalizados({})
@@ -372,11 +354,9 @@ export default function GerentePage() {
           const response = await fetch(`/api/andamento-simples?sinistroId=${sinistro.id}`)
           if (response.ok) {
             const data = await response.json()
-            const passosPersonalizadosDoSinistro = (data.andamento || []).filter((passo: any) => 
-              passo.personalizado && passo.status_sinistro === sinistro.status
-            )
-            if (passosPersonalizadosDoSinistro.length > 0) {
-              return { sinistroId: sinistro.id, passos: passosPersonalizadosDoSinistro }
+            const todosOsPassosDoSinistro = data.andamento || []
+            if (todosOsPassosDoSinistro.length > 0) {
+              return { sinistroId: sinistro.id, passos: todosOsPassosDoSinistro }
             }
           }
         } catch (error) {
@@ -399,6 +379,28 @@ export default function GerentePage() {
     }
   }
 
+  // Função helper para verificar atualização no servidor
+  const verificarERecarregarStatus = (sinistroId: string, statusEsperado: string) => {
+    // Em vez de verificar o servidor, vamos preservar a atualização local
+    // e fazer uma recarga inteligente que não sobrescreve atualizações recentes
+    setTimeout(() => {
+      setSinistros(prevSinistros => {
+        // Preservar qualquer sinistro que foi atualizado recentemente
+        const sinistroAtualLocal = prevSinistros.find(s => s.id === sinistroId)
+        if (sinistroAtualLocal?.status === statusEsperado) {
+          // Status local já correto
+          // Aguardar mais um pouco antes de recarregar do servidor
+          setTimeout(() => carregarSinistros(true), 2000)
+          return prevSinistros // manter estado atual
+        } else {
+          // Se não encontrou ou status diferente, recarregar imediatamente
+          carregarSinistros(true)
+          return prevSinistros
+        }
+      })
+    }, 500)
+  }
+
   // Atualizar status do sinistro
   const atualizarStatusSinistro = async (sinistroId: string, novoStatus: string, observacoes?: string) => {
     try {
@@ -417,19 +419,20 @@ export default function GerentePage() {
       const result = await response.json()
 
       if (response.ok) {
-        // Atualizar o estado local
-        setSinistros((prev) => prev.map((s) => (s.id === sinistroId ? { ...s, status: novoStatus } : s)))
+        // Garantir que o status seja em lowercase para consistency
+        const statusNormalizado = novoStatus.toLowerCase()
+        
+        // Atualizar o estado local imediatamente para feedback visual
+        setSinistros((prev) => prev.map((s) => (s.id === sinistroId ? { ...s, status: statusNormalizado } : s)))
 
-        // Recarregar dados do servidor
-        setTimeout(() => carregarSinistros(true), 500)
+        // Usar função helper para verificar e recarregar
+        verificarERecarregarStatus(sinistroId, statusNormalizado)
 
         if (selectedSinistro?.sinistro.id === sinistroId) {
           await carregarDetalhes(sinistroId)
 
-          // Se mudou para status com andamento, carregar andamento
-          if (['em_analise', 'aprovado', 'rejeitado'].includes(novoStatus)) {
-            await carregarAndamento(sinistroId, novoStatus)
-          }
+          // Carregar andamento para qualquer status
+          await carregarAndamento(sinistroId, novoStatus)
         }
       } else {
         setError(result.error || 'Erro ao atualizar status')
@@ -467,8 +470,8 @@ export default function GerentePage() {
         // Recarregar dados do sinistro (pode ter mudado para concluído)
         await carregarDetalhes(selectedSinistro.sinistro.id)
 
-        // Recarregar lista de sinistros
-        setTimeout(() => carregarSinistros(true), 500)
+        // Recarregar lista de sinistros com delay menor já que não há mudança de status aqui
+        setTimeout(() => carregarSinistros(true), 1000)
       } else {
         setError(result.error || 'Erro ao atualizar andamento')
       }
@@ -555,7 +558,7 @@ export default function GerentePage() {
   // Função original mantida para compatibilidade (será removida)
   const atualizarStatus = async (sinistroId: string, novoStatus: string) => {
     try {
-      console.log('Atualizando status:', sinistroId, novoStatus)
+      // Atualizando status
 
       // Obter data atual no fuso de Brasília
       const obterDataAtualBrasilia = () => {
@@ -581,11 +584,7 @@ export default function GerentePage() {
         // Criar data no formato ISO
         const dataFormatada = `${ano}-${mes}-${dia}T${hora}:${min}:${seg}.000-03:00`
 
-        console.log('🕐 Atualização de status - Conversão CORRIGIDA:', {
-          original_UTC: agora.toISOString(),
-          brasilia_locale: brasiliaString,
-          resultado_final: dataFormatada,
-        })
+        // Debug de timezone removido
 
         return dataFormatada
       }
@@ -620,8 +619,8 @@ export default function GerentePage() {
       // Atualizar o estado local imediatamente para feedback visual
       setSinistros((prev) => prev.map((s) => (s.id === sinistroId ? { ...s, status: novoStatus } : s)))
 
-      // Recarregar dados do servidor
-      setTimeout(() => carregarSinistros(true), 500)
+      // Recarregar dados do servidor com delay
+      setTimeout(() => carregarSinistros(true), 1000)
 
       if (selectedSinistro?.sinistro.id === sinistroId) {
         await carregarDetalhes(sinistroId)
@@ -667,7 +666,7 @@ export default function GerentePage() {
           table: 'sinistros'
         },
         (payload) => {
-          console.log('🔄 Realtime: Mudança detectada na tabela sinistros:', payload)
+          // Realtime: sinistros atualizado
           
           // Recarregar dados quando houver mudanças
           carregarSinistros(true)
@@ -686,7 +685,7 @@ export default function GerentePage() {
           table: 'log_atividades'
         },
         (payload) => {
-          console.log('🔄 Realtime: Mudança detectada em log_atividades:', payload)
+          // Realtime: log_atividades atualizado
           
           // Se estava visualizando detalhes de um sinistro, recarregar apenas se for o mesmo
           if (selectedSinistro && payload.new?.sinistro_id === selectedSinistro.sinistro.id) {
@@ -702,7 +701,7 @@ export default function GerentePage() {
           table: 'arquivos_sinistro'
         },
         (payload) => {
-          console.log('🔄 Realtime: Mudança detectada em arquivos_sinistro:', payload)
+          // Realtime: arquivos_sinistro atualizado
           
           // Se estava visualizando detalhes de um sinistro, recarregar apenas se for o mesmo
           if (selectedSinistro && payload.new?.sinistro_id === selectedSinistro.sinistro.id) {
@@ -711,10 +710,8 @@ export default function GerentePage() {
         }
       )
       .subscribe((status) => {
-        console.log('📡 Realtime connection status:', status)
-        
         if (status === 'SUBSCRIBED') {
-          console.log('✅ Realtime conectado com sucesso!')
+          // Realtime conectado
           setRealtimeStatus('SUBSCRIBED')
         } else if (status === 'CHANNEL_ERROR') {
           console.error('❌ Erro na conexão Realtime')
@@ -724,7 +721,7 @@ export default function GerentePage() {
 
     // Cleanup: unsubscribe quando componente desmonta
     return () => {
-      console.log('🔌 Desconectando Realtime')
+      // Desconectando Realtime
       supabase.removeChannel(channel)
     }
   }, [])
@@ -743,7 +740,7 @@ export default function GerentePage() {
   // Carregar passos personalizados quando sinistros mudarem
   useEffect(() => {
     if (sinistros.length > 0) {
-      console.log('🔄 Carregando passos personalizados para', sinistros.length, 'sinistros')
+      // Carregando passos personalizados
       carregarPassosPersonalizados()
     }
   }, [sinistros]) // Executa sempre que sinistros mudar

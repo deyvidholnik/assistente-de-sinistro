@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Activity, CheckCircle, XCircle, Calendar, Plus, X, Loader2, Settings, PlayCircle, Clock4 } from 'lucide-react'
 import { formatarData } from '../gerente-formatters'
 import { StatusBadge } from './cards'
+import { useState, useEffect } from 'react'
 
 interface SinistroAndamentoProcessoProps {
   sinistro: any
@@ -32,16 +33,65 @@ export default function SinistroAndamentoProcesso({
   onNovoPassoChange,
   onToggleNovoPassoForm,
 }: SinistroAndamentoProcessoProps) {
+  const [statusAtivos, setStatusAtivos] = useState<string[]>([])
+  const [loadingStatus, setLoadingStatus] = useState(true)
+
+  useEffect(() => {
+    const buscarStatusAtivos = async () => {
+      try {
+        const response = await fetch('/api/status-personalizados')
+        if (response.ok) {
+          const data = await response.json()
+          const nomesStatus = data.status?.map((s: any) => s.nome) || []
+          // Incluir status padrões + personalizados
+          const statusPadroes = ['em_analise', 'aprovado', 'rejeitado', 'novo', 'pendente', 'em_andamento', 'concluido', 'cancelado']
+          const todosStatus = [...new Set([...statusPadroes, ...nomesStatus])]
+          setStatusAtivos(todosStatus)
+        }
+      } catch (error) {
+        console.error('Erro ao buscar status:', error)
+        // Fallback para status padrões
+        setStatusAtivos(['em_analise', 'aprovado', 'rejeitado', 'novo', 'pendente', 'em_andamento', 'concluido', 'cancelado'])
+      } finally {
+        setLoadingStatus(false)
+      }
+    }
+
+    buscarStatusAtivos()
+  }, [])
+
+  // Recarregar status quando o sinistro mudar (para pegar mudanças de status)
+  useEffect(() => {
+    if (sinistro?.status) {
+      const buscarStatusAtivos = async () => {
+        try {
+          const response = await fetch('/api/status-personalizados')
+          if (response.ok) {
+            const data = await response.json()
+            const nomesStatus = data.status?.map((s: any) => s.nome) || []
+            const statusPadroes = ['em_analise', 'aprovado', 'rejeitado', 'novo', 'pendente', 'em_andamento', 'concluido', 'cancelado']
+            const todosStatus = [...new Set([...statusPadroes, ...nomesStatus])]
+            setStatusAtivos(todosStatus)
+          }
+        } catch (error) {
+          console.error('Erro ao buscar status:', error)
+        }
+      }
+      buscarStatusAtivos()
+    }
+  }, [sinistro?.status])
+
+  const podeGerenciarAndamento = statusAtivos.includes(sinistro.status)
+  
   // Sempre mostra andamentos se existirem, independente do status
-  if (andamento.length === 0 && !['em_analise', 'aprovado', 'rejeitado'].includes(sinistro.status)) {
+  if (andamento.length === 0 && !podeGerenciarAndamento && !loadingStatus) {
     return (
       <Card>
         <CardContent className='p-6 text-center'>
           <div className='text-muted-foreground'>
             <p className='font-medium text-foreground'>Andamento do Processo</p>
             <p className='text-sm mt-2'>
-              O acompanhamento detalhado dos passos estará disponível quando o sinistro estiver em análise, aprovado ou
-              rejeitado.
+              O acompanhamento detalhado dos passos estará disponível quando o sinistro estiver com um status ativo para gerenciamento.
             </p>
           </div>
         </CardContent>
@@ -160,8 +210,8 @@ export default function SinistroAndamentoProcesso({
                 </Card>
               ))}
 
-            {/* Formulário para adicionar novo passo - só nos status permitidos */}
-            {['em_analise', 'aprovado', 'rejeitado'].includes(sinistro.status) && (
+            {/* Formulário para adicionar novo passo - para qualquer status ativo */}
+            {podeGerenciarAndamento && (
               <Card className='border-dashed border-2 border-border'>
                 <CardContent className='p-4'>
                   {!showNovoPassoForm ? (

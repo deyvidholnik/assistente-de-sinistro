@@ -36,13 +36,7 @@ export default function SinistroHeader({ sinistro }: SinistroHeaderProps) {
   const telefone = sinistro.telefone_cliente || extrairTelefone(sinistro.observacoes_gerente)
   const observacoesLimpas = limparObservacoes(sinistro.observacoes_gerente)
   
-  console.log('🔍 DEBUG:', { 
-    telefone_cliente: sinistro.telefone_cliente,
-    observacoes_gerente: sinistro.observacoes_gerente,
-    telefone_extraido: extrairTelefone(sinistro.observacoes_gerente),
-    telefone_final: telefone,
-    observacoes_limpas: observacoesLimpas
-  })
+  // Debug removido
   const renderTipoIcon = () => {
     if (sinistro.tipo_atendimento === 'assistencia') {
       return <Headphones className='w-4 h-4 inline mr-1 text-status-info' />

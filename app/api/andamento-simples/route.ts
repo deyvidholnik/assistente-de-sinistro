@@ -92,18 +92,10 @@ export async function GET(req: NextRequest) {
 
     // Se não tem andamento e tem status que precisa de andamento, criar andamento inicial
     let andamento = data.andamento
-    if (!andamento && ['em_analise', 'aprovado', 'rejeitado'].includes(data.status)) {
-      andamento = criarAndamentoInicial(data.status)
-      
-      // Salvar andamento inicial no banco
-      const { error: updateError } = await supabase
-        .from('sinistros')
-        .update({ andamento })
-        .eq('id', sinistroId)
-
-      if (updateError) {
-        console.error('Erro ao salvar andamento inicial:', updateError)
-      }
+    
+    // Não criar mais andamento automático - apenas retornar array vazio
+    if (!andamento || (Array.isArray(andamento) && andamento.length === 0)) {
+      andamento = []
     }
 
     return NextResponse.json({ andamento: andamento || [] })
@@ -140,7 +132,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Erro ao buscar sinistro' }, { status: 500 })
     }
 
-    let andamento = sinistroData.andamento || criarAndamentoInicial(sinistroData.status)
+    let andamento = sinistroData.andamento || []
 
     // Encontrar e atualizar o passo
     const passoIndex = andamento.findIndex((p: any) => p.id === parseInt(passoId))
@@ -226,6 +218,8 @@ export async function PUT(req: NextRequest) {
     const body = await req.json()
     const { sinistroId, novoStatus, observacoes } = body
 
+    // Debug removido
+
     if (!sinistroId || !novoStatus) {
       return NextResponse.json({ 
         error: 'Sinistro ID e Novo Status são obrigatórios' 
@@ -269,6 +263,8 @@ export async function PUT(req: NextRequest) {
       .from('sinistros')
       .update(updateData)
       .eq('id', sinistroId)
+
+    // Debug após salvar removido
 
     if (error) {
       console.error('Erro ao atualizar status do sinistro:', error)
@@ -319,13 +315,13 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Erro ao buscar sinistro' }, { status: 500 })
     }
 
-    let andamento = sinistroData.andamento || criarAndamentoInicial(sinistroData.status)
+    let andamento = sinistroData.andamento || []
 
     // Encontrar próximo ID disponível
-    const nextId = Math.max(...andamento.map((p: any) => p.id)) + 1
+    const nextId = andamento.length > 0 ? Math.max(...andamento.map((p: any) => p.id)) + 1 : 1
     
     // Encontrar próxima ordem disponível
-    const nextOrdem = Math.max(...andamento.map((p: any) => p.ordem)) + 1
+    const nextOrdem = andamento.length > 0 ? Math.max(...andamento.map((p: any) => p.ordem)) + 1 : 1
 
     // Criar novo passo
     const novoPassoCompleto = {

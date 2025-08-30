@@ -18,7 +18,7 @@ function GerenteLayoutContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     timeoutRef.current = setTimeout(() => {
       redirectedRef.current = false
-      console.log('🔄 GERENTE: Proteção anti-loop resetada')
+      // console.log('🔄 GERENTE: Proteção anti-loop resetada')
     }, 5000)
 
     return () => {
@@ -32,25 +32,25 @@ function GerenteLayoutContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // ✅ CRÍTICO: Aguardar inicialização completa
     if (initializing) {
-      console.log('⏳ GERENTE: Aguardando inicialização...')
+      // console.log('⏳ GERENTE: Aguardando inicialização...')
       return
     }
     
     // ✅ CRÍTICO: Aguardar loading também
     if (loading) {
-      console.log('⏳ GERENTE: Aguardando carregamento...')
+      // console.log('⏳ GERENTE: Aguardando carregamento...')
       return
     }
 
     // ✅ PROTEÇÃO: Evitar redirecionamentos múltiplos
     if (redirectedRef.current) {
-      console.log('🛡️ GERENTE: Redirecionamento já executado, ignorando')
+      // console.log('🛡️ GERENTE: Redirecionamento já executado, ignorando')
       return
     }
 
     // ✅ Verificar autenticação APÓS inicialização
     if (!isAuthenticated) {
-      console.log('❌ GERENTE: Não autenticado, redirecionando para login')
+      // console.log('❌ GERENTE: Não autenticado, redirecionando para login')
       redirectedRef.current = true
       router.replace('/admin/login')
       return
@@ -58,13 +58,13 @@ function GerenteLayoutContent({ children }: { children: React.ReactNode }) {
 
     // ✅ Verificar se é manager ou admin
     if (user?.user_level !== 'manager' && user?.user_level !== 'admin') {
-      console.log('❌ GERENTE: Sem permissão (nível:', user?.user_level + '), redirecionando para login')
+      // console.log('❌ GERENTE: Sem permissão (nível:', user?.user_level + '), redirecionando para login')
       redirectedRef.current = true
       router.replace('/admin/login')
       return
     }
 
-    console.log('✅ GERENTE: Autenticado com sucesso -', user.username, 'nível:', user.user_level)
+    // console.log('✅ GERENTE: Autenticado com sucesso -', user.username, 'nível:', user.user_level)
   }, [loading, isAuthenticated, user, router, initializing])
 
   // ✅ CORRIGIDO: Mostrar loading enquanto verifica autenticação ou inicializa
