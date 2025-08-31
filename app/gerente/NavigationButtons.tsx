@@ -23,7 +23,7 @@ export function NavigationButtons() {
         const toast = document.createElement('div')
         toast.className =
           'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-in slide-in-from-top-2'
-        toast.textContent = 'Link copiado com sucesso!'
+        toast.textContent = 'Link copiado!'
 
         document.body.appendChild(toast)
 
@@ -72,8 +72,9 @@ export function NavigationButtons() {
         className='bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3'
       >
         {copied ? <Check className='w-5 h-5 mr-3' /> : <Copy className='w-5 h-5 mr-3' />}
-        Copiar Link Assistência
+        Link Abrir Ocorrência
       </Button>
     </div>
   )
+  
 }
