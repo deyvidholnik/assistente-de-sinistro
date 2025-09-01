@@ -187,7 +187,7 @@ export function StepCRLV() {
                 <Input
                   value={currentCrlvData.placa}
                   onChange={(e) => setCurrentCrlvData({ ...currentCrlvData, placa: e.target.value })}
-                  className='bg-white text-sm h-10 sm:h-11'
+                  className='bg-white text-gray-800 text-sm h-10 sm:h-11'
                 />
               </div>
               <div>
@@ -195,7 +195,7 @@ export function StepCRLV() {
                 <Input
                   value={currentCrlvData.renavam}
                   onChange={(e) => setCurrentCrlvData({ ...currentCrlvData, renavam: e.target.value })}
-                  className='bg-white text-sm h-10 sm:h-11'
+                  className='bg-white text-gray-800 text-sm h-10 sm:h-11'
                 />
               </div>
               <div>
@@ -203,7 +203,7 @@ export function StepCRLV() {
                 <Input
                   value={currentCrlvData.marca}
                   onChange={(e) => setCurrentCrlvData({ ...currentCrlvData, marca: e.target.value })}
-                  className='bg-white text-sm h-10 sm:h-11'
+                  className='bg-white text-gray-800 text-sm h-10 sm:h-11'
                 />
               </div>
               <div>
@@ -211,7 +211,7 @@ export function StepCRLV() {
                 <Input
                   value={currentCrlvData.modelo}
                   onChange={(e) => setCurrentCrlvData({ ...currentCrlvData, modelo: e.target.value })}
-                  className='bg-white text-sm h-10 sm:h-11'
+                  className='bg-white text-gray-800 text-sm h-10 sm:h-11'
                 />
               </div>
               <div>
@@ -219,7 +219,7 @@ export function StepCRLV() {
                 <Input
                   value={currentCrlvData.anoFabricacao}
                   onChange={(e) => setCurrentCrlvData({ ...currentCrlvData, anoFabricacao: e.target.value })}
-                  className='bg-white text-sm h-10 sm:h-11'
+                  className='bg-white text-gray-800 text-sm h-10 sm:h-11'
                 />
               </div>
               <div>
@@ -227,7 +227,7 @@ export function StepCRLV() {
                 <Input
                   value={currentCrlvData.anoModelo}
                   onChange={(e) => setCurrentCrlvData({ ...currentCrlvData, anoModelo: e.target.value })}
-                  className='bg-white text-sm h-10 sm:h-11'
+                  className='bg-white text-gray-800 text-sm h-10 sm:h-11'
                 />
               </div>
               <div>
@@ -235,7 +235,7 @@ export function StepCRLV() {
                 <Input
                   value={currentCrlvData.cor}
                   onChange={(e) => setCurrentCrlvData({ ...currentCrlvData, cor: e.target.value })}
-                  className='bg-white text-sm h-10 sm:h-11'
+                  className='bg-white text-gray-800 text-sm h-10 sm:h-11'
                 />
               </div>
               <div>
@@ -243,7 +243,7 @@ export function StepCRLV() {
                 <Input
                   value={currentCrlvData.combustivel}
                   onChange={(e) => setCurrentCrlvData({ ...currentCrlvData, combustivel: e.target.value })}
-                  className='bg-white text-sm h-10 sm:h-11'
+                  className='bg-white text-gray-800 text-sm h-10 sm:h-11'
                 />
               </div>
               <div className='sm:col-span-2'>
@@ -251,7 +251,7 @@ export function StepCRLV() {
                 <Input
                   value={currentCrlvData.proprietario}
                   onChange={(e) => setCurrentCrlvData({ ...currentCrlvData, proprietario: e.target.value })}
-                  className='bg-white text-sm h-10 sm:h-11'
+                  className='bg-white text-gray-800 text-sm h-10 sm:h-11'
                 />
               </div>
               <div className='sm:col-span-2'>
@@ -259,7 +259,7 @@ export function StepCRLV() {
                 <Input
                   value={currentCrlvData.chassi}
                   onChange={(e) => setCurrentCrlvData({ ...currentCrlvData, chassi: e.target.value })}
-                  className='bg-white text-sm h-10 sm:h-11'
+                  className='bg-white text-gray-800 text-sm h-10 sm:h-11'
                 />
               </div>
             </div>
