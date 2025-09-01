@@ -175,7 +175,7 @@ export function StepCNH() {
                 <Input
                   value={currentCnhData.nome}
                   onChange={(e) => setCurrentCnhData({ ...currentCnhData, nome: e.target.value })}
-                  className='bg-white text-gray-700 text-xs sm:text-sm h-8 sm:h-9'
+                  className='bg-white text-gray-800 text-xs sm:text-sm h-8 sm:h-9'
                   placeholder='Digite o nome completo'
                   required
                 />
@@ -186,7 +186,7 @@ export function StepCNH() {
                 <Input
                   value={currentCnhData.cpf}
                   onChange={(e) => setCurrentCnhData({ ...currentCnhData, cpf: e.target.value })}
-                  className='bg-white text-gray-700 text-xs sm:text-sm h-8 sm:h-9'
+                  className='bg-white text-gray-800 text-xs sm:text-sm h-8 sm:h-9'
                   placeholder='000.000.000-00'
                   required
                 />
@@ -197,7 +197,7 @@ export function StepCNH() {
                 <Input
                   value={currentCnhData.rg}
                   onChange={(e) => setCurrentCnhData({ ...currentCnhData, rg: e.target.value })}
-                  className='bg-white text-gray-700 text-xs sm:text-sm h-8 sm:h-9'
+                  className='bg-white text-gray-800 text-xs sm:text-sm h-8 sm:h-9'
                   placeholder='Digite o RG'
                 />
               </div>
@@ -208,7 +208,7 @@ export function StepCNH() {
                   type='date'
                   value={currentCnhData.dataNascimento}
                   onChange={(e) => setCurrentCnhData({ ...currentCnhData, dataNascimento: e.target.value })}
-                  className='bg-white text-gray-700 text-xs sm:text-sm h-8 sm:h-9'
+                  className='bg-white text-gray-800 text-xs sm:text-sm h-8 sm:h-9'
                   required
                 />
               </div>
@@ -218,7 +218,7 @@ export function StepCNH() {
                 <Input
                   value={currentCnhData.categoria}
                   onChange={(e) => setCurrentCnhData({ ...currentCnhData, categoria: e.target.value })}
-                  className='bg-white text-gray-700 text-xs sm:text-sm h-8 sm:h-9'
+                  className='bg-white text-gray-800 text-xs sm:text-sm h-8 sm:h-9'
                   placeholder='A, B, C, D, E'
                 />
               </div>
@@ -228,7 +228,7 @@ export function StepCNH() {
                 <Input
                   value={currentCnhData.numeroRegistro}
                   onChange={(e) => setCurrentCnhData({ ...currentCnhData, numeroRegistro: e.target.value })}
-                  className='bg-white text-gray-700 text-xs sm:text-sm h-8 sm:h-9'
+                  className='bg-white text-gray-800 text-xs sm:text-sm h-8 sm:h-9'
                   placeholder='Digite o número'
                   required
                 />
@@ -240,7 +240,7 @@ export function StepCNH() {
                   type='date'
                   value={currentCnhData.dataVencimento}
                   onChange={(e) => setCurrentCnhData({ ...currentCnhData, dataVencimento: e.target.value })}
-                  className='bg-white text-gray-700 text-xs sm:text-sm h-8 sm:h-9'
+                  className='bg-white text-gray-800 text-xs sm:text-sm h-8 sm:h-9'
                 />
               </div>
             </div>
