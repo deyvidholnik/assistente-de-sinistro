@@ -2,7 +2,7 @@
 
 import React, { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { Upload, X, File, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
+import { Upload, X, File, AlertCircle, CheckCircle, Loader2, Video } from 'lucide-react'
 import { Button } from './button'
 import { Card } from './card'
 import { cn } from '@/lib/utils'
@@ -34,9 +34,10 @@ export function FileUpload({
     'application/pdf': ['.pdf'],
     'application/msword': ['.doc'],
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-    'text/plain': ['.txt']
+    'text/plain': ['.txt'],
+    'video/*': ['.mp4', '.webm', '.mov', '.avi']
   },
-  maxSize = 10 * 1024 * 1024, // 10MB
+  maxSize = 100 * 1024 * 1024, // 100MB
   maxFiles = 5,
   disabled = false,
   className
@@ -129,6 +130,12 @@ export function FileUpload({
     if (file.status === 'uploading') return <Loader2 className='w-4 h-4 animate-spin' />
     if (file.status === 'success') return <CheckCircle className='w-4 h-4 text-green-500' />
     if (file.status === 'error') return <AlertCircle className='w-4 h-4 text-red-500' />
+    
+    // Show video icon for video files
+    if (file.type?.startsWith('video/')) {
+      return <Video className='w-4 h-4 text-blue-500' />
+    }
+    
     return <File className='w-4 h-4' />
   }
 
@@ -167,7 +174,7 @@ export function FileUpload({
             Máximo {maxFiles} arquivos, até {formatFileSize(maxSize)} cada
           </p>
           <p className='text-xs text-muted-foreground mt-1'>
-            Suporte: PDF, Imagens, Word, TXT
+            Suporte: PDF, Imagens, Word, TXT, Vídeos
           </p>
         </div>
       </Card>

@@ -115,7 +115,7 @@ export default function SinistroArquivos({ arquivos, sinistroId, onArquivosUpdat
             </div>
             <div>
               <h3 className='text-base md:text-lg font-semibold text-foreground'>Arquivos</h3>
-              <p className='text-xs md:text-sm text-muted-foreground hidden md:block'>Documentos e fotos anexados</p>
+              <p className='text-xs md:text-sm text-muted-foreground hidden md:block'>Documentos, fotos e vídeos anexados</p>
             </div>
           </div>
           

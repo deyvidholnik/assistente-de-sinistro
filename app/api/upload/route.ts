@@ -23,10 +23,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Validações básicas
-    const maxSize = 10 * 1024 * 1024 // 10MB
+    const maxSize = 100 * 1024 * 1024 // 100MB
     if (arquivo.size > maxSize) {
       return NextResponse.json({ 
-        error: 'Arquivo muito grande. Máximo 10MB.' 
+        error: 'Arquivo muito grande. Máximo 100MB.' 
       }, { status: 400 })
     }
 
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
       // Gerar nome padronizado para o arquivo
       const timestamp = Date.now()
-      const extension = arquivo.name.split('.').pop() || 'jpg'
+      const extension = arquivo.name.split('.').pop() || 'bin'
       const nomeArquivoPadrao = gerarNomeArquivoPorTipo(tipo, undefined, timestamp, extension)
       const nomeArquivo = `${sinistroId}/${nomeArquivoPadrao}`
 
