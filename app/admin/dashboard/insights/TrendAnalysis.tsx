@@ -10,12 +10,6 @@ interface DashboardMetrics {
     porDia: Array<{ date: string; count: number }>
     porStatus: Record<string, number>
   }
-  chamadas: {
-    total: number
-    totalMinutos: number
-    minutosMedia: number
-    porDia: Array<{ date: string; count: number }>
-  }
   usuarios: {
     total: number
     ativos: number
@@ -49,36 +43,14 @@ export function TrendAnalysis({ data, loading = false, className = '' }: TrendAn
     }
   }
 
-  const getChamadasTrend = () => {
-    const porDia = data.chamadas?.porDia || []
-    if (porDia.length < 2) return null
-
-    const today = porDia[porDia.length - 1]
-    const yesterday = porDia[porDia.length - 2]
-
-    if (!today || !yesterday) return null
-
-    const change = (today.count || 0) - (yesterday.count || 0)
-    const percentChange = (yesterday.count || 0) > 0 ? (change / yesterday.count) * 100 : 0
-
-    return {
-      change,
-      percentChange,
-      direction: change > 0 ? 'up' : change < 0 ? 'down' : 'neutral',
-    }
-  }
 
   const getAverages = () => {
     const sinistrosPorDia = data.sinistros?.porDia || []
-    const chamdasPorDia = data.chamadas?.porDia || []
 
     const avgSinistros =
       sinistrosPorDia.length > 0 ? Math.round(((data.sinistros?.total || 0) / sinistrosPorDia.length) * 10) / 10 : 0
 
-    const avgChamadas =
-      chamdasPorDia.length > 0 ? Math.round(((data.chamadas?.total || 0) / chamdasPorDia.length) * 10) / 10 : 0
-
-    return { avgSinistros, avgChamadas }
+    return { avgSinistros }
   }
 
   const getStatusInsights = () => {
@@ -103,14 +75,13 @@ export function TrendAnalysis({ data, loading = false, className = '' }: TrendAn
   }
 
   const sinistrosTrend = getSinistrosTrend()
-  const chamadasTrend = getChamadasTrend()
   const averages = getAverages()
   const statusInsights = getStatusInsights()
   const userEngagement =
     (data.usuarios?.total || 0) > 0 ? ((data.usuarios?.ativos || 0) / data.usuarios.total) * 100 : 0
 
   return (
-    <div className={`grid grid-cols-1 gap-3 md:gap-4 lg:gap-6 md:grid-cols-2 lg:grid-cols-3 ${className}`}>
+    <div className={`grid grid-cols-1 gap-3 md:gap-4 lg:gap-6 md:grid-cols-2 ${className}`}>
       {/* Tendência de Sinistros */}
       <InsightCard
         title='Tendência de Sinistros'
@@ -217,58 +188,6 @@ export function TrendAnalysis({ data, loading = false, className = '' }: TrendAn
         </div>
       </InsightCard>
 
-      {/* Performance de Chamadas IA */}
-      <InsightCard
-        title='Performance de Chamadas IA'
-        description='Análise do sistema de atendimento automatizado'
-        icon={Activity}
-        type='info'
-        badge={{
-          text: `${data.chamadas.minutosMedia} min média`,
-          type: 'info',
-        }}
-        loading={loading}
-      >
-        <div className='space-y-3'>
-          {chamadasTrend ? (
-            <>
-              <div className='flex items-center justify-between'>
-                <span className='text-sm text-muted-foreground'>Variação diária:</span>
-                <span
-                  className={`font-medium  ${
-                    chamadasTrend.direction === 'up'
-                      ? 'text-[hsl(var(--status-success))]'
-                      : chamadasTrend.direction === 'down'
-                      ? 'text-[hsl(var(--status-warning))]'
-                      : 'text-foreground'
-                  }`}
-                >
-                  {chamadasTrend.change > 0 ? '+' : ''}
-                  {chamadasTrend.change}
-                </span>
-              </div>
-
-              <div className='flex items-center justify-between'>
-                <span className='text-sm text-muted-foreground'>Média diária:</span>
-                <span className='font-medium text-foreground'>{averages.avgChamadas}</span>
-              </div>
-
-              <div className='flex items-center justify-between'>
-                <span className='text-sm text-muted-foreground'>Tempo total:</span>
-                <span className='font-medium text-foreground'>{data.chamadas.totalMinutos} min</span>
-              </div>
-
-              <div className='text-xs text-muted-foreground'>
-                {data.chamadas.minutosMedia > 5
-                  ? 'Tempo médio elevado pode indicar consultas complexas.'
-                  : 'Tempo médio otimizado para atendimento eficiente.'}
-              </div>
-            </>
-          ) : (
-            <div className='text-sm text-muted-foreground'>Dados insuficientes para análise de chamadas</div>
-          )}
-        </div>
-      </InsightCard>
     </div>
   )
 }

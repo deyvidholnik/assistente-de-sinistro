@@ -14,7 +14,7 @@ import { AdminHeader } from './AdminHeader'
 import { MetricsCards } from './MetricsCards'
 import { DateRangeFilter } from './DateRangeFilter'
 import { DashboardGrid, ResponsiveWrapper, GridSection } from './DashboardGrid'
-import { SinistrosChart, ChamadasChart, UsuariosChart } from './charts'
+import { SinistrosChart, UsuariosChart, TipoAssistenciaChart } from './charts'
 import { TrendAnalysis } from './insights'
 import { formatarTodasAssistencias } from './admin-formatters'
 import { Clock } from 'lucide-react'
@@ -38,13 +38,6 @@ interface DashboardMetrics {
     total: number
     porStatus: Record<string, number>
     porTipo: Record<string, number>
-    porDia: Array<{ date: string; count: number }>
-  }
-  chamadas: {
-    total: number
-    totalMinutos: number
-    minutosMedia: number
-    porAgente: Record<string, number>
     porDia: Array<{ date: string; count: number }>
   }
   usuarios: {
@@ -332,11 +325,11 @@ export default function AdminDashboardPage() {
               </div>
             </GridSection>
 
-            {/* Gráficos de Chamadas IA */}
-            <GridSection title='Performance de Chamadas IA' isDark={isDark}>
+            {/* Análise por Tipo de Assistência */}
+            <GridSection title='Análise por Tipo de Assistência' isDark={isDark}>
               <div className='col-span-full'>
-                <ChamadasChart 
-                  data={metrics.chamadas} 
+                <TipoAssistenciaChart 
+                  data={{ logs: metrics.logs }} 
                   loading={metricsLoading}
                 />
               </div>

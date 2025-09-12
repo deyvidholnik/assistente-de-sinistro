@@ -1,4 +1,4 @@
 export { SinistrosChart } from './SinistrosChart'
-export { ChamadasChart } from './ChamadasChart'
 export { UsuariosChart } from './UsuariosChart'
+export { TipoAssistenciaChart } from './TipoAssistenciaChart'
 export { ChartContainer } from './shared/ChartContainer'

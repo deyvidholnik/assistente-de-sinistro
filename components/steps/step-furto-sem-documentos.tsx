@@ -9,7 +9,7 @@ import { useForm } from "@/context/form-context"
 import { validarCPF, formatarCPF, validarPlaca, formatarPlaca } from "@/lib/validations"
 
 export function StepFurtoSemDocumentos() {
-  const { dadosFurtoSemDocumentos, setDadosFurtoSemDocumentos, nextStep, canProceed } = useForm()
+  const { dadosFurtoSemDocumentos, setDadosFurtoSemDocumentos, nextStep } = useForm()
   const [erros, setErros] = useState<{ [key: string]: string }>({})
   const [isProcessing, setIsProcessing] = useState(false)
 
@@ -73,10 +73,12 @@ export function StepFurtoSemDocumentos() {
     setIsProcessing(false)
   }
 
-  const isFormValid = canProceed()
   const hasValidCPF = dadosFurtoSemDocumentos.cpf.length === 14 && validarCPF(dadosFurtoSemDocumentos.cpf)
   const hasValidPlaca = dadosFurtoSemDocumentos.placaVeiculo.length >= 7 && validarPlaca(dadosFurtoSemDocumentos.placaVeiculo)
   const hasValidNome = dadosFurtoSemDocumentos.nomeCompleto.trim().length >= 2
+  
+  // Validação local direta ao invés de depender do canProceed()
+  const isFormValid = hasValidNome && hasValidCPF && hasValidPlaca && !Object.values(erros).some(erro => erro !== "")
 
   return (
     <div className="space-y-6 sm:space-y-8">

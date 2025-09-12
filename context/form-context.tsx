@@ -579,10 +579,8 @@ export function FormProvider({ children, initialData }: FormProviderProps) {
       // Sempre vai para finalização (a seleção das assistências é feita na mesma tela)
       setCurrentStep(13)
     } else if (currentStep === 13) {
-      // Step 12 - Finalização
-      if ((tipoSinistro === "furto" || tipoSinistro === "roubo") && documentosFurtados) {
-        setCurrentStep(13) // Vai para furto sem documentos
-      }
+      // Step 13 - Furto sem documentos, vai para finalização
+      setCurrentStep(14)
     }
   }
 

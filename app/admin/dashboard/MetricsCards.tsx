@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { FileText, PhoneCall, Clock, Users, Activity, BarChart3 } from 'lucide-react'
+import { FileText, Users, Activity } from 'lucide-react'
 
 interface DashboardMetrics {
   periodo: {
@@ -13,13 +13,6 @@ interface DashboardMetrics {
     total: number
     porStatus: Record<string, number>
     porTipo: Record<string, number>
-    porDia: Array<{ date: string; count: number }>
-  }
-  chamadas: {
-    total: number
-    totalMinutos: number
-    minutosMedia: number
-    porAgente: Record<string, number>
     porDia: Array<{ date: string; count: number }>
   }
   usuarios: {
@@ -39,7 +32,6 @@ export function MetricsCards({ metrics, isDark }: MetricsCardsProps) {
   // Calcular KPIs avançados
   const calculateTrends = () => {
     const sinistrosPorDia = metrics.sinistros?.porDia || []
-    const chamadasPorDia = metrics.chamadas?.porDia || []
 
     const sinistrosTrend =
       sinistrosPorDia.length >= 2
@@ -48,17 +40,10 @@ export function MetricsCards({ metrics, isDark }: MetricsCardsProps) {
           100
         : 0
 
-    const chamadasTrend =
-      chamadasPorDia.length >= 2
-        ? ((chamadasPorDia[chamadasPorDia.length - 1].count - chamadasPorDia[chamadasPorDia.length - 2].count) /
-            (chamadasPorDia[chamadasPorDia.length - 2].count || 1)) *
-          100
-        : 0
-
     const engajamento =
       (metrics.usuarios?.total || 0) > 0 ? ((metrics.usuarios?.ativos || 0) / metrics.usuarios.total) * 100 : 0
 
-    return { sinistrosTrend, chamadasTrend, engajamento }
+    return { sinistrosTrend, engajamento }
   }
 
   const trends = calculateTrends()
@@ -74,24 +59,6 @@ export function MetricsCards({ metrics, isDark }: MetricsCardsProps) {
         direction: trends.sinistrosTrend > 0 ? 'up' : trends.sinistrosTrend < 0 ? 'down' : 'neutral',
       },
       description: 'Ocorrências registradas',
-    },
-    {
-      title: 'Chamadas de IA',
-      value: metrics.chamadas?.total || 0,
-      icon: PhoneCall,
-      color: 'hsl(var(--brand-foreground))',
-      trend: {
-        value: Math.round(trends.chamadasTrend),
-        direction: trends.chamadasTrend > 0 ? 'up' : trends.chamadasTrend < 0 ? 'down' : 'neutral',
-      },
-      description: 'Atendimentos automatizados',
-    },
-    {
-      title: 'Tempo Total (min)',
-      value: metrics.chamadas?.totalMinutos || 0,
-      icon: Clock,
-      color: 'hsl(var(--status-success))',
-      description: 'Minutos em chamadas',
     },
     {
       title: 'Usuários Cadastrados',
@@ -112,17 +79,10 @@ export function MetricsCards({ metrics, isDark }: MetricsCardsProps) {
           : 'hsl(var(--status-error))',
       description: 'Usuários ativos',
     },
-    {
-      title: 'Tempo Médio (min)',
-      value: metrics.chamadas?.minutosMedia || 0,
-      icon: BarChart3,
-      color: 'hsl(var(--chart-3))',
-      description: 'Por chamada',
-    },
   ]
 
   return (
-    <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 md:gap-3 lg:gap-4 mb-4 md:mb-6 lg:mb-8 overflow-hidden'>
+    <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 md:gap-3 lg:gap-4 mb-4 md:mb-6 lg:mb-8 overflow-hidden'>
       {kpiData.map((kpi, index) => {
         const IconComponent = kpi.icon
 

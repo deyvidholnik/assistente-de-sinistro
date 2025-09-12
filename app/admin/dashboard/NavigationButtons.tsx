@@ -2,20 +2,11 @@
 
 import React from 'react'
 import { Button } from '@/components/ui/button'
-import { PhoneCall, Users, MessageCircle, FileText } from 'lucide-react'
+import { Users, MessageCircle, FileText } from 'lucide-react'
 
 export function NavigationButtons() {
   return (
     <div className='flex justify-center flex-wrap gap-4 md:gap-6 mb-8'>
-     {/*  <a href='/admin/calls'>
-        <Button
-          size='lg'
-          className='bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3'
-        >
-          <PhoneCall className='w-5 h-5 mr-3' />
-          Chamadas IA
-        </Button>
-      </a> */}
 
       <a href='/admin/users'>
         <Button
