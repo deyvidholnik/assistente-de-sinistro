@@ -169,6 +169,8 @@ export default function GerentePage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('todos')
   const [tipoFilter, setTipoFilter] = useState<string>('todos')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
   const [selectedSinistro, setSelectedSinistro] = useState<SinistroDetalhado | null>(null)
   const [loadingDetalhes, setLoadingDetalhes] = useState(false)
   const [andamentoSinistro, setAndamentoSinistro] = useState<any[]>([])
@@ -214,10 +216,19 @@ export default function GerentePage() {
     setError(null)
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('view_sinistros_completos')
         .select('*')
-        .order('data_criacao', { ascending: false })
+
+      // Aplicar filtros de data se estiverem definidos
+      if (dateFrom) {
+        query = query.gte('data_criacao', `${dateFrom}T00:00:00`)
+      }
+      if (dateTo) {
+        query = query.lte('data_criacao', `${dateTo}T23:59:59`)
+      }
+
+      const { data, error } = await query.order('data_criacao', { ascending: false })
 
       if (error) {
         throw error
@@ -658,6 +669,11 @@ export default function GerentePage() {
     return matchesSearch && matchesStatus && matchesTipo
   })
 
+  // Função para recarregar dados quando filtros de data mudarem
+  const handleRefreshWithFilters = () => {
+    carregarSinistros()
+  }
+
   useEffect(() => {
     carregarSinistros()
 
@@ -775,6 +791,13 @@ export default function GerentePage() {
     setPaginaAtual(1)
   }, [statusFilter, tipoFilter, searchTerm])
 
+  // Recarregar dados quando filtros de data mudarem
+  useEffect(() => {
+    if (dateFrom || dateTo) {
+      carregarSinistros()
+    }
+  }, [dateFrom, dateTo])
+
   // Log para debug dos filtros (comentado para reduzir spam no console)
   // useEffect(() => {
   //   console.log('Filtros alterados:', { statusFilter, tipoFilter })
@@ -809,6 +832,12 @@ export default function GerentePage() {
             setStatusFilter={setStatusFilter}
             tipoFilter={tipoFilter}
             setTipoFilter={setTipoFilter}
+            dateFrom={dateFrom}
+            setDateFrom={setDateFrom}
+            dateTo={dateTo}
+            setDateTo={setDateTo}
+            onRefresh={handleRefreshWithFilters}
+            isLoading={loading}
           />
 
           <GerenteListaSinistros

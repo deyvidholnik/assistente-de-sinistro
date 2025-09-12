@@ -26,7 +26,9 @@ export async function GET(request: NextRequest) {
       sinistrosQuery = sinistrosQuery.gte('data_criacao', new Date(dateFrom).toISOString())
     }
     if (dateTo) {
-      sinistrosQuery = sinistrosQuery.lte('data_criacao', new Date(dateTo).toISOString())
+      // Ajustar dateTo para incluir o dia completo (23:59:59.999Z)
+      const endOfDay = new Date(dateTo + 'T23:59:59.999Z')
+      sinistrosQuery = sinistrosQuery.lte('data_criacao', endOfDay.toISOString())
     }
 
     const { data: sinistros, error: sinistrosError } = await sinistrosQuery
@@ -46,7 +48,9 @@ export async function GET(request: NextRequest) {
       callsQuery = callsQuery.gte('start_timestamp', fromTimestamp)
     }
     if (dateTo) {
-      const toTimestamp = new Date(dateTo).getTime()
+      // Ajustar dateTo para incluir o dia completo (23:59:59.999Z)
+      const endOfDay = new Date(dateTo + 'T23:59:59.999Z')
+      const toTimestamp = endOfDay.getTime()
       callsQuery = callsQuery.lte('start_timestamp', toTimestamp)
     }
 
@@ -139,8 +143,8 @@ export async function GET(request: NextRequest) {
       return acc
     }, {} as Record<string, number>)
 
-    // 6. Logs recentes (últimos 50 sinistros) - buscar da tabela sinistros diretamente
-    const { data: recentLogs, error: logsError } = await supabase
+    // 6. Logs recentes (últimos 50 sinistros) - buscar da tabela sinistros aplicando filtros de data
+    let logsQuery = supabase
       .from('sinistros')
       .select(`
         id,
@@ -155,6 +159,18 @@ export async function GET(request: NextRequest) {
       `)
       .order('data_criacao', { ascending: false })
       .limit(50)
+
+    // Aplicar filtros de data apenas se fornecidos
+    if (dateFrom) {
+      logsQuery = logsQuery.gte('data_criacao', new Date(dateFrom).toISOString())
+    }
+    if (dateTo) {
+      // Ajustar dateTo para incluir o dia completo (23:59:59.999Z)
+      const endOfDay = new Date(dateTo + 'T23:59:59.999Z')
+      logsQuery = logsQuery.lte('data_criacao', endOfDay.toISOString())
+    }
+
+    const { data: recentLogs, error: logsError } = await logsQuery
 
     // Enriquecer com dados de CNH se necessário
     const enrichedLogs = recentLogs?.map(log => ({

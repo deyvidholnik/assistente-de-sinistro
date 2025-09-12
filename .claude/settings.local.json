@@ -39,7 +39,8 @@
       "Bash(npx tsc:*)",
       "Read(c:\\Users\\deyni\\OneDrive\\Imagens\\Capturas de tela/**)",
       "Bash(cat:*)",
-      "Bash(npx supabase db describe:*)"
+      "Bash(npx supabase db describe:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": [],
