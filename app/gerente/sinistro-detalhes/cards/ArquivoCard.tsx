@@ -1,4 +1,4 @@
-import { Camera, FileText, Trash2, Loader2 } from 'lucide-react'
+import { Camera, FileText, Trash2, Loader2, Play } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useState, useEffect } from 'react'
 import { convertPdfToImage, isPdfFile } from '@/lib/pdf-utils'
@@ -31,6 +31,10 @@ export default function ArquivoCard({ arquivo, index, onDelete }: ArquivoCardPro
         return { badge: 'Foto', label: 'Foto do Veículo' }
       case 'documento_adicional':
         return { badge: 'Doc', label: 'Documento Adicional' }
+      case 'video_proprio':
+        return { badge: 'Vídeo', label: 'Vídeo Principal' }
+      case 'video_terceiro':
+        return { badge: 'Vídeo 3º', label: 'Vídeo Terceiro' }
       default:
         return { badge: 'Arquivo', label: 'Documento' }
     }
@@ -52,6 +56,13 @@ export default function ArquivoCard({ arquivo, index, onDelete }: ArquivoCardPro
   const isPdf = urlArquivo && (
     arquivo.tipo_mime === 'application/pdf' ||
     nomeArquivo.toLowerCase().endsWith('.pdf')
+  )
+
+  const isVideo = urlArquivo && (
+    arquivo.tipo_arquivo === 'video_proprio' ||
+    arquivo.tipo_arquivo === 'video_terceiro' ||
+    arquivo.tipo_mime?.startsWith('video/') ||
+    nomeArquivo.toLowerCase().match(/\.(mp4|webm|mov|avi)$/)
   )
 
   // Efeito para converter PDF em imagem quando necessário
@@ -86,9 +97,9 @@ export default function ArquivoCard({ arquivo, index, onDelete }: ArquivoCardPro
     convertPdfForPreview()
   }, [isPdf, urlArquivo, nomeArquivo])
 
-  // URL da preview final (imagem original ou PDF convertido)
+  // URL da preview final (imagem original, PDF convertido ou vídeo)
   const finalPreviewUrl = isPdf ? pdfPreviewUrl : urlArquivo
-  const canShowPreview = isImage || (isPdf && pdfPreviewUrl)
+  const canShowPreview = isImage || (isPdf && pdfPreviewUrl) || isVideo
 
 
 
@@ -110,20 +121,39 @@ export default function ArquivoCard({ arquivo, index, onDelete }: ArquivoCardPro
             </div>
           </div>
         ) : canShowPreview && finalPreviewUrl ? (
-          <img
-            src={finalPreviewUrl}
-            alt={nomeArquivo}
-            className='w-full h-40 md:h-56 object-cover cursor-pointer transition-transform duration-300'
-            onClick={() => window.open(urlArquivo, '_blank')}
-            onError={(e) => {
-              const target = e.target as HTMLImageElement
-              target.style.display = 'none'
-              const fallback = target.parentElement?.querySelector('.fallback-icon')
-              if (fallback) {
-                fallback.classList.remove('hidden')
-              }
-            }}
-          />
+          isVideo ? (
+            <video
+              controls
+              className='w-full h-40 md:h-56 object-cover cursor-pointer transition-transform duration-300'
+              onClick={(e) => e.stopPropagation()}
+              onError={(e) => {
+                const target = e.target as HTMLVideoElement
+                target.style.display = 'none'
+                const fallback = target.parentElement?.querySelector('.fallback-icon')
+                if (fallback) {
+                  fallback.classList.remove('hidden')
+                }
+              }}
+            >
+              <source src={urlArquivo} type={arquivo.tipo_mime || 'video/mp4'} />
+              Seu navegador não suporta vídeos.
+            </video>
+          ) : (
+            <img
+              src={finalPreviewUrl}
+              alt={nomeArquivo}
+              className='w-full h-40 md:h-56 object-cover cursor-pointer transition-transform duration-300'
+              onClick={() => window.open(urlArquivo, '_blank')}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement
+                target.style.display = 'none'
+                const fallback = target.parentElement?.querySelector('.fallback-icon')
+                if (fallback) {
+                  fallback.classList.remove('hidden')
+                }
+              }}
+            />
+          )
         ) : null}
         
         {/* Badge PDF */}
@@ -133,12 +163,21 @@ export default function ArquivoCard({ arquivo, index, onDelete }: ArquivoCardPro
           </div>
         )}
         
+        {/* Badge Vídeo */}
+        {isVideo && (
+          <div className='absolute top-2 left-2 bg-purple-600 text-white text-xs px-2 py-1 rounded'>
+            VÍDEO
+          </div>
+        )}
+        
         {/* Fallback sempre presente mas inicialmente oculto */}
         <div className={`fallback-icon ${canShowPreview && finalPreviewUrl ? 'hidden' : ''} w-full h-40 md:h-56 flex items-center justify-center`}>
           <div className='text-center'>
             <div className='w-16 h-16 bg-muted rounded-lg flex items-center justify-center mx-auto mb-3'>
               {arquivo.tipo_arquivo === 'foto_veiculo' || isImage ? (
                 <Camera className='w-8 h-8 text-muted-foreground' />
+              ) : isVideo ? (
+                <Play className='w-8 h-8 text-muted-foreground' />
               ) : (
                 <FileText className='w-8 h-8 text-muted-foreground' />
               )}

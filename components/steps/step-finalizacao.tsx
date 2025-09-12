@@ -30,6 +30,8 @@ export function StepFinalizacao() {
     fotoStepFiles,
     assistenciaAdicional,
     assistenciasAdicionais,
+    videosProprio,
+    videosTerceiro,
   } = useForm()
 
   const handleEnvioSinistro = async () => {
@@ -106,6 +108,24 @@ export function StepFinalizacao() {
           })
         }
       })
+
+      // Adicionar vídeos próprios
+      if (videosProprio && videosProprio.length > 0) {
+        videosProprio.forEach((arquivo, index) => {
+          const chaveArquivo = `arquivo_video_proprio_${index}`
+          console.log(`➕ Adicionando vídeo próprio: ${chaveArquivo}`, arquivo)
+          formData.append(chaveArquivo, arquivo)
+        })
+      }
+
+      // Adicionar vídeos terceiros
+      if (videosTerceiro && videosTerceiro.length > 0) {
+        videosTerceiro.forEach((arquivo, index) => {
+          const chaveArquivo = `arquivo_video_terceiro_${index}`
+          console.log(`➕ Adicionando vídeo terceiro: ${chaveArquivo}`, arquivo)
+          formData.append(chaveArquivo, arquivo)
+        })
+      }
 
       // Debug: listar todas as chaves do FormData
       console.log('Todas as chaves do FormData:')

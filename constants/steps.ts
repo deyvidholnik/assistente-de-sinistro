@@ -1,4 +1,4 @@
-import { Shield, CreditCard, FileText, Car, CheckCircle, AlertCircle, ClipboardList, ShieldAlert, Headphones, HelpCircle } from "lucide-react"
+import { Shield, CreditCard, FileText, Car, CheckCircle, AlertCircle, ClipboardList, ShieldAlert, Headphones, HelpCircle, Video } from "lucide-react"
 import type { FotoVeiculoStep } from "@/types"
 
 export const steps = [
@@ -11,9 +11,10 @@ export const steps = [
   { id: 7, title: "CRLV", icon: FileText, description: "Documento do Veículo" },
   { id: 8, title: "B.O.", icon: FileText, description: "Boletim de Ocorrência" },
   { id: 9, title: "Fotos do Veículo", icon: Car, description: "Fotos guiadas" },
-  { id: 10, title: "Terceiros", icon: AlertCircle, description: "Outros veículos" },
-  { id: 11, title: "Assistência Extra", icon: Headphones, description: "Assistência adicional" },
-  { id: 12, title: "Finalização", icon: CheckCircle, description: "Envio concluído" },
+  { id: 10, title: "Vídeos", icon: Video, description: "Vídeos opcionais" },
+  { id: 11, title: "Terceiros", icon: AlertCircle, description: "Outros veículos" },
+  { id: 12, title: "Assistência Extra", icon: Headphones, description: "Assistência adicional" },
+  { id: 13, title: "Finalização", icon: CheckCircle, description: "Envio concluído" },
 ]
 
 export const fotoVeiculoSteps: FotoVeiculoStep[] = [

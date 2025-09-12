@@ -53,6 +53,15 @@ export function gerarNomeArquivoPorTipo(
     return `boletim_${timestamp}.${extension}`
   }
   
+  // Para vídeos
+  if (tipoArquivo === 'video_proprio') {
+    return `video_proprio_${timestamp}.${extension}`
+  }
+  
+  if (tipoArquivo === 'video_terceiro') {
+    return `video_terceiro_${timestamp}.${extension}`
+  }
+  
   // Fallback para tipos não mapeados
   return `${tipoArquivo}_${timestamp}.${extension}`
 }
@@ -98,6 +107,10 @@ const mapeamentoNomesParaTitulos: { [key: string]: string } = {
   'cnh': 'CNH - Carteira Nacional de Habilitação',
   'crlv': 'CRLV - Documento do Veículo',
   'boletim': 'Boletim de Ocorrência',
+  
+  // Vídeos
+  'video_proprio': 'Vídeo do Veículo Principal',
+  'video_terceiro': 'Vídeo do Veículo Terceiro',
   
   // Genéricos
   'documento_adicional': 'Documento Adicional',

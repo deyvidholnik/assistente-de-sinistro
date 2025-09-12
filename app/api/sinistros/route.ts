@@ -300,6 +300,10 @@ export async function POST(req: NextRequest) {
           // Formato: arquivo_foto_veiculo_stepId_index
           tipoArquivo = 'foto_veiculo'
           identificador = keyParts[3] // stepId
+        } else if (keyParts.length >= 3 && keyParts[1] === 'video') {
+          // Formato: arquivo_video_proprio_index ou arquivo_video_terceiro_index
+          tipoArquivo = `${keyParts[1]}_${keyParts[2]}`
+          identificador = keyParts[3] || '0'
         } else if (keyParts.length >= 3) {
           // Formato: arquivo_tipo_subtipo_index (ex: arquivo_cnh_proprio_0)
           tipoArquivo = `${keyParts[1]}_${keyParts[2]}`

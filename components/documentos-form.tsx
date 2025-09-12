@@ -61,6 +61,9 @@ const StepTerceiros = dynamic(() => import("@/components/steps/step-terceiros").
 const StepFotos = dynamic(() => import("@/components/steps/step-fotos").then((mod) => mod.StepFotos), {
   loading: () => <StepLoading />,
 })
+const StepVideos = dynamic(() => import("@/components/steps/step-videos").then((mod) => mod.StepVideos), {
+  loading: () => <StepLoading />,
+})
 const StepAssistenciaAdicional = dynamic(
   () => import("@/components/steps/step-assistencia-adicional").then((mod) => mod.StepAssistenciaAdicional),
   { loading: () => <StepLoading /> },
@@ -184,15 +187,17 @@ export default function DocumentosForm() {
       case 9:
         return <StepFotos />
       case 10:
-        return <StepTerceiros />
+        return <StepVideos />
       case 11:
-        return <StepAssistenciaAdicional />
+        return <StepTerceiros />
       case 12:
+        return <StepAssistenciaAdicional />
+      case 13:
         if ((tipoSinistro === "furto" || tipoSinistro === "roubo") && documentosFurtados) {
           return <StepFurtoSemDocumentos />
         }
         return <StepFinalizacao />
-      case 13:
+      case 14:
         return <StepFinalizacao />
       default:
         return null
@@ -205,11 +210,16 @@ export default function DocumentosForm() {
       return titles[currentFotoStep] || "Fotos do Veículo"
     }
     if (currentStep === 9) return fotoVeiculoSteps[currentFotoStep]?.titulo || "Fotos do Veículo"
+    if (currentStep === 10) {
+      if (tipoSinistro === "pequenos_reparos") return "Vídeo do Reparo"
+      if (isDocumentingThirdParty) return "Vídeo do Terceiro"
+      return "Vídeo do Veículo"
+    }
     if (isDocumentingThirdParty && currentStep <= 9) {
       const titles: { [key: number]: string } = { 6: "CNH do Terceiro", 7: "CRLV do Terceiro" }
       return titles[currentStep] || steps[currentStep - 1].title
     }
-    const stepIndex = currentStep === 13 ? 11 : currentStep - 1
+    const stepIndex = currentStep >= 13 ? currentStep - 2 : currentStep - 1
     return steps[stepIndex]?.title || "Finalização"
   }
 
@@ -222,6 +232,11 @@ export default function DocumentosForm() {
       return descriptions[currentFotoStep] || "Siga as instruções."
     }
     if (currentStep === 9) return fotoVeiculoSteps[currentFotoStep]?.descricao || "Siga as instruções."
+    if (currentStep === 10) {
+      if (tipoSinistro === "pequenos_reparos") return "Grave um vídeo do dano (opcional)"
+      if (isDocumentingThirdParty) return "Vídeo do veículo terceiro (opcional)"
+      return "Vídeo da situação do sinistro (opcional)"
+    }
     if (isDocumentingThirdParty && currentStep <= 9) {
       const descriptions: { [key: number]: string } = {
         6: "Documentos do condutor terceiro",
@@ -229,7 +244,7 @@ export default function DocumentosForm() {
       }
       return descriptions[currentStep] || steps[currentStep - 1].description
     }
-    const stepIndex = currentStep === 13 ? 11 : currentStep - 1
+    const stepIndex = currentStep >= 13 ? currentStep - 2 : currentStep - 1
     return steps[stepIndex]?.description || "Envio concluído"
   }
 
@@ -317,7 +332,7 @@ export default function DocumentosForm() {
         </Card>
 
         {/* BOTÕES NAVEGAÇÃO */}
-        {currentStep !== 1 && currentStep !== 11 && currentStep !== 12 && currentStep !== 13 && isReadyToProceed && !isProcessingOCR && (
+        {currentStep !== 1 && currentStep !== 12 && currentStep !== 13 && currentStep !== 14 && isReadyToProceed && !isProcessingOCR && (
           <div
             ref={navigationRef}
             className="bg-white border-t border-gray-200 p-3 mt-4 sm:bg-transparent sm:border-t-0 sm:p-0"

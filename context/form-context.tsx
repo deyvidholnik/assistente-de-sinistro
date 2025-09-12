@@ -33,6 +33,8 @@ interface FormContextType {
   hasProcessedCRLV: boolean
   hasProcessedCNHTerceiros: boolean
   hasProcessedCRLVTerceiros: boolean
+  videosProprio: File[]
+  videosTerceiro: File[]
 
   // Setters
   setCurrentStep: Dispatch<SetStateAction<number>>
@@ -62,6 +64,8 @@ interface FormContextType {
   removeFile: (field: keyof DocumentosData, index: number) => void
   removeFotoStepFile: (stepId: number, index: number) => void
   canProceed: () => boolean
+  handleVideoUpload: (fileList: FileList | null, tipo: 'proprio' | 'terceiro') => void
+  removeVideoFile: (index: number, tipo: 'proprio' | 'terceiro') => void
 }
 
 const FormContext = createContext<FormContextType | undefined>(undefined)
@@ -176,6 +180,8 @@ export function FormProvider({ children, initialData }: FormProviderProps) {
   const [hasProcessedCRLV, setHasProcessedCRLV] = useState(false)
   const [hasProcessedCNHTerceiros, setHasProcessedCNHTerceiros] = useState(false)
   const [hasProcessedCRLVTerceiros, setHasProcessedCRLVTerceiros] = useState(false)
+  const [videosProprio, setVideosProprio] = useState<File[]>([])
+  const [videosTerceiro, setVideosTerceiro] = useState<File[]>([])
 
   const updateDocumentos = (field: keyof DocumentosData, files: File[]) => {
     const setter = isDocumentingThirdParty ? setDocumentosTerceiros : setDocumentos
@@ -467,6 +473,25 @@ export function FormProvider({ children, initialData }: FormProviderProps) {
     updateDocumentos("fotosCarro", newAllCarFiles)
   }
 
+  const handleVideoUpload = (fileList: FileList | null, tipo: 'proprio' | 'terceiro') => {
+    if (!fileList || fileList.length === 0) return
+    const newFiles = Array.from(fileList).slice(0, 1)
+    
+    if (tipo === 'proprio') {
+      setVideosProprio(prev => [...prev, ...newFiles].slice(0, 3)) // Máximo 3 vídeos
+    } else {
+      setVideosTerceiro(prev => [...prev, ...newFiles].slice(0, 3)) // Máximo 3 vídeos
+    }
+  }
+
+  const removeVideoFile = (index: number, tipo: 'proprio' | 'terceiro') => {
+    if (tipo === 'proprio') {
+      setVideosProprio(prev => prev.filter((_, i) => i !== index))
+    } else {
+      setVideosTerceiro(prev => prev.filter((_, i) => i !== index))
+    }
+  }
+
   const nextStep = () => {
     if (currentStep === 1) {
       setCurrentStep(2) // Vai para tipo de atendimento
@@ -520,7 +545,8 @@ export function FormProvider({ children, initialData }: FormProviderProps) {
         if (currentFotoStep < 1) {
           setCurrentFotoStep(currentFotoStep + 1)
         } else {
-          setCurrentStep(11) // Vai para assistência adicional
+          setCurrentStep(10) // Vai para vídeos
+          setCurrentFotoStep(0)
         }
       } else {
         // Fluxo normal de fotos para colisão
@@ -528,24 +554,31 @@ export function FormProvider({ children, initialData }: FormProviderProps) {
         if (currentFotoStep < limit) {
           setCurrentFotoStep(currentFotoStep + 1)
         } else {
-          // AGORA todos os fluxos passam pela assistência adicional antes da finalização
-          setCurrentStep(isDocumentingThirdParty ? 11 : 10) // Se já documentou terceiros, vai para assistência, senão vai para terceiros
+          setCurrentStep(10) // Vai para vídeos
+          setCurrentFotoStep(0)
         }
       }
     } else if (currentStep === 10) {
-      // Step 10 - Terceiros
+      // Step 10 - Vídeos
+      if (!isDocumentingThirdParty) {
+        setCurrentStep(11) // Vai para terceiros
+      } else {
+        setCurrentStep(12) // Já documentou terceiro, vai para assistência
+      }
+    } else if (currentStep === 11) {
+      // Step 11 - Terceiros
       if (outrosVeiculos) {
         setIsDocumentingThirdParty(true)
         setCurrentStep(6)
         setCurrentFotoStep(0)
       } else {
-        setCurrentStep(11) // Vai para assistência adicional
+        setCurrentStep(12) // Vai para assistência adicional
       }
-    } else if (currentStep === 11) {
-      // Step 11 - Assistência Adicional
-      // Sempre vai para finalização (a seleção das assistências é feita na mesma tela)
-      setCurrentStep(12)
     } else if (currentStep === 12) {
+      // Step 12 - Assistência Adicional
+      // Sempre vai para finalização (a seleção das assistências é feita na mesma tela)
+      setCurrentStep(13)
+    } else if (currentStep === 13) {
       // Step 12 - Finalização
       if ((tipoSinistro === "furto" || tipoSinistro === "roubo") && documentosFurtados) {
         setCurrentStep(13) // Vai para furto sem documentos
@@ -584,11 +617,14 @@ export function FormProvider({ children, initialData }: FormProviderProps) {
           return !fotoStep?.obrigatoria || (fotoStepFiles[fotoStep.id] || []).length > 0
         }
       case 10:
-        return outrosVeiculos !== null
+        // Passo de vídeos é opcional, sempre pode prosseguir
+        return true
       case 11:
+        return outrosVeiculos !== null
+      case 12:
         // Se não quer assistência adicional OU se quer e já selecionou pelo menos uma
         return assistenciaAdicional === false || (assistenciaAdicional === true && assistenciasAdicionais.length > 0)
-      case 12:
+      case 13:
         if ((tipoSinistro === "furto" || tipoSinistro === "roubo") && documentosFurtados) {
           return (
             dadosFurtoSemDocumentos.nomeCompleto.trim() !== "" &&
@@ -648,12 +684,16 @@ export function FormProvider({ children, initialData }: FormProviderProps) {
     hasProcessedCRLV,
     hasProcessedCNHTerceiros,
     hasProcessedCRLVTerceiros,
+    videosProprio,
+    videosTerceiro,
     nextStep,
     handleFileUpload,
     handleFotoStepUpload,
     removeFile,
     removeFotoStepFile,
     canProceed,
+    handleVideoUpload,
+    removeVideoFile,
   }
 
   return <FormContext.Provider value={value}>{children}</FormContext.Provider>
