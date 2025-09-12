@@ -139,21 +139,28 @@ export async function GET(request: NextRequest) {
       return acc
     }, {} as Record<string, number>)
 
-    // 6. Logs recentes (últimos 50 sinistros)
+    // 6. Logs recentes (últimos 50 sinistros) - buscar da tabela sinistros diretamente
     const { data: recentLogs, error: logsError } = await supabase
-      .from('view_sinistros_completos')
+      .from('sinistros')
       .select(`
         id,
         numero_sinistro,
         tipo_atendimento,
         tipo_sinistro,
         tipo_assistencia,
+        assistencia_adicional,
+        assistencias_tipos,
         status,
-        data_criacao,
-        cnh_proprio_nome
+        data_criacao
       `)
       .order('data_criacao', { ascending: false })
       .limit(50)
+
+    // Enriquecer com dados de CNH se necessário
+    const enrichedLogs = recentLogs?.map(log => ({
+      ...log,
+      cnh_proprio_nome: 'N/A' // Placeholder - pode buscar da tabela cnh_dados se necessário
+    })) || []
 
     return NextResponse.json({
       periodo: {
@@ -178,7 +185,7 @@ export async function GET(request: NextRequest) {
         ativos: activeUsers,
         porNivel: usersByLevel
       },
-      logs: recentLogs || []
+      logs: enrichedLogs || []
     })
 
   } catch (error) {

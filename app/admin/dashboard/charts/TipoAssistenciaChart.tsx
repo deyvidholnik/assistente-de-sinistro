@@ -1,11 +1,10 @@
 'use client'
 
-import React from 'react'
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts'
+import React, { useState, useEffect } from 'react'
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { ChartContainer as CustomChartContainer } from './shared/ChartContainer'
 import { EmptyState } from './shared/EmptyState'
-import { Car, Shield, FileText, AlertTriangle } from 'lucide-react'
 
 interface TipoAssistenciaData {
   logs: Array<{
@@ -13,7 +12,7 @@ interface TipoAssistenciaData {
     tipo_atendimento: string
     tipo_assistencia?: string
     assistencia_adicional?: boolean
-    assistencias_tipos?: string
+    assistencias_tipos?: string | string[]
   }>
 }
 
@@ -30,61 +29,79 @@ const chartConfig = {
   },
 }
 
-const assistenciaColors = [
-  'hsl(var(--chart-2))',
-  'hsl(var(--chart-3))',
-  'hsl(var(--chart-4))',
-  'hsl(var(--chart-5))',
-  'hsl(var(--brand-secondary))',
-  'hsl(var(--status-success))',
-  'hsl(var(--status-info))',
-  'hsl(var(--brand-primary))',
-  'hsl(var(--status-warning))',
-]
+const assistenciaColors = {
+  guincho: '#3b82f6', // azul
+  pane_seca: '#8b5cf6', // roxo
+  pane_mecanica: '#06b6d4', // ciano
+  pane_eletrica: '#eab308', // amarelo
+  trocar_pneu: '#ec4899', // rosa
+  taxi: '#84cc16', // lime
+  hotel: '#f59e0b', // âmbar
+}
 
-const adicionaisColors = [
-  'hsl(var(--status-error))',
-  'hsl(var(--status-warning))',
-  'hsl(var(--chart-1))',
-  'hsl(var(--status-info))',
-  'hsl(var(--chart-5))',
-  'hsl(var(--brand-primary))',
-]
+function formatAssistenciaLabel(tipo: string): string {
+  const labels: Record<string, string> = {
+    guincho: 'Guincho',
+    pane_seca: 'Pane Seca',
+    pane_mecanica: 'Pane Mecânica',
+    pane_eletrica: 'Pane Elétrica',
+    trocar_pneu: 'Trocar Pneu',
+    taxi: 'Táxi',
+    hotel: 'Hotel',
+  }
+  return labels[tipo] || tipo
+}
 
 export function TipoAssistenciaChart({ data, loading = false, className = '' }: TipoAssistenciaChartProps) {
-  // Processar dados para gráficos - focar apenas em assistências
+  // Hook para detectar tamanho da tela
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    function handleResize() {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    handleResize()
+    window.addEventListener('resize', handleResize)
+
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // Processar dados para unificar todas as assistências
   const processarDados = () => {
     const logs = data.logs
+    const todasAssistencias: Record<string, number> = {}
 
-    // Filtrar apenas assistências
-    const assistencias = logs.filter(log => log.tipo_atendimento === 'assistencia')
-    
-    // Contar tipos de assistência
-    const tiposAssistencia = assistencias.reduce((acc, log) => {
-      const tipo = log.tipo_assistencia || 'indefinido'
-      acc[tipo] = (acc[tipo] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
+    // 1. Contar assistências diretas
+    const assistenciasDirectas = logs.filter(log => log.tipo_atendimento === 'assistencia')
+    assistenciasDirectas.forEach(log => {
+      if (log.tipo_assistencia) {
+        const tipo = log.tipo_assistencia
+        todasAssistencias[tipo] = (todasAssistencias[tipo] || 0) + 1
+      }
+    })
 
-    // Contar assistências adicionais
-    const assistenciasAdicionais = assistencias.filter(log => log.assistencia_adicional === true)
-    const tiposAdicionais = {} as Record<string, number>
-    
-    assistenciasAdicionais.forEach(log => {
+    // 2. Contar assistências adicionais de TODOS os registros
+    const registrosComAdicionais = logs.filter(log => log.assistencia_adicional === true)
+    registrosComAdicionais.forEach(log => {
       if (log.assistencias_tipos) {
-        const tipos = log.assistencias_tipos.split(',')
+        // Verificar se é array ou string
+        const tipos = Array.isArray(log.assistencias_tipos) 
+          ? log.assistencias_tipos 
+          : log.assistencias_tipos.split(',')
+        
         tipos.forEach(tipo => {
-          const tipoLimpo = tipo.trim()
-          tiposAdicionais[tipoLimpo] = (tiposAdicionais[tipoLimpo] || 0) + 1
+          const tipoLimpo = String(tipo).trim()
+          if (tipoLimpo) {
+            todasAssistencias[tipoLimpo] = (todasAssistencias[tipoLimpo] || 0) + 1
+          }
         })
       }
     })
 
     return {
-      tiposAssistencia,
-      tiposAdicionais,
-      totalAssistencias: assistencias.length,
-      totalAdicionais: assistenciasAdicionais.length,
+      todasAssistencias,
+      totalAssistencias: Object.values(todasAssistencias).reduce((sum, count) => sum + count, 0),
     }
   }
 
@@ -101,179 +118,65 @@ export function TipoAssistenciaChart({ data, loading = false, className = '' }: 
     )
   }
 
-  // Preparar dados para gráficos
-  const dadosAssistencia = Object.entries(dados.tiposAssistencia).map(([tipo, count]) => ({
-    name: tipo === 'hotel' ? 'Hotel'
-         : tipo === 'guincho' ? 'Guincho'
-         : tipo === 'taxi' ? 'Táxi'
-         : tipo === 'pane_seca' ? 'Pane Seca'
-         : tipo === 'pane_mecanica' ? 'Pane Mecânica'
-         : tipo === 'pane_eletrica' ? 'Pane Elétrica'
-         : tipo === 'trocar_pneu' ? 'Trocar Pneu'
-         : tipo,
-    value: count,
-    percent: dados.totalAssistencias > 0 ? ((count / dados.totalAssistencias) * 100).toFixed(1) : '0',
+  // Dados para gráfico de pizza (igual ao "Sinistros por Tipo")
+  const assistenciasData = Object.entries(dados.todasAssistencias).map(([tipo, count]) => ({
+    name: formatAssistenciaLabel(tipo),
+    value: Number(count) || 0,
+    fill: assistenciaColors[tipo as keyof typeof assistenciaColors] || 'hsl(var(--muted))',
   })).sort((a, b) => b.value - a.value)
-
-  const dadosAdicionais = Object.entries(dados.tiposAdicionais).map(([tipo, count]) => ({
-    name: tipo,
-    value: count,
-    percent: dados.totalAdicionais > 0 ? ((count / dados.totalAdicionais) * 100).toFixed(1) : '0',
-  })).sort((a, b) => b.value - a.value)
-
-  // Dados para métricas resumidas
-  const metricsData = [
-    {
-      name: 'Total de Assistências',
-      value: dados.totalAssistencias,
-      icon: Car,
-      color: 'hsl(var(--brand-secondary))',
-    },
-    {
-      name: 'Assistências Adicionais',
-      value: dados.totalAdicionais,
-      icon: Shield,
-      color: 'hsl(var(--status-info))',
-    },
-    {
-      name: 'Tipos Diferentes',
-      value: Object.keys(dados.tiposAssistencia).length,
-      icon: FileText,
-      color: 'hsl(var(--brand-primary))',
-    },
-    {
-      name: 'Taxa Adicionais',
-      value: `${dados.totalAssistencias > 0 ? ((dados.totalAdicionais / dados.totalAssistencias) * 100).toFixed(1) : '0'}%`,
-      icon: AlertTriangle,
-      color: 'hsl(var(--status-warning))',
-    },
-  ]
 
   return (
-    <div className={`space-y-4 md:space-y-6 ${className}`}>
-      {/* Métricas Resumidas */}
-      <div className='grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4'>
-        {metricsData.map((metric, index) => {
-          const IconComponent = metric.icon
-          return (
-            <div key={index} className='bg-card/50 backdrop-blur-sm rounded-lg p-3 md:p-4 border border-border/50'>
-              <div className='flex items-center gap-2 md:gap-3'>
-                <div 
-                  className='w-8 md:w-10 h-8 md:h-10 rounded-lg flex items-center justify-center flex-shrink-0'
-                  style={{ backgroundColor: `${metric.color}15`, color: metric.color }}
-                >
-                  <IconComponent className='w-4 md:w-5 h-4 md:h-5' />
-                </div>
-                <div className='min-w-0 flex-1'>
-                  <div className='text-sm md:text-lg lg:text-2xl font-bold text-foreground truncate'>
-                    {typeof metric.value === 'number' ? metric.value.toLocaleString('pt-BR') : metric.value}
-                  </div>
-                  <div className='text-xs text-muted-foreground truncate'>{metric.name}</div>
-                </div>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Gráficos */}
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6'>
-        
-        {/* Gráfico Pizza - Tipos de Assistência */}
-        {dadosAssistencia.length > 0 && (
-          <CustomChartContainer
-            title='Distribuição por Tipo de Assistência'
-            description={`Proporção dos ${dados.totalAssistencias} atendimentos de assistência`}
-            loading={loading}
+    <div className={className}>
+      <CustomChartContainer
+        title='Assistências por Tipo'
+        description='Distribuição por tipo de assistência (diretas e adicionais)'
+        loading={loading}
+      >
+        <ChartContainer
+          config={chartConfig}
+          className='h-[320px] max-w-full mx-auto'
+        >
+          <ResponsiveContainer
+            width='100%'
+            height='100%'
           >
-            <ChartContainer config={chartConfig} className='h-[250px] md:h-[300px]'>
-              <ResponsiveContainer width='100%' height='100%'>
-                <PieChart>
-                  <Pie
-                    data={dadosAssistencia}
-                    cx='50%'
-                    cy='50%'
-                    outerRadius={80}
-                    fill='#8884d8'
-                    dataKey='value'
-                    label={({ name, percent }) => `${name}: ${percent}%`}
-                  >
-                    {dadosAssistencia.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={assistenciaColors[index % assistenciaColors.length]} />
-                    ))}
-                  </Pie>
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                </PieChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CustomChartContainer>
-        )}
-
-        {/* Gráfico Barras - Ranking de Assistências */}
-        {dadosAssistencia.length > 0 && (
-          <CustomChartContainer
-            title='Ranking de Assistências'
-            description={`As assistências mais solicitadas (${dados.totalAssistencias} total)`}
-            loading={loading}
-          >
-            <ChartContainer config={chartConfig} className='h-[250px] md:h-[300px]'>
-              <ResponsiveContainer width='100%' height='100%'>
-                <BarChart data={dadosAssistencia} margin={{ top: 10, right: 10, left: 10, bottom: 30 }}>
-                  <CartesianGrid strokeDasharray='3 3' opacity={0.3} />
-                  <XAxis 
-                    dataKey='name' 
-                    tick={{ fontSize: 10 }}
-                    angle={-45}
-                    textAnchor='end'
-                    height={80}
+            <PieChart>
+              <Pie
+                data={assistenciasData}
+                cx={isMobile ? '50%' : '50%'}
+                cy={isMobile ? '35%' : '40%'}
+                labelLine={false}
+                label={({ value }) => value}
+                outerRadius={isMobile ? 60 : 80}
+                fill='#8884d8'
+                dataKey='value'
+              >
+                {assistenciasData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.fill}
                   />
-                  <YAxis tick={{ fontSize: 10 }} width={30} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey='value' radius={4}>
-                    {dadosAssistencia.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={assistenciaColors[index % assistenciaColors.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CustomChartContainer>
-        )}
-
-      </div>
-
-      {/* Assistências Adicionais - se existirem */}
-      {dados.totalAdicionais > 0 && dadosAdicionais.length > 0 && (
-        <div className='mt-6'>
-          <CustomChartContainer
-            title='Assistências Adicionais Solicitadas'
-            description={`Serviços extras solicitados além da assistência principal (${dados.totalAdicionais} casos)`}
-            loading={loading}
-          >
-            <ChartContainer config={chartConfig} className='h-[250px] md:h-[300px]'>
-              <ResponsiveContainer width='100%' height='100%'>
-                <BarChart data={dadosAdicionais} margin={{ top: 10, right: 10, left: 10, bottom: 30 }}>
-                  <CartesianGrid strokeDasharray='3 3' opacity={0.3} />
-                  <XAxis 
-                    dataKey='name' 
-                    tick={{ fontSize: 10 }}
-                    angle={-45}
-                    textAnchor='end'
-                    height={80}
-                  />
-                  <YAxis tick={{ fontSize: 10 }} width={30} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey='value' radius={4}>
-                    {dadosAdicionais.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={adicionaisColors[index % adicionaisColors.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CustomChartContainer>
-        </div>
-      )}
+                ))}
+              </Pie>
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Legend
+                height={isMobile ? 70 : 30}
+                align='center'
+                wrapperStyle={{
+                  fontSize: isMobile ? '8px' : '10px',
+                  paddingTop: isMobile ? '20px' : '0px',
+                  paddingRight: '0px',
+                  paddingLeft: '0px',
+                  lineHeight: isMobile ? '12px' : '4px',
+                  textAlign: 'center',
+                  maxWidth: '100%',
+                  overflow: 'hidden',
+                }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartContainer>
+      </CustomChartContainer>
     </div>
   )
 }
